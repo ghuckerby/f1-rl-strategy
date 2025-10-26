@@ -2,6 +2,12 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
+from dataclasses import dataclass
+from .dynamics import (
+    SOFT, MEDIUM, HARD, calculate_lap_time, TrackParms
+)
+
+
 
 class F1PitStopEnv(gym.Env):
 
@@ -13,18 +19,21 @@ class F1PitStopEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
 
         # Observation Space
-        # Vector with 4 values, each normalised to [0,1]:
-        # lap fraction, tire wear, pit loss, sc active
         self.observation_space = spaces.Box(
             low=0,              # min value for each element
             high=1,             # max value for each element                    
-            shape=(4,),         # 4 values in obs vector
+            shape=(4,),   # 4 values in obs vector
             dtype=np.float32    # use 32-bit floats
         )
         
         self.state = np.zeros(4)    # vector for obs space
         self.current_lap = 0        # track current lap
         self.max_laps = 50          # set race length
+
+    def laptime(self, compound, stint_laps):
+        # calculate lap time
+
+        return compound
 
     # Called at the start of each new episode (race)
     def reset(self, *, seed = None, options = None):
