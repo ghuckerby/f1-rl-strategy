@@ -18,12 +18,10 @@ DEG_RATE = {
 }
 
 @dataclass
-class TrackParms:
+class TrackParams:
     laps: int = 50
     pit_loss: float = 20.0
+    max_stint_age: int = 50
 
 def calculate_lap_time(compound: int, stint_age: int) -> float:
-    base = BASE_LAP[compound]
-    degradation = DEG_RATE[compound] * stint_age
-
-    return base + degradation
+    return BASE_LAP[compound] + DEG_RATE[compound] * stint_age
