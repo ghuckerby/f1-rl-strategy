@@ -10,21 +10,14 @@ class F1PitStopEnv(gym.Env):
 
     def __init__(self, track: TrackParams | None = None):
         super().__init__()
+
         self.track = track or TrackParams()
-
-        # Discrete actions: stay out, pit soft, pit med, pit hard
-        self.action_space = spaces.Discrete(4)
-
+        self.action_space = spaces.Discrete(4) # 0 = stay_out, 1=S, 2=M, 3=H
         # [lap_fraction, compound(3), stint_age_norm, tyre_wear_norm, pit_loss_norm]
         self.obs_size = 1 + 3 + 1 + 1 + 1
 
         # Observation Space
-        self.observation_space = spaces.Box(
-            low=0,                      # min value for each element
-            high=1,                     # max value for each element                    
-            shape=(self.obs_size,),     
-            dtype=np.float32
-        )
+        self.observation_space = spaces.Box(low=0, high=1, shape=(self.obs_size,), dtype=np.float32)
         
         self.current_lap = 0
         self.compound = SOFT
@@ -34,6 +27,7 @@ class F1PitStopEnv(gym.Env):
 
     def make_obs(self) -> np.ndarray:
         lap_fraction = self.current_lap / self.track.laps
+        # one hot encoding for compound
         compound_oh = np.array([1.0 if self.compound == c else 0.0 for c in (SOFT, MEDIUM, HARD)], dtype=np.float32)
         stint_age_norm = min(self.stint_age / self.track.max_stint_age, 1.0)
         tire_wear_norm = np.clip(self.tire_wear, 0.0, 1.0)
@@ -48,6 +42,7 @@ class F1PitStopEnv(gym.Env):
         return obs
     
     def apply_pit(self, new_compound: int) -> float:
+        # set compound, reset age & wear
         self.compound = new_compound
         self.stint_age = 0
         self.tire_wear = 0.0
@@ -57,6 +52,7 @@ class F1PitStopEnv(gym.Env):
     # Called at the start of each new episode (race)
     def reset(self, *, seed = None, options = None):
         super().reset(seed=seed, options=options)
+
         self.current_lap = 0
         self.compound = SOFT
         self.stint_age = 0
@@ -77,17 +73,24 @@ class F1PitStopEnv(gym.Env):
         else:
             pass # stay out
 
-        lap_time = calculate_lap_time(self.compound, self.stint_age)
-        lap_time += pit_time
-
+        # lap time dynamics
+        lap_time = calculate_lap_time(self.compound, self.stint_age) + pit_time
         self.total_time += lap_time
         self.current_lap += 1
-
         self.stint_age += 1
         self.tire_wear = min(self.stint_age / self.track.max_stint_age, 1.0)
-
         terminated = self.current_lap >= self.track.laps
-
         reward = -lap_time
 
-        return self.make_obs(), reward, terminated, False, {}
+        # info for tracking
+        info = {
+            "lap": int(self.current_lap),
+            "compound": int(self.compound),
+            "stint_age": int(self.stint_age),
+            "tire_wear": float(self.tire_wear),
+            "total_time": float(self.total_time),
+            "action": int(action),
+            "lap_time": float(lap_time),
+        }
+
+        return self.make_obs(), reward, terminated, False, info
