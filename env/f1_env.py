@@ -6,6 +6,8 @@ from .dynamics import (
     SOFT, MEDIUM, HARD, calculate_lap_time, TrackParams
 )
 
+from typing import List, Dict, Any
+
 class F1PitStopEnv(gym.Env):
 
     def __init__(self, track: TrackParams | None = None):
@@ -25,6 +27,8 @@ class F1PitStopEnv(gym.Env):
         self.tire_wear = 0.0
         self.total_time = 0.0
 
+        self.race_log: List[Dict[str, Any]] = []
+
     def make_obs(self) -> np.ndarray:
         lap_fraction = self.current_lap / self.track.laps
         # one hot encoding for compound
@@ -40,14 +44,6 @@ class F1PitStopEnv(gym.Env):
         ]).astype(np.float32)
 
         return obs
-    
-    def apply_pit(self, new_compound: int) -> float:
-        # set compound, reset age & wear
-        self.compound = new_compound
-        self.stint_age = 0
-        self.tire_wear = 0.0
-
-        return self.track.pit_loss
 
     # Called at the start of each new episode (race)
     def reset(self, *, seed = None, options = None):
@@ -58,20 +54,34 @@ class F1PitStopEnv(gym.Env):
         self.stint_age = 0
         self.tire_wear = 0.0
         self.total_time = 0.0
+        obs = self.make_obs()
 
-        return self.make_obs(), {}
+        self.race_log = []
+        info = {
+            "lap": self.current_lap,
+            "compound": int(self.compound),
+            "stint_age": int(self.stint_age),
+            "tire_wear": float(self.tire_wear),
+            "total_time": float(self.total_time),
+            "pitted": False,
+            "action": None,
+            "lap_time": None, 
+        }
+
+        return obs, info
     
     # Advances environment by one time step, given an action from agent
     def step(self, action: int):
+
+        pitted = False
         pit_time = 0.0
-        if action == 1:
-            pit_time = self.apply_pit(SOFT) # pit soft 
-        elif action == 2:
-            pit_time = self.apply_pit(MEDIUM) # pit medium 
-        elif action == 3:
-            pit_time = self.apply_pit(HARD) # pit hard
-        else:
-            pass # stay out
+        if action in (1, 2, 3):
+            new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
+            if new_compound != self.compound:
+                pitted = True
+                pit_time = self.track.pit_loss
+                self.compound = new_compound
+                self.stint_age = 0
 
         # lap time dynamics
         lap_time = calculate_lap_time(self.compound, self.stint_age) + pit_time
@@ -89,8 +99,14 @@ class F1PitStopEnv(gym.Env):
             "stint_age": int(self.stint_age),
             "tire_wear": float(self.tire_wear),
             "total_time": float(self.total_time),
+            "pitted": bool(pitted),
             "action": int(action),
             "lap_time": float(lap_time),
         }
+        self.race_log.append(info)
+
+        # if race ends, add full log
+        if terminated:
+            info["episode_log"] = list(self.race_log)
 
         return self.make_obs(), reward, terminated, False, info
