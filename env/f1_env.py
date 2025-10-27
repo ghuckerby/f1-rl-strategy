@@ -110,3 +110,18 @@ class F1PitStopEnv(gym.Env):
             info["episode_log"] = list(self.race_log)
 
         return self.make_obs(), reward, terminated, False, info
+
+    def loggeroutput(self):
+
+        if not self.race_log:
+            print ("No laps yet")
+            return
+        
+        row = self.race_log[-1]
+        compound = {0: "S", 1: "M", 2:"H"}[row["compound"]]
+        action = {0: "stay_out", 1: "box_soft", 2:"box_medium", 3:"box_hard"}[row["action"]]
+        print(
+            f"Lap {row["lap"]:>2} | action: {action:>6} | compound: {compound} | "
+            f"stint_age: {row['stint_age']:>2} | lap_time: {row['lap_time']:.2f}s | "
+            f"total_time: {row['total_time']:.2f}s | pitted: {row['pitted']}"
+        )
