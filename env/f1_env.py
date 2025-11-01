@@ -50,7 +50,7 @@ class F1PitStopEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         self.current_lap = 0
-        self.compound = SOFT
+        self.compound = SOFT # (Currently always start on softs, change later)
         self.stint_age = 0
         self.tire_wear = 0.0
         self.total_time = 0.0
@@ -75,11 +75,19 @@ class F1PitStopEnv(gym.Env):
 
         pitted = False
         pit_time = 0.0
+
+        # Action 0: Stay out, no pit penalty
+        if action == 0:
+            pass
+
+        # Action 1, 2, 3: Pitting
         if action in (1, 2, 3):
+            pitted = True
+            pit_time = self.track.pit_loss
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
+
+
             if new_compound != self.compound:
-                pitted = True
-                pit_time = self.track.pit_loss
                 self.compound = new_compound
                 self.stint_age = 0
 
@@ -89,8 +97,9 @@ class F1PitStopEnv(gym.Env):
         self.current_lap += 1
         self.stint_age += 1
         self.tire_wear = min(self.stint_age / self.track.max_stint_age, 1.0)
+
         terminated = self.current_lap >= self.track.laps
-        reward = -lap_time
+        reward = -lap_time # reward is negative lap time
 
         # info for tracking
         info = {
@@ -105,8 +114,14 @@ class F1PitStopEnv(gym.Env):
         }
         self.race_log.append(info)
 
-        # if race ends, add full log
+        # if race ends, check rules and add full log
         if terminated:
+
+            # Compound Rule Penalty
+            compounds_used = set(log['compound'] for log in self.race_log)
+            if len(compounds_used) < 2:
+                reward -= 10_000.0
+
             info["episode_log"] = list(self.race_log)
 
         return self.make_obs(), reward, terminated, False, info

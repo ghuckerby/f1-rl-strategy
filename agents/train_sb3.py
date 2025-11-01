@@ -7,7 +7,7 @@ import numpy as np
 def main():
     env = F1PitStopEnv()
     model = PPO("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=10_000)
+    model.learn(total_timesteps=500_000)
 
     obs, info = env.reset()
     done = False
