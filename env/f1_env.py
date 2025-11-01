@@ -10,10 +10,12 @@ from typing import List, Dict, Any
 
 class F1PitStopEnv(gym.Env):
 
-    def __init__(self, track: TrackParams | None = None):
+    def __init__(self, track: TrackParams | None = None, starting_compound: int = SOFT):
         super().__init__()
 
         self.track = track or TrackParams()
+        self.starting_compound = starting_compound
+
         self.action_space = spaces.Discrete(4) # 0 = stay_out, 1=S, 2=M, 3=H
         # [lap_fraction, compound(3), stint_age_norm, tyre_wear_norm, pit_loss_norm]
         self.obs_size = 1 + 3 + 1 + 1 + 1
@@ -50,7 +52,7 @@ class F1PitStopEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         self.current_lap = 0
-        self.compound = SOFT # (Currently always start on softs, change later)
+        self.compound = self.starting_compound # (Currently always start on softs, change later)
         self.stint_age = 0
         self.tire_wear = 0.0
         self.total_time = 0.0
