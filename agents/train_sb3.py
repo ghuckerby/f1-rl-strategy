@@ -11,7 +11,7 @@ def train(start_compound, compound_name):
     env = F1PitStopEnv(starting_compound=start_compound)
 
     model = PPO("MlpPolicy", env, verbose=0)
-    model.learn(total_timesteps=1_000_000)
+    model.learn(total_timesteps=10_000_000)
     model.save(f"ppo_f1_{compound_name}_start")
 
     obs, info = env.reset()
@@ -23,14 +23,9 @@ def train(start_compound, compound_name):
         obs, reward, done, truncated, info = env.step(int(action))
         env.loggeroutput()
 
-    #print("\nRace Summary\n")
-    #for lap in env.race_log:
-    #    print(lap)
-
     final_time = env.total_time
     print(f"\nFinal Race time for {compound_name}: {final_time:.2f}s")
     pd.DataFrame(env.race_log).to_csv(f"race_log_{compound_name}.csv", index=False)
-
     return final_time
 
 def main():

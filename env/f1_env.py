@@ -81,6 +81,16 @@ class F1PitStopEnv(gym.Env):
         pitted = False
         pit_time = 0.0
 
+        # reward adjustment for if the agent stays out on degrading tyres
+        reward_shaping = 0.0
+        # slowest fresh tyre
+        new_hard_time = calculate_lap_time(HARD, 0)
+        current_tyre_time = calculate_lap_time(self.compound, self.stint_age)
+
+        # if current tyre slower than new hard tyres, and agent stays out
+        if current_tyre_time > new_hard_time and action == 0:
+            reward_shaing = -5.0
+
         # Action 0: Stay out, no pit penalty
         if action == 0:
             pass
@@ -90,7 +100,6 @@ class F1PitStopEnv(gym.Env):
             pitted = True
             pit_time = self.track.pit_loss
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
-
 
             if new_compound != self.compound:
                 self.compound = new_compound
@@ -104,7 +113,7 @@ class F1PitStopEnv(gym.Env):
         self.tire_wear = min(self.stint_age / self.track.max_stint_age, 1.0)
 
         terminated = self.current_lap >= self.track.laps
-        reward = -lap_time # reward is negative lap time
+        reward = -lap_time + reward_shaping # reward is negative lap time plus shaping
 
         # info for tracking
         info = {
