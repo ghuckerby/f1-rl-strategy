@@ -30,7 +30,7 @@ class F1PitStopEnv(gym.Env):
         self.total_time = 0.0
 
         self.race_log: List[Dict[str, Any]] = []
-
+    
     def make_obs(self) -> np.ndarray:
         lap_fraction = self.current_lap / self.track.laps
         # one hot encoding for compound
@@ -59,6 +59,7 @@ class F1PitStopEnv(gym.Env):
         obs = self.make_obs()
 
         self.race_log = []
+
         info = {
             "lap": self.current_lap,
             "compound": int(self.compound),
@@ -69,6 +70,8 @@ class F1PitStopEnv(gym.Env):
             "action": None,
             "lap_time": None, 
         }
+
+        self.race_log.append(info)
 
         return obs, info
     
@@ -127,7 +130,7 @@ class F1PitStopEnv(gym.Env):
             info["episode_log"] = list(self.race_log)
 
         return self.make_obs(), reward, terminated, False, info
-
+    
     def loggeroutput(self):
 
         if not self.race_log:

@@ -8,3 +8,4 @@ wandb
 hydra-core
 pytest
 plotly
+fastf1
