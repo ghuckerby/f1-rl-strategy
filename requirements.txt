@@ -9,3 +9,4 @@ hydra-core
 pytest
 plotly
 fastf1
+sb3-contrib
