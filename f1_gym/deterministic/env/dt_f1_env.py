@@ -3,7 +3,7 @@ import gymnasium as gym
 from gymnasium import spaces
 #from gymnasium.spaces import Dict
 import numpy as np
-from .dynamics import (
+from .dt_dynamics import (
     SOFT, MEDIUM, HARD, calculate_lap_time, TrackParams
 )
 
@@ -60,7 +60,7 @@ class F1PitStopEnv(gym.Env):
         self.allowed_tyres[self.starting_compound] -= 1
 
         self.current_lap = 0
-        self.compound = self.starting_compound # (Currently always start on softs, change later)
+        self.compound = self.starting_compound
         self.stint_age = 0
         self.tire_wear = 0.0
         self.total_time = 0.0
@@ -88,15 +88,11 @@ class F1PitStopEnv(gym.Env):
 
         pitted = False
         pit_time = 0.0
-        compound_before_action = self.compound
-
-        # reward adjustment for if the agent stays out on degrading tyres
         reward_shaping = 0.0
-        # slowest fresh tyre
+
+        # reward shaping for current lap < fresh hard tyre
         new_hard_time = calculate_lap_time(HARD, 0)
         current_tyre_time = calculate_lap_time(self.compound, self.stint_age)
-
-        # if current tyre slower than new hard tyres, and agent stays out
         if current_tyre_time > new_hard_time and action == 0:
             reward_shaping = -10.0
 
@@ -111,7 +107,7 @@ class F1PitStopEnv(gym.Env):
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
 
             if self.allowed_tyres[new_compound] <= 0:
-                reward_shaping -= 100_000.0
+                reward_shaping -= 10_000_000.0
             else:
                 self.allowed_tyres[new_compound] -= 1
 
@@ -147,7 +143,7 @@ class F1PitStopEnv(gym.Env):
             # Compound Rule Penalty
             compounds_used = set(log['compound'] for log in self.race_log)
             if len(compounds_used) < 2:
-                reward -= 100_000.0
+                reward -= 10_000_000.0
 
             info["episode_log"] = list(self.race_log)
 

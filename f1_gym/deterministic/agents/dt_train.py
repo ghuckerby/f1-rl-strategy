@@ -1,15 +1,18 @@
 
+import os
 from stable_baselines3 import DQN
-from env.f1_env import F1PitStopEnv
-from env.dynamics import SOFT, MEDIUM, HARD
+from f1_gym.deterministic.env.dt_f1_env import F1PitStopEnv
+from f1_gym.deterministic.env.dt_dynamics import SOFT, MEDIUM, HARD
 import pandas as pd
 import numpy as np
 
-# from sb3_contrib import MaskableDQN
-# from sk3_contrib.common.wrappers import ActionMasker
-
 def train(start_compound, compound_name):
     print(f"\nTraining {compound_name} as Starting Tire")
+
+    LOG_DIR = "f1_gym/deterministic/logs"
+    MODEL_DIR = "f1_gym/deterministic/dqn_models"
+    os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(MODEL_DIR, exist_ok=True)
 
     env = F1PitStopEnv(starting_compound=start_compound)
 
@@ -17,7 +20,7 @@ def train(start_compound, compound_name):
         "MlpPolicy",
         env,
         verbose=1,
-        buffer_size=100_000,
+        buffer_size=500_000,
         learning_starts=10_000,
         batch_size=128,
         target_update_interval=1000,
@@ -25,8 +28,11 @@ def train(start_compound, compound_name):
         exploration_final_eps=0.05,
     )
 
-    model.learn(total_timesteps=3_000_000)
-    model.save(f"dqn_f1_{compound_name}_start")
+    model.learn(total_timesteps=1_000_000)
+
+    model_name = f"dqn_f1_{compound_name}_start.zip"
+    model_path = os.path.join(MODEL_DIR, model_name)
+    model.save(model_path)
 
     obs, info = env.reset()
     done = False
@@ -39,7 +45,11 @@ def train(start_compound, compound_name):
 
     final_time = env.total_time
     print(f"\nFinal Race time for {compound_name}: {final_time:.2f}s")
-    pd.DataFrame(env.race_log).to_csv(f"race_log_{compound_name}.csv", index=False)
+
+    log_name = f"race_log_{compound_name}.csv"
+    log_path = os.path.join(LOG_DIR, log_name)
+    pd.DataFrame(env.race_log).to_csv(log_path, index=False)
+
     return final_time
 
 def main():
