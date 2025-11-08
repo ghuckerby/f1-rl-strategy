@@ -56,8 +56,7 @@ def get_sc_probability(year=2024):
         session.load(laps=True, telemetry=False, weather=False)
 
         total_laps += len(session.laps)
-        # .isin(['4', '5'])
-        sc_laps += len(session.laps[session.laps['TrackStatus'] == '4'])
+        sc_laps += len(session.laps[session.laps['TrackStatus'].isin(['4', '5'])])
 
     if total_laps == 0:
         return 0.0
