@@ -28,7 +28,7 @@ def train(start_compound, compound_name):
         exploration_final_eps=0.05,
     )
 
-    model.learn(total_timesteps=1_000_000)
+    model.learn(total_timesteps=10_000_000)
 
     model_name = f"dqn_f1_{compound_name}_start.zip"
     model_path = os.path.join(MODEL_DIR, model_name)
@@ -56,19 +56,19 @@ def main():
     time_M = train(MEDIUM, "Medium")
     print(f"Medium Time: {time_M:.2f}s")
 
-    # time_S = train(SOFT, "Soft")
-    # print(f"Soft Time: {time_S:.2f}s")
+    time_S = train(SOFT, "Soft")
+    print(f"Soft Time: {time_S:.2f}s")
     
-    # time_H = train(HARD, "Hard")
-    # print(f"Hard Time: {time_H:.2f}s")
+    time_H = train(HARD, "Hard")
+    print(f"Hard Time: {time_H:.2f}s")
 
-    # results = {
-    #     "Soft": time_S,
-    #     "Medium": time_M,
-    #     "Hard": time_H
-    # }
-    # best_strategy = min(results, key=results.get)
-    # print(f"\n Best Overall: Start on {best_strategy} (Time : {results[best_strategy]:.2f}s)")
+    results = {
+        "Soft": time_S,
+        "Medium": time_M,
+        "Hard": time_H
+    }
+    best_strategy = min(results, key=results.get)
+    print(f"\n Best Overall: Start on {best_strategy} (Time : {results[best_strategy]:.2f}s)")
 
 if __name__ == "__main__":
     main()

@@ -93,6 +93,7 @@ class F1PitStopEnv(gym.Env):
         # reward shaping for current lap < fresh hard tyre
         new_hard_time = calculate_lap_time(HARD, 0)
         current_tyre_time = calculate_lap_time(self.compound, self.stint_age)
+        
         if current_tyre_time > new_hard_time and action == 0:
             reward_shaping = -10.0
 
