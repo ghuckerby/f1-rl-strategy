@@ -9,6 +9,7 @@ import numpy as np
 def train(start_compound, compound_name):
     print(f"\nTraining {compound_name} as Starting Tire")
 
+    # Log output folder
     LOG_DIR = "f1_gym/deterministic/logs"
     MODEL_DIR = "f1_gym/deterministic/dqn_models"
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -16,6 +17,7 @@ def train(start_compound, compound_name):
 
     env = F1PitStopEnv(starting_compound=start_compound)
 
+    # Model: Deep Q Network
     model = DQN(
         "MlpPolicy",
         env,
@@ -28,8 +30,11 @@ def train(start_compound, compound_name):
         exploration_final_eps=0.05,
     )
 
+    # Model learning
+        # Time steps / Laps = Number of races (episodes)
     model.learn(total_timesteps=10_000_000)
 
+    # Model output folder
     model_name = f"dqn_f1_{compound_name}_start.zip"
     model_path = os.path.join(MODEL_DIR, model_name)
     model.save(model_path)
@@ -37,6 +42,7 @@ def train(start_compound, compound_name):
     obs, info = env.reset()
     done = False
 
+    # Start model and output race log
     print("\nRace Log\n")
     while not done:
         action, _ = model.predict(obs, deterministic=True)
@@ -53,6 +59,7 @@ def train(start_compound, compound_name):
     return final_time
 
 def main():
+    # Train using different starting tyres
     time_M = train(MEDIUM, "Medium")
     print(f"Medium Time: {time_M:.2f}s")
 
@@ -62,6 +69,7 @@ def main():
     time_H = train(HARD, "Hard")
     print(f"Hard Time: {time_H:.2f}s")
 
+    # Output best strategy from each starting tyre
     results = {
         "Soft": time_S,
         "Medium": time_M,

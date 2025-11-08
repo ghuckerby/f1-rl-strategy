@@ -1,6 +1,7 @@
 
 from f1_gym.deterministic.env.dt_f1_env import F1PitStopEnv
 
+# Simple environment test
 def test_env_runs():
     env = F1PitStopEnv()
     obs, _ = env.reset()

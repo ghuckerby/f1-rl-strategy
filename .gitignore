@@ -1,2 +1,3 @@
 
+# Ignore fastf1 library cache (big file)
 fastf1/cache/

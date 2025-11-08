@@ -1,7 +1,6 @@
 
 import gymnasium as gym
 from gymnasium import spaces
-#from gymnasium.spaces import Dict
 import numpy as np
 from .dt_dynamics import (
     SOFT, MEDIUM, HARD, calculate_lap_time, TrackParams
@@ -18,36 +17,39 @@ class F1PitStopEnv(gym.Env):
         self.starting_compound = starting_compound
 
         # Number of sets allowed for each tyre
+            # Used to enforce compound limit rule (teams only have 1 or 2 of each tyre)
         self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
         self.allowed_tyres[self.starting_compound] -= 1
 
-        self.action_space = spaces.Discrete(4) # 0 = stay_out, 1=S, 2=M, 3=H
-        # [lap_fraction, compound(3), stint_age_norm, tyre_wear_norm, pit_loss_norm]
+        self.action_space = spaces.Discrete(4) # 4 Actions: 0 = stay_out, 1=S, 2=M, 3=H
+        # Observations: [lap_fraction, compound(3), stint_age_norm, tyre_wear_norm, pit_loss_norm]
         self.obs_size = 1 + 3 + 1 + 1 + 1
 
         # Observation Space
         self.observation_space = spaces.Box(low=0, high=1, shape=(self.obs_size,), dtype=np.float32)
-        
+
         self.current_lap = 0
         self.compound = SOFT
         self.stint_age = 0
-        self.tire_wear = 0.0
+        self.tyre_wear = 0.0
         self.total_time = 0.0
 
+        # Race log for strategy tracking and visualisation
         self.race_log: List[Dict[str, Any]] = []
     
+    # Observation function
     def make_obs(self) -> np.ndarray:
         lap_fraction = self.current_lap / self.track.laps
         # one hot encoding for compound
         compound_oh = np.array([1.0 if self.compound == c else 0.0 for c in (SOFT, MEDIUM, HARD)], dtype=np.float32)
         stint_age_norm = min(self.stint_age / self.track.max_stint_age, 1.0)
-        tire_wear_norm = np.clip(self.tire_wear, 0.0, 1.0)
+        tyre_wear_norm = np.clip(self.tyre_wear, 0.0, 1.0)
         pit_loss_norm = min(self.track.pit_loss / 30.0, 1.0)
 
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_oh,
-            np.array([stint_age_norm, tire_wear_norm, pit_loss_norm], dtype=np.float32)
+            np.array([stint_age_norm, tyre_wear_norm, pit_loss_norm], dtype=np.float32)
         ]).astype(np.float32)
 
         return obs
@@ -56,29 +58,30 @@ class F1PitStopEnv(gym.Env):
     def reset(self, *, seed = None, options = None):
         super().reset(seed=seed, options=options)
 
+        # Compound rule update
         self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
         self.allowed_tyres[self.starting_compound] -= 1
 
+        # Observations
         self.current_lap = 0
         self.compound = self.starting_compound
         self.stint_age = 0
-        self.tire_wear = 0.0
+        self.tyre_wear = 0.0
         self.total_time = 0.0
         obs = self.make_obs()
 
+        # Logging
         self.race_log = []
-
         info = {
             "lap": self.current_lap,
             "compound": int(self.compound),
             "stint_age": int(self.stint_age),
-            "tire_wear": float(self.tire_wear),
+            "tyre_wear": float(self.tyre_wear),
             "total_time": float(self.total_time),
             "pitted": False,
             "action": None,
             "lap_time": None, 
         }
-
         self.race_log.append(info)
 
         return obs, info
@@ -91,9 +94,9 @@ class F1PitStopEnv(gym.Env):
         reward_shaping = 0.0
 
         # reward shaping for current lap < fresh hard tyre
+            # the slowest 'fresh' tyre
         new_hard_time = calculate_lap_time(HARD, 0)
         current_tyre_time = calculate_lap_time(self.compound, self.stint_age)
-        
         if current_tyre_time > new_hard_time and action == 0:
             reward_shaping = -10.0
 
@@ -103,11 +106,15 @@ class F1PitStopEnv(gym.Env):
 
         # Action 1, 2, 3: Pitting
         if action in (1, 2, 3):
+
+            # Apply pit loss
             pitted = True
             pit_time = self.track.pit_loss
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
 
+            # Compound limit rule
             if self.allowed_tyres[new_compound] <= 0:
+                # Big penalty due to rule break
                 reward_shaping -= 10_000_000.0
             else:
                 self.allowed_tyres[new_compound] -= 1
@@ -120,18 +127,18 @@ class F1PitStopEnv(gym.Env):
         self.total_time += lap_time
         self.current_lap += 1
         self.stint_age += 1
-        self.tire_wear = min(self.stint_age / self.track.max_stint_age, 1.0)
+        self.tyre_wear = min(self.stint_age / self.track.max_stint_age, 1.0)
 
         terminated = self.current_lap >= self.track.laps
 
         reward = -lap_time + reward_shaping # reward is negative lap time plus shaping
 
-        # info for tracking
+        # Logging
         info = {
             "lap": int(self.current_lap),
             "compound": int(self.compound),
             "stint_age": int(self.stint_age),
-            "tire_wear": float(self.tire_wear),
+            "tyre_wear": float(self.tyre_wear),
             "total_time": float(self.total_time),
             "pitted": bool(pitted),
             "action": int(action),
@@ -141,15 +148,18 @@ class F1PitStopEnv(gym.Env):
 
         # if race ends, check rules and add full log
         if terminated:
-            # Compound Rule Penalty
+            # Minimum Compound Rule Penalty
             compounds_used = set(log['compound'] for log in self.race_log)
             if len(compounds_used) < 2:
+                # Big penalty due to rule break
                 reward -= 10_000_000.0
 
             info["episode_log"] = list(self.race_log)
 
         return self.make_obs(), reward, terminated, False, info
     
+    # Logging Function for seeing used strategy
+        # Creates a per-lap output for actions and observations
     def loggeroutput(self):
 
         if not self.race_log:

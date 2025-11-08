@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
+# Cache folder for timing data
 ff1.Cache.enable_cache("fastf1/cache")
 
-print("Loading Session Data")
 session = ff1.get_session(2024, 'Bahrain', 'R') # Year, Event, Session
 session.load(laps=True, telemetry=False, weather=False)
 race_dataset = session.laps
@@ -15,11 +15,11 @@ print(f"Session Dataset: {race_dataset}")
 def get_tyre_degradation(race_dataset):
     # Calculate a linear degradation rate (sec/lap) for tyre degradation parameter
 
-    print("/nCalculating Tyre Degradation")
+    print("\nCalculating Tyre Degradation")
 
 def get_pit_loss(race_dataset):
     # Calculate average time loss for a pit stop
-    print("/nCalculating Pit Loss")
+    print("\nCalculating Pit Loss")
 
     # Get all laps without a pit stop
     laps_no_pit = race_dataset.pick_wo_box()
@@ -39,7 +39,7 @@ def get_pit_loss(race_dataset):
 
 def get_sc_probability(year=2024):
     # Calculate per lap probability of a Safety Car across an entire season
-    print(f"/nCalculating SC Probability for {year}")
+    print(f"\nCalculating SC Probability for {year}")
 
     total_laps = 0
     sc_laps = 0
@@ -76,7 +76,7 @@ def get_slow_stop_probability(year=2024, threshold_s=25.0):
 
     print(f"\nCalculating Slow Stop Probability for {year}")
 
-# tyre_deg_param = get_tyre_degradation(race_dataset)
+tyre_deg_param = get_tyre_degradation(race_dataset)
 pit_loss_param = get_pit_loss(race_dataset)
 sc_proba_param = get_sc_probability(year=2024)
-# slowstop_param = get_slow_stop_probability(race_dataset)
+slowstop_param = get_slow_stop_probability(race_dataset)
