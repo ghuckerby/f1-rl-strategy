@@ -1,5 +1,5 @@
 
-from env.f1_env import F1PitStopEnv
+from f1_gym.deterministic.env.dt_f1_env import F1PitStopEnv
 
 def test_env_runs():
     env = F1PitStopEnv()
