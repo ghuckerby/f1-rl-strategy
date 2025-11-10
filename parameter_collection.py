@@ -7,15 +7,50 @@ from scipy.stats import linregress
 # Cache folder for timing data
 ff1.Cache.enable_cache("fastf1/cache")
 
-session = ff1.get_session(2024, 'Bahrain', 'R') # Year, Event, Session
+session = ff1.get_session(2024, 'China', 'R') # Year, Event, Session
 session.load(laps=True, telemetry=False, weather=False)
 race_dataset = session.laps
 print(f"Session Dataset: {race_dataset}")
 
 def get_tyre_degradation(race_dataset):
     # Calculate a linear degradation rate (sec/lap) for tyre degradation parameter
-
     print("\nCalculating Tyre Degradation")
+
+    deg_rates = {
+        "SOFT": [],
+        "MEDIUM": [],
+        "HARD": []
+    }
+
+    for driver in race_dataset['Driver'].unique():
+        laps = race_dataset.pick_drivers(driver)
+
+        for stint_num in laps['Stint'].unique():
+            stint_laps = laps[laps['Stint'] == stint_num]
+
+            clean_stint = stint_laps.iloc[1:-1]
+            if len(clean_stint) < 5:
+                continue
+
+            compound = clean_stint['Compound'].iloc[0]
+            if compound not in deg_rates:
+                continue
+
+            x = clean_stint['TyreLife']
+            y = clean_stint['LapTime'].dt.total_seconds()
+
+            tyre_regression = linregress(x, y)
+            print(f"{compound} Tyre Deg: {tyre_regression.slope}")
+            if 0 < tyre_regression.slope < 1.0:
+                deg_rates[compound].append(tyre_regression.slope)
+
+    average_deg = {}
+    for compound, rates in deg_rates.items():
+        if rates:
+            average_deg[compound] = np.mean(rates)
+            print(f"Average {compound} degradation: {average_deg[compound]:.3f} sec/lap")
+
+    return average_deg
 
 def get_pit_loss(race_dataset):
     # Calculate average time loss for a pit stop
@@ -94,6 +129,8 @@ def get_slow_stop_probability(year, threshold):
     
     # Combine each pit lap from each race into one 
     full_pit_data = pd.concat(all_stops)
+
+    print(full_pit_data.describe())
     
     # Calculate time spent in pit lane
     full_pit_data['PitLaneTime'] = (full_pit_data['PitOutTime'] - full_pit_data['PitInTime']).dt.total_seconds()
@@ -111,6 +148,6 @@ def get_slow_stop_probability(year, threshold):
     print(f"Slow stop probability: {slow_stop_probability:.4f}")
 
 tyre_deg_param = get_tyre_degradation(race_dataset)
-pit_loss_param = get_pit_loss(race_dataset)
-sc_proba_param = get_sc_probability(year=2024)
-slowstop_param = get_slow_stop_probability(year=2024, threshold=10.0)
+# pit_loss_param = get_pit_loss(race_dataset)
+# sc_proba_param = get_sc_probability(year=2024)
+# slowstop_param = get_slow_stop_probability(year=2024, threshold=10.0)
