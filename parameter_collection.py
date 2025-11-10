@@ -70,13 +70,47 @@ def get_sc_probability(year=2024):
 
     return sc_probability
 
-def get_slow_stop_probability(year=2024, threshold_s=25.0):
+def get_slow_stop_probability(year, threshold):
     # Calculate probability of a pit stop being 'slow'
-    # Defined as time in pits > threshold across an entire season
-
+    # Defined as time in pits > (threshold seconds) across an entire season
     print(f"\nCalculating Slow Stop Probability for {year}")
+
+    all_stops = []
+    schedule = ff1.get_event_schedule(year)
+    races = schedule[schedule['EventFormat'] != 'testing']
+    races = races[races['RoundNumber'] < 25]
+
+    for i, event in races.iterrows():
+        print(f"{event['EventName']}:")
+        session = ff1.get_session(year, event['EventName'], 'R')
+        session.load(laps=True, telemetry=False, weather=False)
+
+        # All laps with pitintime are pit stop laps
+        pit_laps = session.laps[session.laps['PitInTime'].notna()]
+        all_stops.append(pit_laps)
+
+    if not all_stops:
+        return 0.0
+    
+    # Combine each pit lap from each race into one 
+    full_pit_data = pd.concat(all_stops)
+    
+    # Calculate time spent in pit lane
+    full_pit_data['PitLaneTime'] = (full_pit_data['PitOutTime'] - full_pit_data['PitInTime']).dt.total_seconds()
+
+    num_pit_stops = len(full_pit_data)
+    num_slow_stops = len(full_pit_data[full_pit_data['PitLaneTime'] > threshold])
+
+    if num_pit_stops == 0:
+        return 0.0
+    
+    slow_stop_probability = num_slow_stops / num_pit_stops
+
+    print(f"Total pit stops in {year}: {num_pit_stops}")
+    print(f"Slow stops > {threshold}: {num_slow_stops}")
+    print(f"Slow stop probability: {slow_stop_probability:.4f}")
 
 tyre_deg_param = get_tyre_degradation(race_dataset)
 pit_loss_param = get_pit_loss(race_dataset)
 sc_proba_param = get_sc_probability(year=2024)
-slowstop_param = get_slow_stop_probability(race_dataset)
+slowstop_param = get_slow_stop_probability(year=2024, threshold=10.0)
