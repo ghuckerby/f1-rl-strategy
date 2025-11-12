@@ -147,7 +147,11 @@ def get_slow_stop_probability(year, threshold):
     print(f"Slow stops > {threshold}: {num_slow_stops}")
     print(f"Slow stop probability: {slow_stop_probability:.4f}")
 
+    return slow_stop_probability
+
 tyre_deg_param = get_tyre_degradation(race_dataset)
-# pit_loss_param = get_pit_loss(race_dataset)
-# sc_proba_param = get_sc_probability(year=2024)
+pit_loss_param = get_pit_loss(race_dataset)
+sc_proba_param = get_sc_probability(year=2024)
 # slowstop_param = get_slow_stop_probability(year=2024, threshold=10.0)
+
+print(f"Tyre Degs: {tyre_deg_param}, \nPit Loss: {pit_loss_param:.4f}, \nSC Probability: {sc_proba_param:.4f}")
