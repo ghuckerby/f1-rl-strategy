@@ -18,8 +18,8 @@ class F1PitStopEnv(gym.Env):
 
         # Number of sets allowed for each tyre
             # Used to enforce compound limit rule (teams only have 1 or 2 of each tyre)
-        self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
-        self.allowed_tyres[self.starting_compound] -= 1
+        # self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
+        # self.allowed_tyres[self.starting_compound] -= 1
 
         self.action_space = spaces.Discrete(4) # 4 Actions: 0 = stay_out, 1=S, 2=M, 3=H
         # Observations: [lap_fraction, compound(3), stint_age_norm, tyre_wear_norm, pit_loss_norm]
@@ -33,6 +33,10 @@ class F1PitStopEnv(gym.Env):
         self.stint_age = 0
         self.tyre_wear = 0.0
         self.total_time = 0.0
+
+        self.pit_stops = 0
+        self.max_pit_stops = 2
+        self.compounds_used = set()
 
         # Race log for strategy tracking and visualisation
         self.race_log: List[Dict[str, Any]] = []
@@ -59,8 +63,8 @@ class F1PitStopEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         # Compound rule update
-        self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
-        self.allowed_tyres[self.starting_compound] -= 1
+        # self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
+        # self.allowed_tyres[self.starting_compound] -= 1
 
         # Observations
         self.current_lap = 0
@@ -68,6 +72,10 @@ class F1PitStopEnv(gym.Env):
         self.stint_age = 0
         self.tyre_wear = 0.0
         self.total_time = 0.0
+
+        self.pit_stops = 0
+        self.compounds_used = {self.starting_compound}
+
         obs = self.make_obs()
 
         # Logging
@@ -93,13 +101,6 @@ class F1PitStopEnv(gym.Env):
         pit_time = 0.0
         reward_shaping = 0.0
 
-        # reward shaping for current lap < fresh hard tyre
-            # the slowest 'fresh' tyre
-        new_hard_time = calculate_lap_time(HARD, 0)
-        current_tyre_time = calculate_lap_time(self.compound, self.stint_age)
-        if current_tyre_time > new_hard_time and action == 0:
-            reward_shaping = -10.0
-
         # Action 0: Stay out, no pit penalty
         if action == 0:
             pass
@@ -107,20 +108,41 @@ class F1PitStopEnv(gym.Env):
         # Action 1, 2, 3: Pitting
         if action in (1, 2, 3):
 
-            # Apply pit loss
+            self.pit_stops += 1
             pitted = True
             pit_time = self.track.pit_loss
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
 
-            # Compound limit rule
-            if self.allowed_tyres[new_compound] <= 0:
-                # Big penalty due to rule break
-                reward_shaping -= 10_000_000.0
-            else:
-                self.allowed_tyres[new_compound] -= 1
+            self.compounds_used.add(new_compound)
+            # if self.allowed_tyres[new_compound] <= 0:
+            #     # Big penalty due to rule break
+            #     reward_shaping -= 10_000_000.0
+            # else:
+            #     self.allowed_tyres[new_compound] -= 1
 
             self.compound = new_compound
             self.stint_age = 0
+
+            # if self.pit_stops >= self.max_pit_stops:
+            #     # Invalid action penalty
+            #     reward_shaping -= 1.0
+            #     pass
+            # else:
+            #     # Perform pit stop
+            #     self.pit_stops += 1
+            #     pitted = True
+            #     pit_time = self.track.pit_loss
+            #     new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
+
+            #     self.compounds_used.add(new_compound)
+            #     # if self.allowed_tyres[new_compound] <= 0:
+            #     #     # Big penalty due to rule break
+            #     #     reward_shaping -= 10_000_000.0
+            #     # else:
+            #     #     self.allowed_tyres[new_compound] -= 1
+
+            #     self.compound = new_compound
+            #     self.stint_age = 0
 
         # lap time dynamics
         lap_time = calculate_lap_time(self.compound, self.stint_age) + pit_time
@@ -148,11 +170,10 @@ class F1PitStopEnv(gym.Env):
 
         # if race ends, check rules and add full log
         if terminated:
-            # Minimum Compound Rule Penalty
-            compounds_used = set(log['compound'] for log in self.race_log)
-            if len(compounds_used) < 2:
-                # Big penalty due to rule break
-                reward -= 10_000_000.0
+            # compounds_used = set(log['compound'] for log in self.race_log)
+            # if len(compounds_used) < 2:
+            #     # Big penalty due to rule break
+            #     reward -= 1_000.0
 
             info["episode_log"] = list(self.race_log)
 

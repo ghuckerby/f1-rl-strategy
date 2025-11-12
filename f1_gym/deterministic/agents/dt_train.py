@@ -34,25 +34,25 @@ def train(start_compound, compound_name):
         "MlpPolicy",
         env,
         verbose=1,  
-        buffer_size=200_000,            # Replay buffer size
+        buffer_size=500_000,            # Replay buffer size
         learning_starts=50_000,         # Steps before learning starts
-        batch_size=128,                 # Minibatch size
+        batch_size=256,                 # Samples from buffer before each update
         target_update_interval=1000,    # Target network update frequency
         exploration_fraction=0.05,      # Fraction of total timesteps for exploration
         exploration_final_eps=0.05,     # Final epsilon for exploration
-        learning_rate=0.0003,           # Learning rate
-        tensorboard_log=f"dqn_logs/tensorboard/{run.id}"
+        learning_rate=0.0002,           # Learning rate
+        tensorboard_log=f"f1_gym/deterministic/dqn_logs/tensorboard/{run.id}"
     )
 
     # WandB Callback
     callback = WandbCallback(
-        model_save_path="dqn_models/wandb/{run.id}",
+        model_save_path="f1_gym/deterministic/dqn_models/wandb/{run.id}",
         verbose=2
     )
 
     # Model learning
         # Time steps / Laps = Number of races (episodes)
-    model.learn(total_timesteps=20_000_000, callback=callback)
+    model.learn(total_timesteps=1_000_000, callback=callback)
 
     # Model output folder
     model_name = f"dqn_f1_{compound_name}_start.zip"
@@ -60,14 +60,14 @@ def train(start_compound, compound_name):
     model.save(model_path)
     print(f"Saved model to {model_path}")
 
-    run.finish()
+    run.finish() # finish wandb run
 
     return model_path
 
 def main():
     # Train using different starting tyres
-    # train(SOFT, "Soft")
-    train(MEDIUM, "Medium")
+    train(SOFT, "Soft")
+    # train(MEDIUM, "Medium")
     # train(HARD, "Hard")
 
     print("\nTraining complete.")
