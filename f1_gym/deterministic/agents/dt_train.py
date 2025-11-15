@@ -52,7 +52,7 @@ def train(start_compound, compound_name):
 
     # Model learning
         # Time steps / Laps = Number of races (episodes)
-    model.learn(total_timesteps=1_000_000, callback=callback)
+    model.learn(total_timesteps=5_000_000, callback=callback)
 
     # Model output folder
     model_name = f"dqn_f1_{compound_name}_start.zip"
