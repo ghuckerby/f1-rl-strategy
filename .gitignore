@@ -1,7 +1,7 @@
 
 # Ignore fastf1 library cache (big file)
-fastf1/cache/
+fastf1_cache/cache/
 
 wandb/
-deterministic/dqn_logs/tensorboard/
-deterministic/dqn_models/wandb/
+f1_gym/deterministic/dqn_logs/tensorboard/
+f1_gym/deterministic/dqn_models/wandb/
