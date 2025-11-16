@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import linregress
 
 # Cache folder for timing data
-ff1.Cache.enable_cache("fastf1/cache")
+ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # UPDATE Change to produce per race parameters
 

@@ -10,7 +10,7 @@ def print_section(title: str):
 
 def main():
     # Set up cache to not re-download data
-    ff1.Cache.enable_cache("fastf1/cache")
+    ff1.Cache.enable_cache("fastf1_cache/cache")
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', 240)

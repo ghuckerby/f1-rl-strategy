@@ -116,7 +116,6 @@ class F1PitStopEnv(gym.Env):
                 action = 0
                 # reward_shaping -= 5.0
                 
-
         # Action 0: Stay out, no pit penalty
         if action == 0:
             pass
@@ -130,35 +129,9 @@ class F1PitStopEnv(gym.Env):
 
             self.compounds_used.add(new_compound)
             self.allowed_tyres[new_compound] -= 1
-            # if self.allowed_tyres[new_compound] <= 0:
-            #     # Big penalty due to rule break
-            #     reward_shaping -= 10_000_000.0
-            # else:
-            #     self.allowed_tyres[new_compound] -= 1
 
             self.compound = new_compound
             self.stint_age = 0
-
-            # if self.pit_stops >= self.max_pit_stops:
-            #     # Invalid action penalty
-            #     reward_shaping -= 1.0
-            #     pass
-            # else:
-            #     # Perform pit stop
-            #     self.pit_stops += 1
-            #     pitted = True
-            #     pit_time = self.track.pit_loss
-            #     new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
-
-            #     self.compounds_used.add(new_compound)
-            #     # if self.allowed_tyres[new_compound] <= 0:
-            #     #     # Big penalty due to rule break
-            #     #     reward_shaping -= 10_000_000.0
-            #     # else:
-            #     #     self.allowed_tyres[new_compound] -= 1
-
-            #     self.compound = new_compound
-            #     self.stint_age = 0
 
         # lap time dynamics
         lap_time = calculate_lap_time(self.compound, self.stint_age) + pit_time
