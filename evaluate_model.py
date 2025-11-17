@@ -6,8 +6,11 @@ from matplotlib.patches import Patch
 
 from stable_baselines3 import DQN
 from stable_baselines3 import PPO
-from f1_gym.deterministic.env.dt_f1_env import F1PitStopEnv
-from f1_gym.deterministic.env.dt_dynamics import SOFT, MEDIUM, HARD
+from config import get_environment_config, get_constants
+
+# Configuration for the selected environment
+config = get_environment_config()
+SOFT, MEDIUM, HARD = get_constants()
 
 def plot_results(race_log, save_path, compound_name):
     compound_colours = {
@@ -63,9 +66,9 @@ def run_model(start_compound, compound_name):
     print(f"\nEvaluating {compound_name} as Starting Tire")
 
     # Log output folder
-    LOG_DIR = "f1_gym/deterministic/dqn_logs"
+    LOG_DIR = os.path.join(config['base_path'], "dqn_logs")
     os.makedirs(LOG_DIR, exist_ok=True)
-    MODEL_DIR = "f1_gym/deterministic/dqn_models"
+    MODEL_DIR = os.path.join(config['base_path'], "dqn_models")
     os.makedirs(MODEL_DIR, exist_ok=True)
     
     model_name = f"dqn_f1_{compound_name}_start.zip"
@@ -75,7 +78,7 @@ def run_model(start_compound, compound_name):
         print(f"Model file {model_path} does not exist. Train model first.")
         return None
     
-    env = F1PitStopEnv(starting_compound=start_compound)
+    env = config['env_class'](starting_compound=start_compound)
     model = DQN.load(model_path, env=env)
     obs, info = env.reset()
     done = False
@@ -112,8 +115,14 @@ def main():
             "Medium": time_M,
             "Hard": time_H
         }
+
         best_strategy = min(results, key=results.get)
-        print(f"\n Best Overall: Start on {best_strategy} (Time : {results[best_strategy]:.2f}s)")
+        
+        print(f"Environment: {config['env_name']}")
+        print(f"Soft:   {time_S:.2f}s")
+        print(f"Medium: {time_M:.2f}s")
+        print(f"Hard:   {time_H:.2f}s")
+        print(f"Best Overall: Start on {best_strategy} (Time: {results[best_strategy]:.2f}s)")
     else:
         print("\nEnsure all models are trained before evaluation.")
 

@@ -11,3 +11,4 @@ plotly
 fastf1
 sb3-contrib
 tensorboard
+sklearn
