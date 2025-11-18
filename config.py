@@ -1,5 +1,5 @@
 # Change variable for environment
-ENVIRONMENT = 'stochastic'
+ENVIRONMENT = 'deterministic'
 
 def get_environment_config():
     if ENVIRONMENT == 'deterministic':

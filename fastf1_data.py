@@ -17,7 +17,7 @@ def main():
     pd.set_option('display.max_rows', 50)
 
     YEAR = 2024
-    EVENT = "Silverstone"
+    EVENT = "Japan"
     SESSION = "R"
 
     # Load Session

@@ -39,8 +39,9 @@ def train(start_compound, compound_name):
         batch_size=256,                 # Samples from buffer before each update
         target_update_interval=1000,    # Target network update frequency
         exploration_fraction=0.05,      # Fraction of total timesteps for exploration
-        exploration_final_eps=0.05,     # Final epsilon for exploration
-        learning_rate=0.0002,           # Learning rate
+        exploration_initial_eps=1.0,
+        exploration_final_eps=0.1,     # Final epsilon for exploration
+        learning_rate=0.0001,           # Learning rate
         tensorboard_log=f"f1_gym/deterministic/dqn_logs/tensorboard/{run.id}"
     )
 
@@ -67,8 +68,8 @@ def train(start_compound, compound_name):
 def main():
     # Train using different starting tyres
     train(SOFT, "Soft")
-    # train(MEDIUM, "Medium")
-    # train(HARD, "Hard")
+    train(MEDIUM, "Medium")
+    train(HARD, "Hard")
 
     print("\nTraining complete.")
 
