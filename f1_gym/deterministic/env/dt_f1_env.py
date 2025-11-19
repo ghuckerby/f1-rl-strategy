@@ -16,8 +16,8 @@ class F1PitStopEnv(gym.Env):
         self.track = track or TrackParams()
         self.starting_compound = starting_compound
 
-        # Number of sets allowed for each tyre
-            # Used to enforce compound limit rule (teams only have 1 or 2 of each tyre)
+        # # Number of sets allowed for each tyre
+        #     # Used to enforce compound limit rule (teams only have 1 or 2 of each tyre)
         self.allowed_tyres = {c: 2 for c in (SOFT, MEDIUM, HARD)}
         self.allowed_tyres[self.starting_compound] -= 1
 
@@ -128,7 +128,7 @@ class F1PitStopEnv(gym.Env):
             new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
 
             self.compounds_used.add(new_compound)
-            self.allowed_tyres[new_compound] -= 1
+            # self.allowed_tyres[new_compound] -= 1
 
             self.compound = new_compound
             self.stint_age = 0

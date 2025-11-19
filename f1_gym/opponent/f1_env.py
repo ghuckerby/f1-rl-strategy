@@ -98,11 +98,11 @@ class F1OpponentEnv(gym.Env):
     
     def step(self, action: int):
         
-        if action in (1, 2, 3):
-            if self.num_pit_stops >= self.max_pit_stops:
-                action = 0
-            elif self.allowed_tyres[action] <= 0:
-                action = 0
+        # if action in (1, 2, 3):
+        #     if self.num_pit_stops >= self.max_pit_stops:
+        #         action = 0
+        #     elif self.allowed_tyres[action] <= 0:
+        #         action = 0
         
         pitted = False
         if action in (1, 2, 3):

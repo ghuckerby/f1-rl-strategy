@@ -10,14 +10,18 @@ import wandb
 from wandb.integration.sb3 import WandbCallback
 
 def train_f1_agent(
-        total_timesteps=500_000,
-        buffer_size=500_000,
-        learning_starts=25_000,
-        batch_size=128,
+        total_timesteps=1_000_000,
+        buffer_size=300_000,
+        learning_starts=50_000,
+        batch_size=256,
+        tau=0.005,
         target_update_interval=1000,
-        exploration_fraction=0.05,
-        exploration_final_eps=0.1,
-        learning_rate=0.0001,
+        gamma=0.995,
+        train_freq=4,
+        gradient_steps=1,
+        exploration_fraction=0.2,
+        exploration_final_eps=0.05,
+        learning_rate=3e-4,
 ):
     
     run = wandb.init(
@@ -44,6 +48,10 @@ def train_f1_agent(
         exploration_fraction=exploration_fraction,
         exploration_final_eps=exploration_final_eps,
         learning_rate=learning_rate,
+        tau=tau,
+        gamma=gamma,
+        train_freq=train_freq,
+        gradient_steps=gradient_steps,
         tensorboard_log=f"f1_gym/opponent/logs/tensorboard/{run.id}"
     )
 
