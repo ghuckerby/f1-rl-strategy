@@ -1,12 +1,71 @@
 
 import numpy as np
 import os
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
+from sb3_contrib import MaskablePPO
 from f1_env import F1OpponentEnv
 from dynamics import TyreCompound, compounds
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
+
+def train_f1_agent_masked(
+        total_timesteps = 500_000,
+        learning_rate=1e-3,
+        n_steps = 2048,
+        batch_size = 64,
+        n_epochs = 20,
+        gae_lambda = 0.95,
+        ent_coef = 0.01,
+):
+    """Train F1 agent using MaskablePPO with action masking for compound limits"""
+    
+    run = wandb.init(
+        project="f1-opponent",
+        name=f"f1_opponent_masked_ppo",
+        sync_tensorboard=True,
+        reinit=True,
+    )
+
+    LOG_DIR = "f1_gym/opponent/logs"
+    MODEL_DIR = "f1_gym/opponent/models"
+    os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(MODEL_DIR, exist_ok=True)
+
+    env = F1OpponentEnv()
+    
+    model = MaskablePPO(
+        "MlpPolicy",
+        env,
+        learning_rate=learning_rate,
+        n_steps=n_steps,
+        batch_size=batch_size,
+        n_epochs=n_epochs,
+        gae_lambda=gae_lambda,
+        ent_coef=ent_coef,
+        verbose=1,
+        tensorboard_log=LOG_DIR,
+    )
+
+    callback = WandbCallback(
+        model_save_path=f"f1_gym/opponent/models/wandb/{run.id}",
+        verbose=2
+    )
+
+    print("Starting MaskablePPO Training with Action Masking")
+    model.learn(
+        total_timesteps=total_timesteps,
+        callback=callback,
+    )
+
+    model_name = f"f1_opponent_masked_ppo.zip"
+    model_path = os.path.join(MODEL_DIR, model_name)
+    model.save(model_path)
+    print(f"Saved MaskablePPO model to {model_path}")
+    
+    run.finish()
+
+    return model_path
 
 def train_f1_agent(
         total_timesteps = 300_000,
@@ -68,7 +127,13 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         return
     
     print(f"Loading model from {model_path}")
-    model = PPO.load(model_path)
+    # Auto-detect algorithm type from model filename
+    if "dqn" in model_path.lower():
+        model = DQN.load(model_path)
+    elif "masked" in model_path.lower():
+        model = MaskablePPO.load(model_path)
+    else:
+        model = PPO.load(model_path)
     env = F1OpponentEnv()
     
     print(f"\nEvaluating model over {num_episodes} episodes...\n")
@@ -137,14 +202,27 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "train":
-            print("Training Agent")
-            model = train_f1_agent(
-                total_timesteps=300_000,
-                learning_rate=3e-4,
-                n_steps=2048,
-                batch_size=64,
-                n_epochs=10
-            )
+            algorithm = "ppo"  # Default
+            if len(sys.argv) > 2:
+                algorithm = sys.argv[2].lower()
+            
+            if algorithm == "masked":
+                print("Training Agent with MaskablePPO (enforces compound limits)")
+                model = train_f1_agent_masked(
+                    total_timesteps=500_000,
+                    learning_rate=1e-3,
+                    n_epochs=20,
+                    ent_coef=0.01,
+                )
+            else:
+                print("Training Agent with PPO")
+                model = train_f1_agent(
+                    total_timesteps=300_000,
+                    learning_rate=3e-4,
+                    n_steps=2048,
+                    batch_size=64,
+                    n_epochs=10
+                )
 
         elif sys.argv[1] == "evaluate":
             print("Evaluating Model")
