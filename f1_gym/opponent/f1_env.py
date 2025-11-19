@@ -34,6 +34,10 @@ class F1OpponentEnv(gym.Env):
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
 
+        self.lap_time = 0.0
+
+        self.race_log: List[Dict[str, Any]] = []
+
         self.reset()
 
     def reset(self, seed=None, options=None):
@@ -46,10 +50,25 @@ class F1OpponentEnv(gym.Env):
         self.total_time = 0.0
         self.num_pit_stops = 0
         self.position = 1
+        self.lap_time = 0.0
 
         obs = self.make_obs()
+
+        self.race_log = []
+        info = {
+            "lap": self.current_lap,
+            "compound": int(self.current_compound),
+            "tyre_age": int(self.tyre_age),
+            "tyre_wear": float(self.tyre_wear),
+            "total_time": float(self.total_time),
+            "pitted": False,
+            "action": None,
+            "lap_time": None,
+            "position": self.position,
+        }
+        self.race_log.append(info)
         
-        return obs, {}
+        return obs, info
     
     def make_obs(self) -> np.ndarray:
         lap_fraction = self.current_lap / self.track.laps
@@ -69,17 +88,35 @@ class F1OpponentEnv(gym.Env):
         return obs
     
     def step(self, action: int):
+        pitted = False
+        
+        if action in (1, 2, 3):
+            pitted = True
 
         self.update_agent(action)
         self.update_opponents()
         reward = self.calculate_reward()
-        terminated = self.current_lap > self.track.laps
+        terminated = self.current_lap >= self.track.laps
+
+        info = {
+            "lap": int(self.current_lap),
+            "compound": int(self.current_compound),
+            "tyre_age": int(self.tyre_age),
+            "tyre_wear": float(self.tyre_wear),
+            "total_time": float(self.total_time),
+            "pitted": bool(pitted),
+            "action": int(action),
+            "lap_time": float(self.lap_time),
+            "position": self.position,
+        }
+        self.race_log.append(info)
 
         if terminated:
-            final_position_reward = (20 - self.position) * 10
-            reward += final_position_reward
+            # final_position_reward = (20 - self.position) * 10
+            # reward += final_position_reward
+            info["episode_log"] = list(self.race_log)
         
-        return self.make_obs(), reward, terminated, False, {}
+        return self.make_obs(), reward, terminated, False, info
     
     def update_agent(self, action: int):
         # Update agent state for current lap
@@ -97,8 +134,8 @@ class F1OpponentEnv(gym.Env):
 
         # Calculate lap time using the compound object
         compound_obj = compounds[self.current_compound]
-        lap_time = calculate_lap_time(compound_obj, self.tyre_age) + pit_time
-        self.total_time += lap_time
+        self.lap_time = calculate_lap_time(compound_obj, self.tyre_age) + pit_time
+        self.total_time += self.lap_time
         self.current_lap += 1
         self.tyre_age += 1
         self.tyre_wear = min(self.tyre_age / self.track.laps, 1.0)
@@ -116,11 +153,28 @@ class F1OpponentEnv(gym.Env):
         self.position = 1
 
     def calculate_reward(self) -> float:
-        reward = 0.0
-        reward = -self.position
-
+        reward = -self.lap_time
         return reward
+    
+    def logger_output(self):
 
+        if not self.race_log:
+            print("No laps completed yet")
+            return
+        
+        row = self.race_log[-1]
+        compound_names = {1: "S", 2: "M", 3: "H"}
+        action_names = {0: "STAY_OUT", 1: "BOX_SOFT", 2: "BOX_MED", 3: "BOX_HARD"}
+        
+        compound = compound_names.get(row["compound"], "UNKNOWN")
+        action = action_names.get(row["action"], "UNKNOWN") if row["action"] is not None else "INITIAL"
+        
+        print(
+            f"Lap {row['lap']:>2} | action: {action:>10} | compound: {compound} | "
+            f"tyre_age: {row['tyre_age']:>2} | lap_time: {row['lap_time'] or 0:.2f}s | "
+            f"total_time: {row['total_time']:.2f}s | pitted: {row['pitted']} | "
+            f"position: {row['position']}"
+        )
 
 if __name__ == "__main__":
     # Test the environment
@@ -130,12 +184,13 @@ if __name__ == "__main__":
     print("Environment created successfully!")
     print(f"Observation shape: {obs.shape}")
     print(f"Action space: {env.action_space}")
+    print()
     
-    # Run a few random steps
+    # Run a few random steps and log output
     for _ in range(10):
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
-        print(f"Action: {action}, Reward: {reward:.2f}, Position: {env.position}")
+        env.logger_output()
         
         if terminated:
             break

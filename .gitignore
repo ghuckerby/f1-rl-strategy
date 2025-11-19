@@ -7,3 +7,5 @@ f1_gym/deterministic/dqn_logs/tensorboard/
 f1_gym/deterministic/dqn_models/wandb/
 f1_gym/stochastic/dqn_logs/tensorboard/
 f1_gym/stochastic/dqn_models/wandb/
+f1_gym/opponent/models/wandb/
+f1_gym/opponent/logs/tensorboard

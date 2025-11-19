@@ -7,21 +7,21 @@ from typing import Dict, Tuple, List, Any
 SOFT, MEDIUM, HARD = 0, 1, 2
 
 BASE_LAP = {
-    SOFT: 88,
-    MEDIUM: 90,
-    HARD: 91
+    SOFT: 90.0,
+    MEDIUM: 91.0,
+    HARD: 92.0
 }
 
 DEG_RATE = {
-    SOFT: 0.20,
+    SOFT: 0.15,
     MEDIUM: 0.10,
-    HARD: 0.06
+    HARD: 0.07
 }
 
 @dataclass
 class TrackParams:
     laps: int = 50
-    pit_loss: float = 20.0
+    pit_loss: float = 25.0
 
 TRACK = TrackParams()
 
@@ -58,6 +58,23 @@ def calculate_two_stop(start_compound: int, pit_lap_1: int, compound_2: int, pit
     stint_3_time = calculate_stint_time(pit_lap_2 + 1, TRACK.laps, compound_3)
     
     return stint_1_time + pit_1_time + stint_2_time + pit_2_time + stint_3_time
+
+def calculate_three_stop(start_compound: int, pit_lap_1: int, compound_2: int, pit_lap_2: int, compound_3: int, pit_lap_3: int, compound_4: int) -> float:
+    if start_compound == compound_2 or compound_2 == compound_3 or compound_3 == compound_4:
+        return float('inf')
+        
+    stint_1_time = calculate_stint_time(1, pit_lap_1 - 1, start_compound)
+    pit_1_time = calculate_lap_time(compound_2, 0) + TRACK.pit_loss
+
+    stint_2_time = calculate_stint_time(pit_lap_1 + 1, pit_lap_2 - 1, compound_2)
+    pit_2_time = calculate_lap_time(compound_3, 0) + TRACK.pit_loss
+    
+    stint_3_time = calculate_stint_time(pit_lap_2 + 1, pit_lap_3 - 1, compound_3)
+    pit_3_time = calculate_lap_time(compound_4, 0) + TRACK.pit_loss
+    
+    stint_4_time = calculate_stint_time(pit_lap_3 + 1, TRACK.laps, compound_4)
+    
+    return stint_1_time + pit_1_time + stint_2_time + pit_2_time + stint_3_time + pit_3_time + stint_4_time
 
 def find_fastest_onestop_strategies():
     compounds = [SOFT, MEDIUM, HARD]
@@ -125,7 +142,43 @@ def find_fastest_twostop_strategies():
 
     fastest_time = min(full_strategy_list)
     print(f"\n Overall Fastest Two-Stop Race Time: {fastest_time:.2f}s")
+
+def find_fastest_threestop_strategies():
+    compounds = [SOFT, MEDIUM, HARD]
+    compound_names = {SOFT: "Soft", MEDIUM: "Medium", HARD: "Hard"}
+
+    for start_compound in compounds:
+        print(f"\n Top 10 Three-Stop Strategies for {compound_names[start_compound]} Start:")
+        all_strategies: List[Dict[str, Any]] = []
+
+        for compound_2 in compounds:
+            for compound_3 in compounds:
+                for compound_4 in compounds:
+                    for pit_lap_1, pit_lap_2, pit_lap_3 in itertools.combinations(range(2, TRACK.laps), 3):
+                        time = calculate_three_stop(start_compound, pit_lap_1, compound_2, pit_lap_2, compound_3, pit_lap_3, compound_4)
+                        if time == float('inf'):
+                            continue
+
+                        strategy_name = f"{compound_names[start_compound]} -> {compound_names[compound_2]} -> {compound_names[compound_3]} -> {compound_names[compound_4]}"
+                        all_strategies.append({"strategy": strategy_name, "time": time, "pit_laps": [pit_lap_1, pit_lap_2, pit_lap_3]})
+
+        sorted_strategies = sorted(all_strategies, key=lambda x: x["time"])
+        for rank, strategy in enumerate(sorted_strategies[:10], start=1):
+            pit_laps_str = ' & '.join(map(str, strategy["pit_laps"]))
+            print(f" {rank}. Strategy: {strategy['strategy']:<50} | Pit Laps: {pit_laps_str:<11} | Time: {strategy['time']:.2f}s")
+
+    full_strategy_list = []
+    for start_compound in compounds:
+        for compound_2 in compounds:
+            for compound_3 in compounds:
+                for compound_4 in compounds:
+                    for pit_lap_1, pit_lap_2, pit_lap_3 in itertools.combinations(range(2, TRACK.laps), 3):
+                        full_strategy_list.append(calculate_three_stop(start_compound, pit_lap_1, compound_2, pit_lap_2, compound_3, pit_lap_3, compound_4))
+
+    fastest_time = min(full_strategy_list)
+    print(f"\n Overall Fastest Three-Stop Race Time: {fastest_time:.2f}s")\
     
 if __name__ == "__main__":
     find_fastest_onestop_strategies()
     find_fastest_twostop_strategies()
+    find_fastest_threestop_strategies()

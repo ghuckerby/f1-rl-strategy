@@ -9,7 +9,7 @@ import wandb
 from wandb.integration.sb3 import WandbCallback
 
 def train_f1_agent(
-        total_timesteps = 1_000_000,
+        total_timesteps = 300_000,
         learning_rate=3e-4,
         n_steps = 2048,
         batch_size = 64,
@@ -43,15 +43,14 @@ def train_f1_agent(
     )
 
     callback = WandbCallback(
-        model_save_path="f1_gym/opponent/models/wandb/{run.id}",
+        model_save_path=f"f1_gym/opponent/models/wandb/{run.id}",
         verbose=2
     )
 
     print("Starting Training")
     model.learn(
         total_timesteps=total_timesteps,
-        callback=callback,
-        progress_bar=True
+        callback=callback
     )
 
     model_name = f"f1_opponent.zip"
@@ -63,9 +62,54 @@ def train_f1_agent(
 
     return model_path
 
+def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", num_episodes: int = 5):
+    if not os.path.exists(model_path):
+        print(f"Model not found at {model_path}")
+        return
+    
+    print(f"Loading model from {model_path}")
+    model = PPO.load(model_path)
+    env = F1OpponentEnv()
+    
+    print(f"\nEvaluating model over {num_episodes} episodes...\n")
+    
+    total_rewards = []
+    
+    for episode in range(num_episodes):
+        obs, info = env.reset()
+        episode_reward = 0
+        done = False
+
+        print(f"Episode {episode + 1}/{num_episodes}")
+        
+        step = 0
+        while not done:
+            action, _states = model.predict(obs, deterministic=True)
+            obs, reward, terminated, truncated, info = env.step(action)
+            episode_reward += reward
+            done = terminated or truncated
+            env.logger_output()
+            step += 1
+        
+        total_rewards.append(episode_reward)
+        print(f"\nEpisode {episode + 1} Summary:")
+        print(f"  - Final Lap: {env.current_lap}")
+        print(f"  - Total Time: {env.total_time:.2f}s")
+        print(f"  - Total Pit Stops: {env.num_pit_stops}")
+        print(f"  - Episode Reward: {episode_reward:.2f}")
+        print(f"  - Final Position: {env.position}/20")
+    
+    print(f"Evaluation Summary:\n")
+    print(f"Average Reward: {np.mean(total_rewards):.2f}")
+    print(f"Std Dev Reward: {np.std(total_rewards):.2f}")
+    print(f"Min Reward: {np.min(total_rewards):.2f}")
+    print(f"Max Reward: {np.max(total_rewards):.2f}")
+    
+    env.close()
+
 def test_env():
     print("Testing F1 Environment")
-    env = F1OpponentEnv
+    env = F1OpponentEnv()
     obs, _ = env.reset()
 
     print(f"Initial obs shape: {obs.shape}")
@@ -81,7 +125,7 @@ def test_env():
 
         if (step + 1) % 10 == 0:
             print(f"Step {step + 1}: Position {env.position}, "
-                  f"Lap {env.lap}, Accumulated Reward: {total_reward:.2f}")
+                  f"Lap {env.current_lap}, Accumulated Reward: {total_reward:.2f}")
             
         if terminated:
             print(f"Race finished, Final Position: {env.position}/20")
@@ -95,7 +139,7 @@ if __name__ == "__main__":
         if sys.argv[1] == "train":
             print("Training Agent")
             model = train_f1_agent(
-                total_timesteps=1_000_000,
+                total_timesteps=300_000,
                 learning_rate=3e-4,
                 n_steps=2048,
                 batch_size=64,
@@ -104,13 +148,25 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == "evaluate":
             print("Evaluating Model")
+            if len(sys.argv) > 2:
+                model_path = sys.argv[2]
+            else:
+                model_path = "f1_gym/opponent/models/f1_opponent.zip"
+            
+            num_episodes = 5
+            if len(sys.argv) > 3:
+                num_episodes = int(sys.argv[3])
+            
+            evaluate_model(model_path=model_path, num_episodes=num_episodes)
 
-        elif sys.argv[2] == "visualise":
+        elif sys.argv[1] == "visualise":
             print("Visualising Results")
     
     else:
-        print("Usage:")
-        print("python train.py train               - Train the agent")
-        print("python train.py evaluate [model]    - Evaluate the agent")
-        print("python train.py visualise [model]   - Visualise strategy (pit stops & tyres)")
-        print("python train.py                     - Test environment")
+        print("Testing environment...\n")
+        test_env()
+        print("\nUsage:")
+        print("python train.py train                          - Train the agent")
+        print("python train.py evaluate [model] [episodes]    - Evaluate the agent")
+        print("python train.py visualise                      - Visualise strategy (pit stops & tyres)")
+        print("python train.py                                - Test environment")
