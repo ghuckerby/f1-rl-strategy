@@ -44,6 +44,24 @@ def train(start_compound, compound_name):
         tensorboard_log=f"f1_gym/deterministic/dqn_logs/tensorboard/{run.id}"
     )
 
+    # model = DQN(
+    #     "MlpPolicy",
+    #     env,
+    #     verbose=1,  
+    #     buffer_size=200_000,
+    #     learning_starts=100_000,
+    #     batch_size=256,
+    #     tau=0.005,
+    #     target_update_interval=1000,
+    #     gamma=0.995,
+    #     train_freq=4,
+    #     gradient_steps=1,
+    #     exploration_fraction=0.4,
+    #     exploration_final_eps=0.05,
+    #     learning_rate=3e-4,
+    #     tensorboard_log=f"f1_gym/deterministic/dqn_logs/tensorboard/{run.id}"
+    # )
+
     # WandB Callback
     callback = WandbCallback(
         model_save_path="f1_gym/deterministic/dqn_models/wandb/{run.id}",
@@ -52,7 +70,7 @@ def train(start_compound, compound_name):
 
     # Model learning
         # Time steps / Laps = Number of races (episodes)
-    model.learn(total_timesteps=1_000_000, callback=callback)
+    model.learn(total_timesteps=10_000_000, callback=callback)
 
     # Model output folder
     model_name = f"dqn_f1_{compound_name}_start.zip"

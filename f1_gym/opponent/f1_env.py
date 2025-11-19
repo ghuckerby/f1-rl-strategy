@@ -2,9 +2,10 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from dynamics import (
-    compounds, TrackParams, TyreCompound, calculate_lap_time
+    compounds, TrackParams, TyreCompound, calculate_lap_time, RandomOpponent
 )
 from typing import List, Dict, Any, Tuple
+import random
 
 class F1OpponentEnv(gym.Env):
 
@@ -36,6 +37,7 @@ class F1OpponentEnv(gym.Env):
         )
 
         self.race_log: List[Dict[str, Any]] = []
+        self.opponents: List[RandomOpponent] = []
 
         self.reset()
 
@@ -50,6 +52,11 @@ class F1OpponentEnv(gym.Env):
         self.num_pit_stops = 0
         self.position = 1
         self.lap_time = 0.0
+        
+        self.opponents = [
+            RandomOpponent(i, self.track, starting_compound=random.choice([1, 2, 3]))
+            for i in range(self.num_opponents)
+        ]
 
         obs = self.make_obs()
 
@@ -75,16 +82,44 @@ class F1OpponentEnv(gym.Env):
         tyre_age_norm = min(self.tyre_age / self.track.laps, 1.0)
         tyre_wear_norm = np.clip(self.tyre_wear, 0.0, 1.0)
 
-        position = 1
-        time_to_leader = 0.0
-        time_to_ahead = 0.0
+        # Calculate position and time gaps
+        position = self.position
+        time_to_leader = self.calculate_time_to_leader()
+        time_to_ahead = self.calculate_time_to_ahead()
+        
+        # Normalize times (assume max gap is 10 seconds)
+        time_to_leader_norm = np.clip(time_to_leader / 10.0, 0.0, 1.0)
+        time_to_ahead_norm = np.clip(time_to_ahead / 10.0, 0.0, 1.0)
+        position_norm = np.clip(position / 20.0, 0.0, 1.0)
 
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, position, time_to_leader, time_to_ahead], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, position_norm, time_to_leader_norm, time_to_ahead_norm], dtype=np.float32)
         ])
         return obs
+    
+    def calculate_time_to_leader(self) -> float:
+
+        min_time = self.total_time
+        for opp in self.opponents:
+            if opp.current_lap >= self.current_lap:
+                min_time = min(min_time, opp.total_time)
+        
+        return max(0.0, self.total_time - min_time)
+    
+    def calculate_time_to_ahead(self) -> float:
+
+        times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
+        times.append((self.total_time, -1))  # -1 for agent
+        times.sort()
+        
+        agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
+        
+        if agent_id == 0:
+            return 0.0
+        
+        return max(0.0, self.total_time - times[agent_id - 1][0])
     
     def step(self, action: int):
         
@@ -111,8 +146,8 @@ class F1OpponentEnv(gym.Env):
         self.race_log.append(info)
 
         if terminated:
-            # final_position_reward = (20 - self.position) * 10
-            # reward += final_position_reward
+            final_position_reward = (20 - self.position) * 10
+            reward += final_position_reward
             info["episode_log"] = list(self.race_log)
         
         return self.make_obs(), reward, terminated, False, info
@@ -140,16 +175,22 @@ class F1OpponentEnv(gym.Env):
         self.tyre_wear = min(self.tyre_age / self.track.laps, 1.0)
 
     def update_opponents(self):
-        # Update all opponent drivers
-        # Placeholder: would track opponent pit strategies and positions
-        pass
-        
-        # Update positions based on times
+        for opp in self.opponents:
+            if opp.current_lap < self.track.laps:
+                opp.step()
+
         self.update_positions()
 
     def update_positions(self):
-        # Placeholder: would calculate position based on times vs opponents
-        self.position = 1
+        # Create list of (total_time, is_agent)
+        times = [(opp.total_time, False) for opp in self.opponents]
+        times.append((self.total_time, True))
+        
+        # Sort by time (ascending - faster times are better)
+        times.sort(key=lambda x: x[0])
+        
+        # Find agent position
+        self.position = next(i + 1 for i, (_, is_agent) in enumerate(times) if is_agent)
 
     def calculate_reward(self) -> float:
         reward = -self.lap_time

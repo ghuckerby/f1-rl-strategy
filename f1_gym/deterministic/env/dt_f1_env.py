@@ -103,17 +103,17 @@ class F1PitStopEnv(gym.Env):
         original_action = action
 
         # Validation of pit stop action
-        is_valid = True
-        new_compound = None
-        if action in (1, 2, 3):
-            new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
-            if self.pit_stops >= self.max_pit_stops:
-                is_valid = False
-            elif self.allowed_tyres[new_compound] <= 0:
-                is_valid = False
+        # is_valid = True
+        # new_compound = None
+        # if action in (1, 2, 3):
+        #     new_compound = {1: SOFT, 2: MEDIUM, 3: HARD}[action]
+        #     if self.pit_stops >= self.max_pit_stops:
+        #         is_valid = False
+        #     elif self.allowed_tyres[new_compound] <= 0:
+        #         is_valid = False
             
-            if not is_valid:
-                action = 0
+        #     if not is_valid:
+        #         action = 0
                 # reward_shaping -= 5.0
                 
         # Action 0: Stay out, no pit penalty
@@ -162,7 +162,7 @@ class F1PitStopEnv(gym.Env):
             compounds_used = set(log['compound'] for log in self.race_log)
             if len(compounds_used) < 2:
                 # Big penalty due to rule break
-                reward -= 1_000.0
+                reward -= 100.0
 
             info["episode_log"] = list(self.race_log)
 

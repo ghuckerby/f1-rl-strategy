@@ -87,6 +87,7 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
     print(f"\nEvaluating model over {num_episodes} episodes...\n")
     
     total_rewards = []
+    total_positions = []
     
     for episode in range(num_episodes):
         obs, info = env.reset()
@@ -105,6 +106,7 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
             step += 1
         
         total_rewards.append(episode_reward)
+        total_positions.append(env.position)
         print(f"\nEpisode {episode + 1} Summary:")
         print(f"  - Final Lap: {env.current_lap}")
         print(f"  - Total Time: {env.total_time:.2f}s")
@@ -112,11 +114,17 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         print(f"  - Episode Reward: {episode_reward:.2f}")
         print(f"  - Final Position: {env.position}/20")
     
-    print(f"Evaluation Summary:\n")
+    print(f"Reward Summary:\n")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")
     print(f"Std Dev Reward: {np.std(total_rewards):.2f}")
     print(f"Min Reward: {np.min(total_rewards):.2f}")
     print(f"Max Reward: {np.max(total_rewards):.2f}")
+
+    print(f"Position Summary:\n")
+    print(f"Average Position: {np.mean(total_positions):.2f}")
+    print(f"Std Dev Position: {np.std(total_positions):.2f}")
+    print(f"Min Position: {np.min(total_positions):.2f}")
+    print(f"Max Position: {np.max(total_positions):.2f}")
     
     env.close()
 
@@ -160,7 +168,7 @@ if __name__ == "__main__":
             else:
                 model_path = "f1_gym/opponent/models/f1_opponent.zip"
             
-            num_episodes = 5
+            num_episodes = 10
             if len(sys.argv) > 3:
                 num_episodes = int(sys.argv[3])
             
