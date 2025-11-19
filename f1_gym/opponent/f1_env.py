@@ -98,6 +98,12 @@ class F1OpponentEnv(gym.Env):
     
     def step(self, action: int):
         
+        if action in (1, 2, 3):
+            if self.num_pit_stops >= self.max_pit_stops:
+                action = 0
+            elif self.allowed_tyres[action] <= 0:
+                action = 0
+        
         pitted = False
         if action in (1, 2, 3):
             pitted = True
@@ -165,24 +171,6 @@ class F1OpponentEnv(gym.Env):
     def calculate_reward(self) -> float:
         reward = -self.lap_time
         return reward
-    
-    def valid_action_mask(self):
-        mask = np.array([True, True, True, True], dtype=bool)
-
-        if self.num_pit_stops >= self.max_pit_stops:
-            mask[1] = False
-            mask[2] = False
-            mask[3] = False
-            return mask
-        
-        if self.allowed_tyres.get(1, 0) <= 0:
-            mask[1] = False
-        if self.allowed_tyres.get(2, 0) <= 0:
-            mask[2] = False
-        if self.allowed_tyres.get(3, 0) <= 0:
-            mask[3] = False
-
-        return mask
     
     def logger_output(self):
 

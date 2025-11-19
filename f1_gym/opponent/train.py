@@ -2,25 +2,22 @@
 import numpy as np
 import os
 from stable_baselines3 import PPO
-from sb3_contrib import MaskablePPO
-from sb3_contrib.common.wrappers import ActionMasker
+from stable_baselines3 import DQN
 from f1_env import F1OpponentEnv
 from dynamics import TyreCompound, compounds
-import gymnasium as gym
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
-def mask_fn(env: gym.Env) -> np.ndarray:
-    return env.valid_action_mask()
-
 def train_f1_agent(
-        total_timesteps = 300_000,
-        learning_rate=3e-4,
-        n_steps = 2048,
-        batch_size = 64,
-        n_epochs = 10,
-        gae_lambda = 0.95,
+        total_timesteps=500_000,
+        buffer_size=500_000,
+        learning_starts=25_000,
+        batch_size=128,
+        target_update_interval=1000,
+        exploration_fraction=0.05,
+        exploration_final_eps=0.1,
+        learning_rate=0.0001,
 ):
     
     run = wandb.init(
@@ -36,19 +33,18 @@ def train_f1_agent(
     os.makedirs(MODEL_DIR, exist_ok=True)
 
     env = F1OpponentEnv()
-    env = ActionMasker(env, mask_fn)
-
-    model = MaskablePPO(
+    model = DQN(
         "MlpPolicy",
         env,
-        learning_rate=learning_rate,
-        n_steps=n_steps,
-        batch_size=batch_size,
-        n_epochs=n_epochs,
-        gae_lambda=gae_lambda,
         verbose=1,
-        tensorboard_log=LOG_DIR,
-        ent_coef=0.1,
+        buffer_size=buffer_size,
+        learning_starts=learning_starts,
+        batch_size=batch_size,
+        target_update_interval=target_update_interval,
+        exploration_fraction=exploration_fraction,
+        exploration_final_eps=exploration_final_eps,
+        learning_rate=learning_rate,
+        tensorboard_log=f"f1_gym/opponent/logs/tensorboard/{run.id}"
     )
 
     callback = WandbCallback(
@@ -77,7 +73,7 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         return
     
     print(f"Loading model from {model_path}")
-    model = PPO.load(model_path)
+    model = DQN.load(model_path)
     env = F1OpponentEnv()
     
     print(f"\nEvaluating model over {num_episodes} episodes...\n")
@@ -94,7 +90,7 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         step = 0
         while not done:
             action, _states = model.predict(obs, deterministic=True)
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(int(action))
             episode_reward += reward
             done = terminated or truncated
             env.logger_output()
@@ -147,13 +143,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == "train":
             print("Training Agent")
-            model = train_f1_agent(
-                total_timesteps=300_000,
-                learning_rate=3e-4,
-                n_steps=2048,
-                batch_size=64,
-                n_epochs=10
-            )
+            model = train_f1_agent()
 
         elif sys.argv[1] == "evaluate":
             print("Evaluating Model")
