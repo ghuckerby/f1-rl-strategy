@@ -16,11 +16,7 @@ class F1OpponentEnv(gym.Env):
         self.compounds = compounds
         self.starting_compound = starting_compound
         self.num_pit_stops = 0
-
-        self.max_pit_stops = 2
-        self.allowed_tyres = {c: 2 for c in (1, 2, 3)}
-        if isinstance(self.starting_compound, int):
-            self.allowed_tyres[self.starting_compound] -= 1
+        self.lap_time = 0.0
 
         # Action Space: 0=Stay Out, 1=Soft, 2=Medium, 3=Hard
         self.action_space = spaces.Discrete(4)
@@ -39,8 +35,6 @@ class F1OpponentEnv(gym.Env):
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
 
-        self.lap_time = 0.0
-
         self.race_log: List[Dict[str, Any]] = []
 
         self.reset()
@@ -56,10 +50,6 @@ class F1OpponentEnv(gym.Env):
         self.num_pit_stops = 0
         self.position = 1
         self.lap_time = 0.0
-
-        self.allowed_tyres = {c: 2 for c in (1, 2, 3)}
-        if isinstance(self.starting_compound, int):
-            self.allowed_tyres[self.starting_compound] -= 1
 
         obs = self.make_obs()
 
@@ -98,16 +88,9 @@ class F1OpponentEnv(gym.Env):
     
     def step(self, action: int):
         
-        # if action in (1, 2, 3):
-        #     if self.num_pit_stops >= self.max_pit_stops:
-        #         action = 0
-        #     elif self.allowed_tyres[action] <= 0:
-        #         action = 0
-        
         pitted = False
         if action in (1, 2, 3):
             pitted = True
-            self.allowed_tyres[action] -= 1
 
         self.update_agent(action)
         self.update_opponents()

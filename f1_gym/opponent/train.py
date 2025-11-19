@@ -12,14 +12,14 @@ from wandb.integration.sb3 import WandbCallback
 def train_f1_agent(
         total_timesteps=1_000_000,
         buffer_size=300_000,
-        learning_starts=50_000,
+        learning_starts=100_000,
         batch_size=256,
         tau=0.005,
         target_update_interval=1000,
         gamma=0.995,
         train_freq=4,
         gradient_steps=1,
-        exploration_fraction=0.2,
+        exploration_fraction=0.4,
         exploration_final_eps=0.05,
         learning_rate=3e-4,
 ):
