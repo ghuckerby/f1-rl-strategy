@@ -34,7 +34,8 @@ class F1OpponentEnv(gym.Env):
             # position
             # time_to_leader
             # time_to_ahead
-        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1
+            # tyres_left
+        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 3
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
@@ -89,10 +90,16 @@ class F1OpponentEnv(gym.Env):
         time_to_leader = 0.0
         time_to_ahead = 0.0
 
+        softs_left = self.allowed_tyres.get(1, 0) / 2.0
+        meds_left = self.allowed_tyres.get(2, 0) / 2.0
+        hards_left = self.allowed_tyres.get(3, 0) / 2.0
+        tyre_counts = np.array([softs_left, meds_left, hards_left], dtype=np.float32)
+
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, position, time_to_leader, time_to_ahead], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, position, time_to_leader, time_to_ahead], dtype=np.float32),
+            tyre_counts
         ])
         return obs
     
