@@ -2,11 +2,17 @@
 import numpy as np
 import os
 from stable_baselines3 import PPO
+from sb3_contrib import MaskablePPO
+from sb3_contrib.common.wrappers import ActionMasker
 from f1_env import F1OpponentEnv
 from dynamics import TyreCompound, compounds
+import gymnasium as gym
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
+
+def mask_fn(env: gym.Env) -> np.ndarray:
+    return env.valid_action_mask()
 
 def train_f1_agent(
         total_timesteps = 300_000,
@@ -30,7 +36,9 @@ def train_f1_agent(
     os.makedirs(MODEL_DIR, exist_ok=True)
 
     env = F1OpponentEnv()
-    model = PPO(
+    env = ActionMasker(env, mask_fn)
+
+    model = MaskablePPO(
         "MlpPolicy",
         env,
         learning_rate=learning_rate,
@@ -40,6 +48,7 @@ def train_f1_agent(
         gae_lambda=gae_lambda,
         verbose=1,
         tensorboard_log=LOG_DIR,
+        ent_coef=0.1,
     )
 
     callback = WandbCallback(
