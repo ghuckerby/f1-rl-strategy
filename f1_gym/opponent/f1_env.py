@@ -18,6 +18,7 @@ class F1OpponentEnv(gym.Env):
         self.starting_compound = starting_compound
         self.num_pit_stops = 0
         self.lap_time = 0.0
+        self.compounds_used = set()
 
         # Action Space: 0=Stay Out, 1=Soft, 2=Medium, 3=Hard
         self.action_space = spaces.Discrete(4)
@@ -28,11 +29,12 @@ class F1OpponentEnv(gym.Env):
             # tyre_age_norm
             # tyre_wear_norm
 
+            # num_compounds_used (normalized)
             # position
             # time_to_leader
             # time_to_ahead
             # time_to_behind
-        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1  # Updated to 10
+        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1 + 1  # Updated to 11
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
@@ -53,6 +55,7 @@ class F1OpponentEnv(gym.Env):
         self.num_pit_stops = 0
         self.position = 1
         self.lap_time = 0.0
+        self.compounds_used = {self.starting_compound}  # Track starting compound
         
         self.opponents = [
             RandomOpponent(i, self.track, starting_compound=random.choice([1, 2, 3]))
@@ -94,11 +97,14 @@ class F1OpponentEnv(gym.Env):
         time_to_ahead_norm = np.clip(time_to_ahead / 10.0, 0.0, 1.0)
         time_to_behind_norm = np.clip(time_to_behind / 10.0, 0.0, 1.0)
         position_norm = np.clip(position / 20.0, 0.0, 1.0)
+        
+        # Number of different compounds used so far (normalized to 0-1)
+        num_compounds_norm = len(self.compounds_used) / 3.0
 
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, num_compounds_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm], dtype=np.float32)
         ])
         return obs
 
@@ -134,6 +140,7 @@ class F1OpponentEnv(gym.Env):
         return max(0.0, self.total_time - times[agent_id - 1][0])
     
     def step(self, action: int):
+
         # Track previous position for reward shaping
         prev_position = self.position
         pitted = False
@@ -147,13 +154,16 @@ class F1OpponentEnv(gym.Env):
         reward = -self.lap_time
 
         # Position change reward
-        position_gain_weight = 10.0  # Stronger signal
+        position_gain_weight = 10.0
         reward += (prev_position - self.position) * position_gain_weight
 
         # Pit stop incentive (reward for pitting in strategic window)
         pit_reward = 0.0
-        if pitted and 20 <= self.current_lap <= 35:
-            pit_reward = 75.0  # Much stronger incentive
+        if pitted and 15 <= self.current_lap <= 40:
+            pit_reward = 30.0
+            # Bonus if pitting to a different compound
+            if action != self.current_compound:
+                pit_reward += 100.0
         reward += pit_reward
 
         # Penalty for excessive tyre age/wear
@@ -161,6 +171,24 @@ class F1OpponentEnv(gym.Env):
         if self.tyre_age > 30 or self.tyre_wear > 0.8:
             tyre_penalty = -50.0  # Strong penalty for not pitting
         reward += tyre_penalty
+
+        # F1 compound rule enforcement: use at least 2 different compounds
+        # Progressive penalty if approaching end of race with only 1 compound
+        compound_rule_penalty = 0.0
+        laps_remaining = self.track.laps - self.current_lap
+        
+        if len(self.compounds_used) < 2:
+            # Progressive penalty as race goes on
+            if laps_remaining < 10:
+                compound_rule_penalty = -500.0
+            elif laps_remaining < 20:
+                compound_rule_penalty = -200.0
+        
+        # Final massive penalty if rule violated at race end
+        if self.current_lap >= self.track.laps and len(self.compounds_used) < 2:
+            compound_rule_penalty = -3000.0  # Extreme penalty
+        
+        reward += compound_rule_penalty
 
         terminated = self.current_lap >= self.track.laps
 
@@ -196,6 +224,7 @@ class F1OpponentEnv(gym.Env):
             pit_time = self.track.pit_loss
             new_compound = action
             self.current_compound = new_compound
+            self.compounds_used.add(new_compound)
             self.tyre_age = 0
 
         # Calculate lap time using the compound object
