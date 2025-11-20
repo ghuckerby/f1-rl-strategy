@@ -46,7 +46,7 @@ def calculate_lap_time(compound: TyreCompound, age: int) -> float:
 # Implements a random pit stop strategy for an opponent
 class RandomOpponent:
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
-        # Initialize opponent
+        """Initialize Random Opponent with ID, track parameters, and starting compound"""
 
         self.opponent_id = opponent_id
         self.track = track
@@ -64,7 +64,7 @@ class RandomOpponent:
         self.pit_compounds = self.strategy["compounds"]
         
     def generate_strategy(self) -> Dict[str, Any]:
-        # Generate a random pit stop strategy (1-stop or 2-stop)
+        """Generate a random pit stop strategy (1-stop or 2-stop)"""
 
         strategy_type = random.choice([1, 2])
         
@@ -98,7 +98,7 @@ class RandomOpponent:
             }
     
     def step(self):
-        # Advance one lap
+        """Advance one lap"""   
         pit_time = 0.0
         
         if self.current_lap + 1 in self.pit_laps:
@@ -115,7 +115,8 @@ class RandomOpponent:
         self.tyre_age += 1
     
     def reset(self):
-        # Reset opponent
+        """Reset opponent to initial state"""
+
         self.current_lap = 0
         self.current_compound = self.starting_compound
         self.tyre_age = 0

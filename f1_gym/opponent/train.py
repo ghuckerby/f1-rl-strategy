@@ -35,6 +35,7 @@ def train_f1_agent(
         # Learning rate
         learning_rate=1e-4,
 ):
+    """Train an RL agent to compete in the F1 opponent environment using a DQN algorithm"""
     
     # WandB Initialization for tracking training
     run = wandb.init(
@@ -89,7 +90,7 @@ def train_f1_agent(
     return model_path
 
 def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", num_episodes: int = 5):
-    # Evaluate a trained model over a number of episodes
+    """Evaluate a trained model over a number of episodes"""
 
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
@@ -145,6 +146,8 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
     env.close()
 
 def test_env():
+    """Simple test of the F1OpponentEnv environment"""
+    
     print("Testing F1 Environment")
     env = F1OpponentEnv()
     obs, _ = env.reset()
