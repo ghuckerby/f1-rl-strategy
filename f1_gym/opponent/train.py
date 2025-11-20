@@ -10,7 +10,7 @@ import wandb
 from wandb.integration.sb3 import WandbCallback
 
 def train_f1_agent(
-        total_timesteps=1_000_000,
+        total_timesteps=500_000,
         buffer_size=300_000,
         learning_starts=100_000,
         batch_size=256,

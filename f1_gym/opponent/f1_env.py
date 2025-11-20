@@ -31,7 +31,8 @@ class F1OpponentEnv(gym.Env):
             # position
             # time_to_leader
             # time_to_ahead
-        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1
+            # time_to_behind
+        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1  # Updated to 10
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
@@ -86,18 +87,29 @@ class F1OpponentEnv(gym.Env):
         position = self.position
         time_to_leader = self.calculate_time_to_leader()
         time_to_ahead = self.calculate_time_to_ahead()
-        
+        time_to_behind = self.calculate_time_to_behind()
+
         # Normalize times (assume max gap is 10 seconds)
         time_to_leader_norm = np.clip(time_to_leader / 10.0, 0.0, 1.0)
         time_to_ahead_norm = np.clip(time_to_ahead / 10.0, 0.0, 1.0)
+        time_to_behind_norm = np.clip(time_to_behind / 10.0, 0.0, 1.0)
         position_norm = np.clip(position / 20.0, 0.0, 1.0)
 
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, position_norm, time_to_leader_norm, time_to_ahead_norm], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm], dtype=np.float32)
         ])
         return obs
+
+    def calculate_time_to_behind(self) -> float:
+        times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
+        times.append((self.total_time, -1))  # -1 for agent
+        times.sort()
+        agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
+        if agent_id == len(times) - 1:
+            return 0.0
+        return max(0.0, times[agent_id + 1][0] - self.total_time)
     
     def calculate_time_to_leader(self) -> float:
 
@@ -122,14 +134,34 @@ class F1OpponentEnv(gym.Env):
         return max(0.0, self.total_time - times[agent_id - 1][0])
     
     def step(self, action: int):
-        
+        # Track previous position for reward shaping
+        prev_position = self.position
         pitted = False
         if action in (1, 2, 3):
             pitted = True
 
         self.update_agent(action)
         self.update_opponents()
-        reward = self.calculate_reward()
+
+        # Lap time reward
+        reward = -self.lap_time
+
+        # Position change reward
+        position_gain_weight = 10.0  # Stronger signal
+        reward += (prev_position - self.position) * position_gain_weight
+
+        # Pit stop incentive (reward for pitting in strategic window)
+        pit_reward = 0.0
+        if pitted and 20 <= self.current_lap <= 35:
+            pit_reward = 75.0  # Much stronger incentive
+        reward += pit_reward
+
+        # Penalty for excessive tyre age/wear
+        tyre_penalty = 0.0
+        if self.tyre_age > 30 or self.tyre_wear > 0.8:
+            tyre_penalty = -50.0  # Strong penalty for not pitting
+        reward += tyre_penalty
+
         terminated = self.current_lap >= self.track.laps
 
         info = {
@@ -146,7 +178,7 @@ class F1OpponentEnv(gym.Env):
         self.race_log.append(info)
 
         if terminated:
-            final_position_reward = (20 - self.position) * 10
+            final_position_reward = (20 - self.position) * 100  # Extremely strong final bonus
             reward += final_position_reward
             info["episode_log"] = list(self.race_log)
         
@@ -191,10 +223,6 @@ class F1OpponentEnv(gym.Env):
         
         # Find agent position
         self.position = next(i + 1 for i, (_, is_agent) in enumerate(times) if is_agent)
-
-    def calculate_reward(self) -> float:
-        reward = -self.lap_time
-        return reward
     
     def logger_output(self):
 
