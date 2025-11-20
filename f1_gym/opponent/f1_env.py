@@ -12,6 +12,7 @@ class F1OpponentEnv(gym.Env):
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1):
         super().__init__()
 
+        # Environment parameters
         self.track = track or TrackParams()
         self.num_opponents = 19
         self.compounds = compounds
@@ -39,7 +40,10 @@ class F1OpponentEnv(gym.Env):
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
 
+        # Race log for storing lap data
         self.race_log: List[Dict[str, Any]] = []
+
+        # Opponents list
         self.opponents: List[RandomOpponent] = []
 
         self.reset()
@@ -57,6 +61,7 @@ class F1OpponentEnv(gym.Env):
         self.lap_time = 0.0
         self.compounds_used = {self.starting_compound}  # Track starting compound
         
+        # Initialize opponents
         self.opponents = [
             RandomOpponent(i, self.track, starting_compound=random.choice([1, 2, 3]))
             for i in range(self.num_opponents)
@@ -81,6 +86,9 @@ class F1OpponentEnv(gym.Env):
         return obs, info
     
     def make_obs(self) -> np.ndarray:
+        """Construct observation vector for the current state"""
+
+        # Construct observations (normalisation and one-hot encoding)
         lap_fraction = self.current_lap / self.track.laps
         compound_one_hot = np.array([1.0 if self.current_compound == c else 0.0 for c in (1, 2, 3)], dtype=np.float32)
         tyre_age_norm = min(self.tyre_age / self.track.laps, 1.0)
@@ -92,13 +100,13 @@ class F1OpponentEnv(gym.Env):
         time_to_ahead = self.calculate_time_to_ahead()
         time_to_behind = self.calculate_time_to_behind()
 
-        # Normalize times (assume max gap is 10 seconds)
+        # Normalise times (assuming max gap is 10 seconds)
         time_to_leader_norm = np.clip(time_to_leader / 10.0, 0.0, 1.0)
         time_to_ahead_norm = np.clip(time_to_ahead / 10.0, 0.0, 1.0)
         time_to_behind_norm = np.clip(time_to_behind / 10.0, 0.0, 1.0)
         position_norm = np.clip(position / 20.0, 0.0, 1.0)
         
-        # Number of different compounds used so far (normalized to 0-1)
+        # Number of different compounds used so far (normalised to 0-1)
         num_compounds_norm = len(self.compounds_used) / 3.0
 
         obs = np.concatenate([
@@ -109,16 +117,25 @@ class F1OpponentEnv(gym.Env):
         return obs
 
     def calculate_time_to_behind(self) -> float:
+        """Calculate time gap to the car behind"""
+
+        # Create list of (total_time, is_agent)
         times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
-        times.append((self.total_time, -1))  # -1 for agent
+        times.append((self.total_time, -1))
         times.sort()
+
         agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
+
         if agent_id == len(times) - 1:
             return 0.0
+        
+        # Returns the time difference to the car behind (or 0 if last)
         return max(0.0, times[agent_id + 1][0] - self.total_time)
     
     def calculate_time_to_leader(self) -> float:
+        """Calculate time gap to the race leader"""
 
+        # Find the minimum total time among all cars ahead
         min_time = self.total_time
         for opp in self.opponents:
             if opp.current_lap >= self.current_lap:
@@ -127,9 +144,11 @@ class F1OpponentEnv(gym.Env):
         return max(0.0, self.total_time - min_time)
     
     def calculate_time_to_ahead(self) -> float:
+        """Calculate time gap to the car ahead"""
 
+        # Create list of (total_time, is_agent)
         times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
-        times.append((self.total_time, -1))  # -1 for agent
+        times.append((self.total_time, -1))
         times.sort()
         
         agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
@@ -137,9 +156,11 @@ class F1OpponentEnv(gym.Env):
         if agent_id == 0:
             return 0.0
         
+        # Returns the time difference to the car ahead (or 0 if first)
         return max(0.0, self.total_time - times[agent_id - 1][0])
     
     def step(self, action: int):
+        """Perform one step in the environment with the given action"""
 
         # Track previous position for reward shaping
         prev_position = self.position
@@ -169,14 +190,15 @@ class F1OpponentEnv(gym.Env):
         # Penalty for excessive tyre age/wear
         tyre_penalty = 0.0
         if self.tyre_age > 30 or self.tyre_wear > 0.8:
-            tyre_penalty = -50.0  # Strong penalty for not pitting
+            # Strong penalty for not pitting on old tyres
+            tyre_penalty = -50.0
         reward += tyre_penalty
 
         # F1 compound rule enforcement: use at least 2 different compounds
-        # Progressive penalty if approaching end of race with only 1 compound
         compound_rule_penalty = 0.0
         laps_remaining = self.track.laps - self.current_lap
         
+        # Progressive penalty if approaching end of race with only 1 compound
         if len(self.compounds_used) < 2:
             # Progressive penalty as race goes on
             if laps_remaining < 10:
@@ -184,9 +206,9 @@ class F1OpponentEnv(gym.Env):
             elif laps_remaining < 20:
                 compound_rule_penalty = -200.0
         
-        # Final massive penalty if rule violated at race end
+        # Final large penalty for rule violation
         if self.current_lap >= self.track.laps and len(self.compounds_used) < 2:
-            compound_rule_penalty = -3000.0  # Extreme penalty
+            compound_rule_penalty = -3000.0
         
         reward += compound_rule_penalty
 
@@ -206,19 +228,24 @@ class F1OpponentEnv(gym.Env):
         self.race_log.append(info)
 
         if terminated:
-            final_position_reward = (20 - self.position) * 100  # Extremely strong final bonus
+            # Final position reward
+            final_position_reward = (20 - self.position) * 100
             reward += final_position_reward
+
             info["episode_log"] = list(self.race_log)
         
         return self.make_obs(), reward, terminated, False, info
     
     def update_agent(self, action: int):
-        # Update agent state for current lap
+        """Update the agent's state based on the action taken"""
+
         pit_time = 0.0
 
+        # Stay out action
         if action == 0:
             pass
         
+        # Pit stop action
         elif action in (1, 2, 3):
             self.num_pit_stops += 1
             pit_time = self.track.pit_loss
@@ -227,7 +254,7 @@ class F1OpponentEnv(gym.Env):
             self.compounds_used.add(new_compound)
             self.tyre_age = 0
 
-        # Calculate lap time using the compound object
+        # Lap time calculation and state updates
         compound_obj = compounds[self.current_compound]
         self.lap_time = calculate_lap_time(compound_obj, self.tyre_age) + pit_time
         self.total_time += self.lap_time
@@ -236,6 +263,8 @@ class F1OpponentEnv(gym.Env):
         self.tyre_wear = min(self.tyre_age / self.track.laps, 1.0)
 
     def update_opponents(self):
+        """Advance all opponents by one lap and update positions"""
+
         for opp in self.opponents:
             if opp.current_lap < self.track.laps:
                 opp.step()
@@ -243,6 +272,8 @@ class F1OpponentEnv(gym.Env):
         self.update_positions()
 
     def update_positions(self):
+        """Update the agent's position based on total times"""
+
         # Create list of (total_time, is_agent)
         times = [(opp.total_time, False) for opp in self.opponents]
         times.append((self.total_time, True))
@@ -254,6 +285,7 @@ class F1OpponentEnv(gym.Env):
         self.position = next(i + 1 for i, (_, is_agent) in enumerate(times) if is_agent)
     
     def logger_output(self):
+        """Print the lap information to the console"""
 
         if not self.race_log:
             print("No laps completed yet")
@@ -274,7 +306,7 @@ class F1OpponentEnv(gym.Env):
         )
 
 if __name__ == "__main__":
-    # Test the environment
+    # Simple environment test
     env = F1OpponentEnv(starting_compound=1)
     obs, info = env.reset()
     

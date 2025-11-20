@@ -10,20 +10,33 @@ import wandb
 from wandb.integration.sb3 import WandbCallback
 
 def train_f1_agent(
+        # Time steps for training
         total_timesteps=1_000_000,
+        # Buffer size, size of memory
         buffer_size=200_000,
+        # Steps before learning starts
         learning_starts=100_000,
+        # Size of each training batch
         batch_size=256,
+        # Soft update coefficient
         tau=0.005,
+        # How often to update the target network
         target_update_interval=1000,
+        # Discount factor
         gamma=0.995,
+        # Frequency of training
         train_freq=4,
+        # Number of gradient steps
         gradient_steps=1,
+        # Fraction of exploration
         exploration_fraction=0.4,
+        # Final epsilon for exploration
         exploration_final_eps=0.05,
-        learning_rate=1e-4,  # Reduced from 3e-4 for stability
+        # Learning rate
+        learning_rate=1e-4,
 ):
     
+    # WandB Initialization for tracking training
     run = wandb.init(
         project="f1-opponent",
         name=f"f1_opponent_rl",
@@ -76,6 +89,8 @@ def train_f1_agent(
     return model_path
 
 def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", num_episodes: int = 5):
+    # Evaluate a trained model over a number of episodes
+
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
         return
@@ -86,16 +101,16 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
     
     print(f"\nEvaluating model over {num_episodes} episodes...\n")
     
+    # Metrics for evaluation
     total_rewards = []
     total_positions = []
     
     for episode in range(num_episodes):
+        # Episode run loop for evaluation
         obs, info = env.reset()
         episode_reward = 0
         done = False
 
-        print(f"Episode {episode + 1}/{num_episodes}")
-        
         step = 0
         while not done:
             action, _states = model.predict(obs, deterministic=True)
@@ -107,20 +122,21 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         
         total_rewards.append(episode_reward)
         total_positions.append(env.position)
+
         print(f"\nEpisode {episode + 1} Summary:")
-        print(f"  - Final Lap: {env.current_lap}")
-        print(f"  - Total Time: {env.total_time:.2f}s")
-        print(f"  - Total Pit Stops: {env.num_pit_stops}")
-        print(f"  - Episode Reward: {episode_reward:.2f}")
-        print(f"  - Final Position: {env.position}/20")
+        print(f"Final Lap: {env.current_lap}")
+        print(f"Total Time: {env.total_time:.2f}s")
+        print(f"Total Pit Stops: {env.num_pit_stops}")
+        print(f"Episode Reward: {episode_reward:.2f}")
+        print(f"Final Position: {env.position}/20")
     
-    print(f"Reward Summary:\n")
+    print(f"\nReward Summary:\n")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")
     print(f"Std Dev Reward: {np.std(total_rewards):.2f}")
     print(f"Min Reward: {np.min(total_rewards):.2f}")
     print(f"Max Reward: {np.max(total_rewards):.2f}")
 
-    print(f"Position Summary:\n")
+    print(f"\nPosition Summary:\n")
     print(f"Average Position: {np.mean(total_positions):.2f}")
     print(f"Std Dev Position: {np.std(total_positions):.2f}")
     print(f"Min Position: {np.min(total_positions):.2f}")
@@ -156,6 +172,7 @@ def test_env():
 if __name__ == "__main__":
     import sys
 
+    # Defines command line interface
     if len(sys.argv) > 1:
         if sys.argv[1] == "train":
             print("Training Agent")
@@ -176,12 +193,14 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == "visualise":
             print("Visualising Results")
+
+        elif sys.argv[1] == "test":
+            print("Testing Environment")
+            test_env()
     
     else:
-        print("Testing environment...\n")
-        test_env()
         print("\nUsage:")
         print("python train.py train                          - Train the agent")
         print("python train.py evaluate [model] [episodes]    - Evaluate the agent")
         print("python train.py visualise                      - Visualise strategy (pit stops & tyres)")
-        print("python train.py                                - Test environment")
+        print("python train.py test                           - Test environment")
