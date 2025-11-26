@@ -5,6 +5,7 @@ from stable_baselines3 import PPO
 from stable_baselines3 import DQN
 from f1_env import F1OpponentEnv
 from dynamics import TyreCompound, compounds
+from visualise import main as visualise_results
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -124,12 +125,7 @@ def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", n
         total_rewards.append(episode_reward)
         total_positions.append(env.position)
 
-        print(f"\nEpisode {episode + 1} Summary:")
-        print(f"Final Lap: {env.current_lap}")
-        print(f"Total Time: {env.total_time:.2f}s")
-        print(f"Total Pit Stops: {env.num_pit_stops}")
-        print(f"Episode Reward: {episode_reward:.2f}")
-        print(f"Final Position: {env.position}/20")
+        print(f"\nEpisode {episode + 1} completed.")
     
     print(f"\nReward Summary:\n")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")
@@ -188,7 +184,7 @@ if __name__ == "__main__":
             else:
                 model_path = "f1_gym/opponent/models/f1_opponent.zip"
             
-            num_episodes = 10
+            num_episodes = 1000
             if len(sys.argv) > 3:
                 num_episodes = int(sys.argv[3])
             
@@ -196,6 +192,7 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == "visualise":
             print("Visualising Results")
+            visualise_results()
 
         elif sys.argv[1] == "test":
             print("Testing Environment")
