@@ -66,15 +66,19 @@ class RandomOpponent:
     def generate_strategy(self) -> Dict[str, Any]:
         """Generate a random pit stop strategy (1-stop or 2-stop)"""
 
+        start_compound = self.starting_compound
+
+        # Determine strategy type
         strategy_type = random.choice([1, 2])
         
         # 1-Stop Strategy
         if strategy_type == 1:
-            # Choose starting and pit compounds (ensuring they're different)    
-            # Random lap for pit stop and compounds
-            start_compound = random.choice([1, 2, 3])
+            # Choose pit compound (ensuring it's different from start)
             pit_compound = random.choice([c for c in [1, 2, 3] if c != start_compound])
-            pit_lap = random.randint(2, self.track.laps - 1)
+            
+            # Ensure valid range
+            max_pit_lap = max(2, self.track.laps - 1)
+            pit_lap = random.randint(2, max_pit_lap)
             
             return {
                 "type": 1,
@@ -84,7 +88,6 @@ class RandomOpponent:
         
         # 2-Stop Strategy
         else:
-            start_compound = random.choice([1, 2, 3])
             pit1_lap = random.randint(2, self.track.laps - 20)
             pit2_lap = random.randint(pit1_lap + 5, self.track.laps - 1)
             
