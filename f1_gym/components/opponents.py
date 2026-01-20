@@ -1,5 +1,5 @@
 
-from tracks import TrackParams, TyreCompound, calculate_lap_time, compounds
+from f1_gym.components.tracks import TrackParams, TyreCompound, calculate_lap_time, compounds
 import random
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple

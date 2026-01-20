@@ -4,7 +4,6 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3 import DQN
 from f1_gym.envs.f1_env import F1OpponentEnv
-from visualisation.visualise import main as visualise_results
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -166,40 +165,3 @@ def test_env():
             print(f"Race finished, Final Position: {env.position}/20")
             print(f"Final Cumulative reward: {total_reward:.2f}")
             break
-
-if __name__ == "__main__":
-    import sys
-
-    # Defines command line interface
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "train":
-            print("Training Agent")
-            model = train_f1_agent()
-
-        elif sys.argv[1] == "evaluate":
-            print("Evaluating Model")
-            if len(sys.argv) > 2:
-                model_path = sys.argv[2]
-            else:
-                model_path = "f1_gym/models/f1_rl_dqn.zip"
-            
-            num_episodes = 1000
-            if len(sys.argv) > 3:
-                num_episodes = int(sys.argv[3])
-            
-            evaluate_model(model_path=model_path, num_episodes=num_episodes)
-
-        elif sys.argv[1] == "visualise":
-            print("Visualising Results")
-            visualise_results()
-
-        elif sys.argv[1] == "test":
-            print("Testing Environment")
-            test_env()
-    
-    else:
-        print("\nUsage:")
-        print("python train.py train                          - Train the agent")
-        print("python train.py evaluate [model] [episodes]    - Evaluate the agent")
-        print("python train.py visualise                      - Visualise strategy (pit stops & tyres)")
-        print("python train.py test                           - Test environment")

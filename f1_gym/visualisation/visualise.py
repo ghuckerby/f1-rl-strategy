@@ -106,17 +106,22 @@ def plot_race(data, output_path):
     print(f"Saved race summary plot to {output_path}")
     plt.close()
 
-def main():
+def visualise_model(model_path, output_path):
+
+    if not os.path.exists(model_path):
+        print(f"Error: Model not found at {model_path}")
+        return
+
     env = F1OpponentEnv()
-    model = DQN.load(PATH)
+    model = DQN.load(model_path)
 
     race_data = run_race(env, model)
     pos = race_data['position']
     time = race_data['standings'][0][1] if pos == 1 else 0
     print(f"Final Position: {pos}, Total Time: {time:.2f}s")
 
-    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
-    plot_race(race_data, OUTPUT)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plot_race(race_data, output_path)
 
 if __name__ == "__main__":
-    main()
+    visualise_model("f1_gym/models/f1_rl_dqn.zip", "f1_gym/logs/race_summary.png")
