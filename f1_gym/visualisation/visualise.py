@@ -6,10 +6,10 @@ import pandas as pd
 import os
 
 from stable_baselines3 import DQN
-from f1_env import F1OpponentEnv
+from f1_gym.envs.f1_env import F1OpponentEnv
 
-PATH = "f1_gym/opponent/models/f1_opponent"
-OUTPUT = "f1_gym/opponent/visualisations/race_summary.png"
+PATH = "f1_gym/models/f1_rl_dqn.zip"
+OUTPUT = "f1_gym/logs/race_summary.png"
 
 COMPOUND_COLOURS = {
     1: '#F90429',

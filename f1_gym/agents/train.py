@@ -3,9 +3,8 @@ import numpy as np
 import os
 from stable_baselines3 import PPO
 from stable_baselines3 import DQN
-from f1_env import F1OpponentEnv
-from dynamics import TyreCompound, compounds
-from visualise import main as visualise_results
+from f1_gym.envs.f1_env import F1OpponentEnv
+from visualisation.visualise import main as visualise_results
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -40,14 +39,14 @@ def train_f1_agent(
     
     # WandB Initialization for tracking training
     run = wandb.init(
-        project="f1-opponent",
-        name=f"f1_opponent_rl",
+        project="f1-rl",
+        name=f"f1_rl_dqn_{total_timesteps//1_000_000}M",
         sync_tensorboard=True,
         reinit=True,
     )
 
-    LOG_DIR = "f1_gym/opponent/logs"
-    MODEL_DIR = "f1_gym/opponent/models"
+    LOG_DIR = "f1_gym/logs"
+    MODEL_DIR = "f1_gym/models"
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(MODEL_DIR, exist_ok=True)
 
@@ -67,11 +66,11 @@ def train_f1_agent(
         gamma=gamma,
         train_freq=train_freq,
         gradient_steps=gradient_steps,
-        tensorboard_log=f"f1_gym/opponent/logs/tensorboard/{run.id}"
+        tensorboard_log=f"f1_gym/logs/tensorboard/{run.id}"
     )
 
     callback = WandbCallback(
-        model_save_path=f"f1_gym/opponent/models/wandb/{run.id}",
+        model_save_path=f"f1_gym/models/wandb/{run.id}",
         verbose=2
     )
 
@@ -81,7 +80,7 @@ def train_f1_agent(
         callback=callback
     )
 
-    model_name = f"f1_opponent.zip"
+    model_name = f"f1_rl_dqn.zip"
     model_path = os.path.join(MODEL_DIR, model_name)
     model.save(model_path)
     print(f"Saved model to {model_path}")
@@ -90,7 +89,7 @@ def train_f1_agent(
 
     return model_path
 
-def evaluate_model(model_path: str = "f1_gym/opponent/models/f1_opponent.zip", num_episodes: int = 5):
+def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes: int = 5):
     """Evaluate a trained model over a number of episodes"""
 
     if not os.path.exists(model_path):
@@ -182,7 +181,7 @@ if __name__ == "__main__":
             if len(sys.argv) > 2:
                 model_path = sys.argv[2]
             else:
-                model_path = "f1_gym/opponent/models/f1_opponent.zip"
+                model_path = "f1_gym/models/f1_rl_dqn.zip"
             
             num_episodes = 1000
             if len(sys.argv) > 3:

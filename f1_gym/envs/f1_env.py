@@ -1,9 +1,8 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from dynamics import (
-    compounds, TrackParams, TyreCompound, calculate_lap_time, RandomOpponent
-)
+from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
+from f1_gym.components.opponents import RandomOpponent
 from typing import List, Dict, Any, Tuple
 import random
 
