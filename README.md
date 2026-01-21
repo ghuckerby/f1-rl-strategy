@@ -4,6 +4,8 @@ This project implements a Reinforcement Learning (RL) agent to optimize Formula 
 
 ## Project Structure
 
+```
+
 f1-rl-strategy/
 ├── main.py # Main entry point for CLI commands
 ├── requirements.txt # Dependencies
@@ -23,21 +25,24 @@ f1-rl-strategy/
 └── scripts/
 └── fastf1_loader.py # Script to load real F1 data for calibration
 
+```
+
 ## Installation
 
 1.  **Clone the repository**:
-
+    ```
     git clone <repository_url>
     cd f1-rl-strategy
-
+    ```
 2.  **Create a virtual environment**:
-
+    ```
     python -m venv .venv
     source .venv/bin/activate # On Windows: .venv\Scripts\activate
-
+    ```
 3.  **Install dependencies**:
-
+    ```
     pip install -r requirements.txt
+    ```
 
 ## Usage
 
