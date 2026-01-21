@@ -3,11 +3,11 @@ from f1_gym.components.tracks import TrackParams, TyreCompound, calculate_lap_ti
 import random
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple
+from abc import ABC, abstractmethod
 
-# Random Opponent Class
-class RandomOpponent:
+class Opponent(ABC):
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
-        """Initialize Random Opponent with ID, track parameters, and starting compound"""
+        """Initialize Opponent with ID, track parameters, and starting compound"""
 
         self.opponent_id = opponent_id
         self.track = track
@@ -23,6 +23,22 @@ class RandomOpponent:
         self.strategy = self.generate_strategy()
         self.pit_laps = self.strategy["pit_laps"]
         self.pit_compounds = self.strategy["compounds"]
+
+    @abstractmethod
+    def step(self):
+        """Advance one lap"""
+        pass
+
+    @abstractmethod
+    def reset(self):
+        """Reset opponent to initial state"""
+        pass
+
+# Random Opponent Class
+class RandomOpponent(Opponent):
+    def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
+        """Initialize Random Opponent with ID, track parameters, and starting compound"""
+        super().__init__(opponent_id, track, starting_compound)
         
     def generate_strategy(self) -> Dict[str, Any]:
         """Generate a random pit stop strategy (1-stop or 2-stop)"""

@@ -2,13 +2,15 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import RandomOpponent
-from typing import List, Dict, Any, Tuple
+from f1_gym.components.opponents import Opponent, RandomOpponent
+from typing import List, Dict, Any, Tuple, Type
 import random
 
 class F1OpponentEnv(gym.Env):
 
-    def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1):
+    def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
+                 opponent_class: Type[Opponent] = RandomOpponent, **opponent_kwargs):
+        
         super().__init__()
 
         # Environment parameters
@@ -16,6 +18,8 @@ class F1OpponentEnv(gym.Env):
         self.num_opponents = 19
         self.compounds = compounds
         self.starting_compound = starting_compound
+        self.opponent_class = opponent_class
+        self.opponent_kwargs = opponent_kwargs
         self.num_pit_stops = 0
         self.lap_time = 0.0
         self.compounds_used = set()
@@ -43,7 +47,7 @@ class F1OpponentEnv(gym.Env):
         self.race_log: List[Dict[str, Any]] = []
 
         # Opponents list
-        self.opponents: List[RandomOpponent] = []
+        self.opponents: List[Opponent] = []
 
         self.reset()
 
@@ -62,7 +66,7 @@ class F1OpponentEnv(gym.Env):
         
         # Initialize opponents
         self.opponents = [
-            RandomOpponent(i, self.track, starting_compound=random.choice([1, 2, 3]))
+            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]), **self.opponent_kwargs)
             for i in range(self.num_opponents)
         ]
 
