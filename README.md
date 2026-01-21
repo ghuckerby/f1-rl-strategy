@@ -5,26 +5,24 @@ This project implements a Reinforcement Learning (RL) agent to optimize Formula 
 ## Project Structure
 
 ```
-
 f1-rl-strategy/
-├── main.py # Main entry point for CLI commands
-├── requirements.txt # Dependencies
-├── f1_gym/ # Main package
-│ ├── agents/ # RL agent implementations and training logic
-│ │ └── train.py # Training and evaluation functions
-│ ├── components/ # Simulation components
-│ │ ├── envs/ # Gymnasium environment definitions
-│ │ │ └── f1_env.py # F1OpponentEnv class
-│ │ ├── tracks.py # Track and tyre parameters
-│ │ ├── opponents.py # Opponent AIs
-│ │ └── events.py # Race event handling (Safety Cars etc.)
-│ ├── models/ # Saved RL models
-│ └── visualisation/ # Visualisation tools
-│ └── visualise.py # Plotting race results
-├── fastf1_cache/ # Cache for FastF1 data
+├── main.py                     # Main entry point for CLI commands
+├── requirements.txt            # Dependencies
+├── f1_gym/                     # Main package
+│   ├── agents/                 # RL agent implementations and training logic
+│   │   └── train.py            # Training and evaluation functions
+│   ├── components/             # Simulation components
+│   │   ├── envs/               # Gymnasium environment definitions
+│   │   │   └── f1_env.py       # F1OpponentEnv class
+│   │   ├── tracks.py           # Track and tyre parameters
+│   │   ├── opponents.py        # Opponent AIs
+│   │   └── events.py           # Race event handling (Safety Cars etc.)
+│   ├── models/                 # Saved RL models
+│   └── visualisation/          # Visualisation tools
+│       └── visualise.py        # Plotting race results
+├── fastf1_cache/               # Cache for FastF1 data
 └── scripts/
-└── fastf1_loader.py # Script to load real F1 data for calibration
-
+    └── fastf1_loader.py        # Script to load real F1 data for calibration
 ```
 
 ## Installation
@@ -52,26 +50,34 @@ The project is controlled with `main.py`.
 
 To train the RL agent, use the `train` command. You can specify the total number of timesteps for training.
 
+```
 python main.py train --timesteps 1000000
+```
 
 ### Evaluating the Agent
 
 To evaluate a trained model, use the `evaluate` command.
 This executes the trained policy on a number of races and outputs a quantitative analysis.
 
+```
 python main.py evaluate --model f1_gym/models/f1_rl_dqn.zip --episodes 100
+```
 
 ### Visualising a Race
 
 To run a single race with the trained agent and generate a custom summary plot, use the `visualise` command.
 
+```
 python main.py visualise --model f1_gym/models/f1_rl_dqn.zip --output f1_gym/logs/race_summary.png
+```
 
 ### Testing the Environment
 
 To run a basic test of the environment loop:
 
+```
 python main.py test
+```
 
 ## Key Components
 
