@@ -9,7 +9,7 @@ import random
 class F1OpponentEnv(gym.Env):
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = RandomOpponent, **opponent_kwargs):
+                 opponent_class: Type[Opponent] = RandomOpponent):
         
         super().__init__()
 
@@ -19,7 +19,6 @@ class F1OpponentEnv(gym.Env):
         self.compounds = compounds
         self.starting_compound = starting_compound
         self.opponent_class = opponent_class
-        self.opponent_kwargs = opponent_kwargs
         self.num_pit_stops = 0
         self.lap_time = 0.0
         self.compounds_used = set()
@@ -66,7 +65,7 @@ class F1OpponentEnv(gym.Env):
         
         # Initialize opponents
         self.opponents = [
-            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]), **self.opponent_kwargs)
+            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
             for i in range(self.num_opponents)
         ]
 
