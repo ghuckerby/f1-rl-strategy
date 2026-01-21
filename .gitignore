@@ -3,9 +3,5 @@
 fastf1_cache/cache/
 
 wandb/
-f1_gym/deterministic/dqn_logs/tensorboard/
-f1_gym/deterministic/dqn_models/wandb/
-f1_gym/stochastic/dqn_logs/tensorboard/
-f1_gym/stochastic/dqn_models/wandb/
-f1_gym/opponent/models/wandb/
-f1_gym/opponent/logs/tensorboard
+f1_gym/models/wandb/
+f1_gym/logs/tensorboard/
