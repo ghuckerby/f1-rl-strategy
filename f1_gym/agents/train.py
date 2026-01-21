@@ -11,7 +11,7 @@ from wandb.integration.sb3 import WandbCallback
 def train_f1_agent(
         # Time steps for training
         total_timesteps=1_000_000,
-        # Buffer size, size of memory
+        # Buffer size, size of training memory
         buffer_size=200_000,
         # Steps before learning starts
         learning_starts=100_000,
