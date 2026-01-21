@@ -303,22 +303,3 @@ class F1OpponentEnv(gym.Env):
             f"total_time: {row['total_time']:.2f}s | pitted: {row['pitted']} | "
             f"position: {row['position']}"
         )
-
-if __name__ == "__main__":
-    # Simple environment test
-    env = F1OpponentEnv(starting_compound=1)
-    obs, info = env.reset()
-    
-    print("Environment created successfully!")
-    print(f"Observation shape: {obs.shape}")
-    print(f"Action space: {env.action_space}")
-    print()
-    
-    # Run a few random steps and log output
-    for _ in range(10):
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, info = env.step(action)
-        env.logger_output()
-        
-        if terminated:
-            break
