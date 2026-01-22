@@ -5,7 +5,7 @@ from typing import Optional
 @dataclass
 class EventParams:
     # Safety Car
-    sc_prob: float = 0.02           # Chance of safety car per lap
+    sc_prob: float = 0.00           # Chance of safety car per lap
     sc_speed_factor: float = 1.5    # Lap times are 1.5x slower under safety car
     sc_pit_factor: float = 0.5      # Time lost pitting is reduced
 

@@ -218,10 +218,12 @@ class F1OpponentEnv(gym.Env):
         reward = 0.0
 
         # Speed Reward
-        reward += self.lap_time * config.lap_time_reward_weight
+        reward += (config.benchmark_lap_time - self.lap_time) * config.lap_time_reward_weight
 
-        # Overtaking Reward
+        # Position Rewards
         reward += (prev_position - self.position) * config.position_gain_reward
+        # time_to_behind_norm = np.clip(self.calculate_time_to_behind() / 10.0, 0.0, 1.0)
+        # reward += time_to_behind_norm * 0.5
 
         # Strategic Pit Stop Reward
         if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
@@ -229,9 +231,9 @@ class F1OpponentEnv(gym.Env):
             if action != self.current_compound:
                 reward += config.compound_change_reward
 
-        # Tyre Management Penalty
-        if self.tyre_age > config.tyre_age_limit or self.tyre_wear > config.tyre_wear_limit:
-            reward += config.tyre_penalty
+        # Progressive Tyre Wear Penalty
+        if self.tyre_wear > config.tyre_wear_threshold:
+            reward += config.tyre_wear_penalty * (self.tyre_wear ** 2)
 
         # Rule Enforcement Penalties
         laps_remaining = self.track.laps - self.current_lap
