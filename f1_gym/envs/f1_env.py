@@ -4,15 +4,18 @@ import numpy as np
 from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
 from f1_gym.components.opponents import Opponent, RandomOpponent
 from f1_gym.components.events import RaceEvents
+from f1_gym.config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
 import random
 
 class F1OpponentEnv(gym.Env):
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = RandomOpponent):
+                 opponent_class: Type[Opponent] = RandomOpponent, reward_config: RewardConfig = None):
         
         super().__init__()
+
+        self.reward_config = reward_config or RewardConfig()
 
         # Environment parameters
         self.track = track or TrackParams()
@@ -183,46 +186,7 @@ class F1OpponentEnv(gym.Env):
         self.update_agent(action)
         self.update_opponents()
 
-        # Lap time reward
-        reward = -self.lap_time
-
-        # Position change reward
-        position_gain_weight = 10.0
-        reward += (prev_position - self.position) * position_gain_weight
-
-        # Pit stop incentive (reward for pitting in strategic window)
-        pit_reward = 0.0
-        if pitted and 15 <= self.current_lap <= 40:
-            pit_reward = 30.0
-            # Bonus if pitting to a different compound
-            if action != self.current_compound:
-                pit_reward += 100.0
-        reward += pit_reward
-
-        # Penalty for excessive tyre age/wear
-        tyre_penalty = 0.0
-        if self.tyre_age > 30 or self.tyre_wear > 0.8:
-            # Strong penalty for not pitting on old tyres
-            tyre_penalty = -50.0
-        reward += tyre_penalty
-
-        # F1 compound rule enforcement: use at least 2 different compounds
-        compound_rule_penalty = 0.0
-        laps_remaining = self.track.laps - self.current_lap
-        
-        # Progressive penalty if approaching end of race with only 1 compound
-        if len(self.compounds_used) < 2:
-            # Progressive penalty as race goes on
-            if laps_remaining < 10:
-                compound_rule_penalty = -500.0
-            elif laps_remaining < 20:
-                compound_rule_penalty = -200.0
-        
-        # Final large penalty for rule violation
-        if self.current_lap >= self.track.laps and len(self.compounds_used) < 2:
-            compound_rule_penalty = -3000.0
-        
-        reward += compound_rule_penalty
+        reward = self.calculate_reward(action, prev_position, pitted)
 
         terminated = self.current_lap >= self.track.laps
 
@@ -248,6 +212,39 @@ class F1OpponentEnv(gym.Env):
             info["episode_log"] = list(self.race_log)
         
         return self.make_obs(), reward, terminated, False, info
+    
+    def calculate_reward(self, action: int, prev_position: int, pitted:bool) -> float:
+        config = self.reward_config
+        reward = 0.0
+
+        # Speed Reward
+        reward += self.lap_time * config.lap_time_reward_weight
+
+        # Overtaking Reward
+        reward += (prev_position - self.position) * config.position_gain_reward
+
+        # Strategic Pit Stop Reward
+        if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
+            reward += config.strategic_pit_reward
+            if action != self.current_compound:
+                reward += config.compound_change_reward
+
+        # Tyre Management Penalty
+        if self.tyre_age > config.tyre_age_limit or self.tyre_wear > config.tyre_wear_limit:
+            reward += config.tyre_penalty
+
+        # Rule Enforcement Penalties
+        laps_remaining = self.track.laps - self.current_lap
+        if len(self.compounds_used) < 2:
+            if laps_remaining < config.rule_penalty_threshold_one:
+                reward += config.rule_penalty_one_value
+            elif laps_remaining < config.rule_penalty_threshold_two:
+                reward += config.rule_penalty_two_value
+            
+            if self.current_lap >= self.track.laps:
+                reward += config.rule_penalty_violation
+
+        return reward
     
     def update_agent(self, action: int):
         """Update the agent's state based on the action taken"""
@@ -314,7 +311,7 @@ class F1OpponentEnv(gym.Env):
         
         compound = compound_names.get(row["compound"], "UNKNOWN")
         action = action_names.get(row["action"], "UNKNOWN") if row["action"] is not None else "INITIAL"
-        sc = " (SC)" if row["sc_active"] else "--"
+        sc = "SC" if row["sc_active"] else "--"
         
         print(
             f"Lap {row['lap']:>2} | {sc} | action: {action:>10} | compound: {compound} | "

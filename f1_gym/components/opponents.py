@@ -51,7 +51,6 @@ class RandomOpponent(Opponent):
         if strategy_type == 1:
             # Choose pit compound (ensuring it's different from start)
             pit_compound = random.choice([c for c in [1, 2, 3] if c != start_compound])
-            
             # Ensure valid range
             max_pit_lap = max(2, self.track.laps - 1)
             pit_lap = random.randint(2, max_pit_lap)

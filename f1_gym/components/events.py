@@ -33,7 +33,6 @@ class RaceEvents:
             self.current_event_lap += 1
             if self.current_event_lap >= self.event_duration:
                 self.active_event = None
-        
         else:
             if random.random() < self.params.sc_prob:
                 self.trigger_safety_car()
