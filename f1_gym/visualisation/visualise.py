@@ -25,6 +25,8 @@ def run_race(env, model):
     all_drivers_history = {'Agent': []}
     for opp in env.opponents:
         all_drivers_history[f'Opponent {opp.opponent_id}'] = []
+    
+    sc_history = []
 
     total_reward = 0
     while not done:
@@ -36,6 +38,8 @@ def run_race(env, model):
         all_drivers_history['Agent'].append(env.current_compound)
         for opp in env.opponents:
             all_drivers_history[f'Opponent {opp.opponent_id}'].append(opp.current_compound)
+        
+        sc_history.append(info.get('sc_active', False))
 
     driver_times = [('Agent', env.total_time)]
     for opp in env.opponents:
@@ -45,6 +49,7 @@ def run_race(env, model):
 
     return{
         'history': all_drivers_history,
+        'sc_history': sc_history,
         'standings': driver_times,
         'position': env.position,
         'total_reward': total_reward,
@@ -53,6 +58,7 @@ def run_race(env, model):
 
 def plot_race(data, output_path):
     history = data['history']
+    sc_history = data.get('sc_history', [])
     standings = data['standings']
 
     total_laps = len(history['Agent'])
@@ -60,6 +66,19 @@ def plot_race(data, output_path):
 
     fig, ax = plt.subplots(figsize=(16, 10))
     ax.set_facecolor('#333333')
+
+    # Draw Safety Car windows
+    if sc_history:
+        current_start = -1
+        for i, is_sc in enumerate(sc_history):
+            if is_sc and current_start == -1:
+                current_start = i
+            elif not is_sc and current_start != -1:
+                ax.axvspan(current_start + 1, i + 1, color='#cf5a00', alpha=1, lw=0)
+                current_start = -1
+        if current_start != -1:
+            ax.axvspan(current_start + 1, len(sc_history) + 1, color='#cf5a00', alpha=1, lw=0)
+
     for y_pos, (driver_name, total_time) in enumerate(reversed(standings)):
         compounds_used = history[driver_name]
         xranges = []
@@ -99,8 +118,9 @@ def plot_race(data, output_path):
         mpatches.Patch(color=COMPOUND_COLOURS[1], label='Soft'),
         mpatches.Patch(color=COMPOUND_COLOURS[2], label='Medium'),
         mpatches.Patch(color=COMPOUND_COLOURS[3], label='Hard'),
+        mpatches.Patch(color='#cf5a00', alpha=1, label='Safety Car'),
     ]
-    ax.legend(handles=legend_patches, loc='upper right', bbox_to_anchor=(0.5, -0.05), ncol=3, frameon=False)
+    ax.legend(handles=legend_patches, loc='upper right', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300)
     print(f"Saved race summary plot to {output_path}")

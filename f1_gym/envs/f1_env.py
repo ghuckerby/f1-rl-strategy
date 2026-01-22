@@ -3,6 +3,7 @@ from gymnasium import spaces
 import numpy as np
 from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
 from f1_gym.components.opponents import Opponent, RandomOpponent
+from f1_gym.components.events import RaceEvents
 from typing import List, Dict, Any, Tuple, Type
 import random
 
@@ -15,6 +16,7 @@ class F1OpponentEnv(gym.Env):
 
         # Environment parameters
         self.track = track or TrackParams()
+        self.events = RaceEvents()
         self.num_opponents = 19
         self.compounds = compounds
         self.starting_compound = starting_compound
@@ -37,7 +39,8 @@ class F1OpponentEnv(gym.Env):
             # time_to_leader
             # time_to_ahead
             # time_to_behind
-        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1 + 1  # Updated to 11
+            # sc_active (0 or 1)
+        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
@@ -62,6 +65,7 @@ class F1OpponentEnv(gym.Env):
         self.position = 1
         self.lap_time = 0.0
         self.compounds_used = {self.starting_compound}  # Track starting compound
+        self.events.reset()
         
         # Initialize opponents
         self.opponents = [
@@ -82,6 +86,7 @@ class F1OpponentEnv(gym.Env):
             "action": None,
             "lap_time": None,
             "position": self.position,
+            "sc_active": False,
         }
         self.race_log.append(info)
         
@@ -111,10 +116,13 @@ class F1OpponentEnv(gym.Env):
         # Number of different compounds used so far (normalised to 0-1)
         num_compounds_norm = len(self.compounds_used) / 3.0
 
+        # Event flag
+        sc_active = 1.0 if self.events.active_event == "safety_car" else 0.0
+
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, num_compounds_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, num_compounds_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm, sc_active], dtype=np.float32)
         ])
         return obs
 
@@ -163,6 +171,8 @@ class F1OpponentEnv(gym.Env):
     
     def step(self, action: int):
         """Perform one step in the environment with the given action"""
+
+        self.events.step()
 
         # Track previous position for reward shaping
         prev_position = self.position
@@ -226,6 +236,7 @@ class F1OpponentEnv(gym.Env):
             "action": int(action),
             "lap_time": float(self.lap_time),
             "position": self.position,
+            "sc_active": bool(self.events.active_event),
         }
         self.race_log.append(info)
 
@@ -243,6 +254,9 @@ class F1OpponentEnv(gym.Env):
 
         pit_time = 0.0
 
+        lap_speed_multiplier = self.events.get_lap_time_multiplier()
+        pit_loss_multiplier = self.events.get_pit_loss_multiplier()
+
         # Stay out action
         if action == 0:
             pass
@@ -250,7 +264,7 @@ class F1OpponentEnv(gym.Env):
         # Pit stop action
         elif action in (1, 2, 3):
             self.num_pit_stops += 1
-            pit_time = self.track.pit_loss
+            pit_time = self.track.pit_loss * pit_loss_multiplier
             new_compound = action
             self.current_compound = new_compound
             self.compounds_used.add(new_compound)
@@ -258,7 +272,8 @@ class F1OpponentEnv(gym.Env):
 
         # Lap time calculation and state updates
         compound_obj = compounds[self.current_compound]
-        self.lap_time = calculate_lap_time(compound_obj, self.tyre_age) + pit_time
+        base_lap = calculate_lap_time(compound_obj, self.tyre_age) * lap_speed_multiplier
+        self.lap_time = base_lap + pit_time
         self.total_time += self.lap_time
         self.current_lap += 1
         self.tyre_age += 1
@@ -269,7 +284,7 @@ class F1OpponentEnv(gym.Env):
 
         for opp in self.opponents:
             if opp.current_lap < self.track.laps:
-                opp.step()
+                opp.step(self.events)
 
         self.update_positions()
 
@@ -299,9 +314,10 @@ class F1OpponentEnv(gym.Env):
         
         compound = compound_names.get(row["compound"], "UNKNOWN")
         action = action_names.get(row["action"], "UNKNOWN") if row["action"] is not None else "INITIAL"
+        sc = " (SC)" if row["sc_active"] else "--"
         
         print(
-            f"Lap {row['lap']:>2} | action: {action:>10} | compound: {compound} | "
+            f"Lap {row['lap']:>2} | {sc} | action: {action:>10} | compound: {compound} | "
             f"tyre_age: {row['tyre_age']:>2} | lap_time: {row['lap_time'] or 0:.2f}s | "
             f"total_time: {row['total_time']:.2f}s | pitted: {row['pitted']} | "
             f"position: {row['position']}"

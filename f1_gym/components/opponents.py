@@ -1,5 +1,6 @@
 
 from f1_gym.components.tracks import TrackParams, TyreCompound, calculate_lap_time, compounds
+from f1_gym.components.events import RaceEvents
 import random
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple
@@ -44,8 +45,6 @@ class RandomOpponent(Opponent):
         """Generate a random pit stop strategy (1-stop or 2-stop)"""
 
         start_compound = self.starting_compound
-
-        # Determine strategy type
         strategy_type = random.choice([1, 2])
         
         # 1-Stop Strategy
@@ -77,19 +76,25 @@ class RandomOpponent(Opponent):
                 "compounds": [start_compound, pit1_compound, pit2_compound]
             }
     
-    def step(self):
+    def step(self, events: RaceEvents):
         """Advance one lap"""   
         pit_time = 0.0
+
+        lap_speed_multiplier = events.get_lap_time_multiplier()
+        pit_loss_multiplier = events.get_pit_loss_multiplier()
         
         if self.current_lap + 1 in self.pit_laps:
             pit_index = self.pit_laps.index(self.current_lap + 1)
-            pit_time = self.track.pit_loss
+            base_loss = self.track.pit_loss * pit_loss_multiplier
+            pit_delay = events.get_pit_delay()
+            pit_time = base_loss + pit_delay
             self.current_compound = self.pit_compounds[pit_index + 1]
             self.tyre_age = 0
             self.num_pit_stops += 1
         
         compound_obj = compounds[self.current_compound]
-        self.lap_time = calculate_lap_time(compound_obj, self.tyre_age) + pit_time
+        base_lap = calculate_lap_time(compound_obj, self.tyre_age) * lap_speed_multiplier
+        self.lap_time = base_lap + pit_time
         self.total_time += self.lap_time
         self.current_lap += 1
         self.tyre_age += 1
