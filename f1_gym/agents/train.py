@@ -16,7 +16,7 @@ def train_f1_agent(
         # Steps before learning starts
         learning_starts=100_000,
         # Size of each training batch
-        batch_size=256,
+        batch_size=32,
         # Soft update coefficient
         tau=0.005,
         # How often to update the target network
@@ -53,6 +53,7 @@ def train_f1_agent(
     model = DQN(
         "MlpPolicy",
         env,
+        policy_kwargs={"net_arch": [256, 256]},
         verbose=1,
         buffer_size=buffer_size,
         learning_starts=learning_starts,

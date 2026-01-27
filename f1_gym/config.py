@@ -14,7 +14,7 @@ class RewardConfig:
     pit_window_start: int = 15
     pit_window_end: int = 40
     strategic_pit_reward: float = 0.0
-    compound_change_reward: float = 0.0
+    compound_change_reward: float = 5.0
 
     # Tyre Wear Penalty
     tyre_wear_threshold: float = 0.5

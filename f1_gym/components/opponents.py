@@ -111,3 +111,126 @@ class RandomOpponent(Opponent):
         self.strategy = self.generate_strategy()
         self.pit_laps = self.strategy["pit_laps"]
         self.pit_compounds = self.strategy["compounds"]
+
+# Heuristic Opponent Class
+class HeuristicOpponent(Opponent):
+    def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
+        super().__init__(opponent_id, track, starting_compound)
+
+    def generate_strategy(self) -> Dict[str, Any]:
+        pit_lap = int(self.track.laps * random.uniform(0.4, 0.6))
+        pit_compound = 2 if self.starting_compound == 1 else 1
+        return {
+            "type": 1,
+            "pit_laps": [pit_lap],
+            "compounds": [self.starting_compound, pit_compound]
+        }
+    
+    def step(self, events: RaceEvents):
+        pit_time = 0.0
+        lap_speed_multiplier = events.get_lap_time_multiplier()
+        pit_loss_multiplier = events.get_pit_loss_multiplier()
+
+        if self.current_lap + 1 in self.pit_laps:
+            pit_index = self.pit_laps.index(self.current_lap + 1)
+            base_loss = self.track.pit_loss * pit_loss_multiplier
+            pit_delay = events.get_pit_delay()
+            pit_time = base_loss + pit_delay
+            self.current_compound = self.pit_compounds[pit_index + 1]
+            self.tyre_age = 0
+            self.num_pit_stops += 1
+        
+        compound_obj = compounds[self.current_compound]
+        base_lap = calculate_lap_time(compound_obj, self.tyre_age) * lap_speed_multiplier
+        self.lap_time = base_lap + pit_time
+        self.total_time += self.lap_time
+        self.current_lap += 1
+        self.tyre_age += 1
+
+    def reset(self):
+        self.current_lap = 0
+        self.current_compound = self.starting_compound
+        self.tyre_age = 0
+        self.total_time = 0.0
+        self.num_pit_stops = 0
+        self.lap_time = 0.0
+        self.strategy = self.generate_strategy()
+        self.pit_laps = self.strategy["pit_laps"]
+        self.pit_compounds = self.strategy["compounds"]
+
+# Time Benchmark Opponent
+class BenchmarkOpponent(Opponent):
+    STRATEGIES = {
+        1: [  # Soft Start Options
+            # 1-Stop: Soft -> Medium
+            {"type": 1, "pit_laps": [25], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [24], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [26], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [23], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [27], "compounds": [1, 2]},
+            # 2-Stop: Soft -> Medium -> Soft (Fastest: ~4615s)
+            {"type": 2, "pit_laps": [17, 33], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [18, 33], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [18, 34], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [17, 34], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [17, 32], "compounds": [1, 2, 1]},
+        ],
+        2: [  # Medium Start Options
+            # 1-Stop: Medium -> Soft
+            {"type": 1, "pit_laps": [26], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [27], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [25], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [28], "compounds": [2, 1]},
+            # 2-Stop: Medium -> Soft -> Medium
+            {"type": 2, "pit_laps": [16, 34], "compounds": [2, 1, 2]},
+            {"type": 2, "pit_laps": [17, 35], "compounds": [2, 1, 2]},
+            {"type": 2, "pit_laps": [16, 35], "compounds": [2, 1, 2]},
+        ],
+        3: [  # Hard Start Options
+            # 1-Stop: Hard -> Soft
+            {"type": 1, "pit_laps": [25], "compounds": [3, 1]},
+            {"type": 1, "pit_laps": [26], "compounds": [3, 1]},
+            # 2-Stop: Mixed variations (H->M->S and H->S->M)
+            {"type": 2, "pit_laps": [12, 31], "compounds": [3, 2, 1]}, # H->M->S
+            {"type": 2, "pit_laps": [12, 32], "compounds": [3, 1, 2]}, # H->S->M
+        ]
+    }
+
+    def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
+        super().__init__(opponent_id, track, starting_compound)
+
+    def generate_strategy(self) -> Dict[str, Any]:
+        options = self.STRATEGIES[self.starting_compound]
+        return random.choice(options)
+    
+    def step(self, events: RaceEvents):
+        pit_time = 0.0
+        lap_speed_multiplier = events.get_lap_time_multiplier()
+        pit_loss_multiplier = events.get_pit_loss_multiplier()
+
+        if self.current_lap + 1 in self.pit_laps:
+            pit_index = self.pit_laps.index(self.current_lap + 1)
+            base_loss = self.track.pit_loss * pit_loss_multiplier
+            pit_delay = events.get_pit_delay()
+            pit_time = base_loss + pit_delay
+            self.current_compound = self.pit_compounds[pit_index + 1]
+            self.tyre_age = 0
+            self.num_pit_stops += 1
+        
+        compound_obj = compounds[self.current_compound]
+        base_lap = calculate_lap_time(compound_obj, self.tyre_age) * lap_speed_multiplier
+        self.lap_time = base_lap + pit_time
+        self.total_time += self.lap_time
+        self.current_lap += 1
+        self.tyre_age += 1
+
+    def reset(self):
+        self.current_lap = 0
+        self.current_compound = self.starting_compound
+        self.tyre_age = 0
+        self.total_time = 0.0
+        self.num_pit_stops = 0
+        self.lap_time = 0.0
+        self.strategy = self.generate_strategy()
+        self.pit_laps = self.strategy["pit_laps"]
+        self.pit_compounds = self.strategy["compounds"]

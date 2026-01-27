@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import Opponent, RandomOpponent
+from f1_gym.components.opponents import Opponent, RandomOpponent, HeuristicOpponent, BenchmarkOpponent
 from f1_gym.components.events import RaceEvents
 from f1_gym.config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
@@ -11,7 +11,7 @@ import random
 class F1OpponentEnv(gym.Env):
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = RandomOpponent, reward_config: RewardConfig = None):
+                 opponent_class: Type[Opponent] = BenchmarkOpponent, reward_config: RewardConfig = None):
         
         super().__init__()
 
@@ -222,8 +222,8 @@ class F1OpponentEnv(gym.Env):
 
         # Position Rewards
         reward += (prev_position - self.position) * config.position_gain_reward
-        # time_to_behind_norm = np.clip(self.calculate_time_to_behind() / 10.0, 0.0, 1.0)
-        # reward += time_to_behind_norm * 0.5
+        time_to_behind_norm = np.clip(self.calculate_time_to_behind() / 10.0, 0.0, 1.0)
+        reward += time_to_behind_norm * 0.5
 
         # Strategic Pit Stop Reward
         if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
