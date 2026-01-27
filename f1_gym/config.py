@@ -6,10 +6,9 @@ class RewardConfig:
 
     # Base Rewards
     lap_time_reward_weight: float = 1.0
-    benchmark_lap_time: float = 110.0
 
     position_gain_reward: float = 10.0
-    final_position_reward: float = 100.0
+    final_position_reward: float = 150.0
 
     # Pit Stop Strategy Window
     pit_window_start: int = 15

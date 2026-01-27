@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple
 from abc import ABC, abstractmethod
 
+# Abstract Opponent Class
 class Opponent(ABC):
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
         """Initialize Opponent with ID, track parameters, and starting compound"""

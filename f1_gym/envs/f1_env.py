@@ -218,7 +218,7 @@ class F1OpponentEnv(gym.Env):
         reward = 0.0
 
         # Speed Reward
-        reward += (config.benchmark_lap_time - self.lap_time) * config.lap_time_reward_weight
+        reward += -self.lap_time * config.lap_time_reward_weight
 
         # Position Rewards
         reward += (prev_position - self.position) * config.position_gain_reward
