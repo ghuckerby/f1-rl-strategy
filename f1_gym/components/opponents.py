@@ -37,6 +37,7 @@ class Opponent(ABC):
         pass
 
 # Random Opponent Class
+# Generates a random 1 or 2-stop strategy
 class RandomOpponent(Opponent):
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
         """Initialize Random Opponent with ID, track parameters, and starting compound"""
@@ -52,7 +53,6 @@ class RandomOpponent(Opponent):
         if strategy_type == 1:
             # Choose pit compound (ensuring it's different from start)
             pit_compound = random.choice([c for c in [1, 2, 3] if c != start_compound])
-            # Ensure valid range
             max_pit_lap = max(2, self.track.laps - 1)
             pit_lap = random.randint(2, max_pit_lap)
             
@@ -113,6 +113,7 @@ class RandomOpponent(Opponent):
         self.pit_compounds = self.strategy["compounds"]
 
 # Heuristic Opponent Class
+# Generates a simple heuristic-based 1-stop strategy (pit between 40% and 60% of race)
 class HeuristicOpponent(Opponent):
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
         super().__init__(opponent_id, track, starting_compound)
@@ -159,6 +160,7 @@ class HeuristicOpponent(Opponent):
         self.pit_compounds = self.strategy["compounds"]
 
 # Time Benchmark Opponent
+# Generates predefined optimal strategies from benchmarking based on starting compound
 class BenchmarkOpponent(Opponent):
     STRATEGIES = {
         1: [  # Soft Start Options
@@ -168,7 +170,7 @@ class BenchmarkOpponent(Opponent):
             {"type": 1, "pit_laps": [26], "compounds": [1, 2]},
             {"type": 1, "pit_laps": [23], "compounds": [1, 2]},
             {"type": 1, "pit_laps": [27], "compounds": [1, 2]},
-            # 2-Stop: Soft -> Medium -> Soft (Fastest: ~4615s)
+            # 2-Stop: Soft -> Medium -> Soft
             {"type": 2, "pit_laps": [17, 33], "compounds": [1, 2, 1]},
             {"type": 2, "pit_laps": [18, 33], "compounds": [1, 2, 1]},
             {"type": 2, "pit_laps": [18, 34], "compounds": [1, 2, 1]},
@@ -190,7 +192,7 @@ class BenchmarkOpponent(Opponent):
             # 1-Stop: Hard -> Soft
             {"type": 1, "pit_laps": [25], "compounds": [3, 1]},
             {"type": 1, "pit_laps": [26], "compounds": [3, 1]},
-            # 2-Stop: Mixed variations (H->M->S and H->S->M)
+            # 2-Stop: Mixed variations
             {"type": 2, "pit_laps": [12, 31], "compounds": [3, 2, 1]}, # H->M->S
             {"type": 2, "pit_laps": [12, 32], "compounds": [3, 1, 2]}, # H->S->M
         ]

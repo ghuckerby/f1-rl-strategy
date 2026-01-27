@@ -1,7 +1,6 @@
 
 import numpy as np
 import os
-from stable_baselines3 import PPO
 from stable_baselines3 import DQN
 from f1_gym.envs.f1_env import F1OpponentEnv
 
@@ -100,14 +99,13 @@ def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes
     model = DQN.load(model_path)
     env = F1OpponentEnv()
     
-    print(f"\nEvaluating model over {num_episodes} episodes...\n")
-    
     # Metrics for evaluation
     total_rewards = []
     total_positions = []
     
+    # Evaluation loop
+    print(f"\nEvaluating model over {num_episodes} episodes...\n")
     for episode in range(num_episodes):
-        # Episode run loop for evaluation
         obs, info = env.reset()
         episode_reward = 0
         done = False

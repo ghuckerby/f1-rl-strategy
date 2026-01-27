@@ -9,6 +9,11 @@ from typing import List, Dict, Any, Tuple, Type
 import random
 
 class F1OpponentEnv(gym.Env):
+    
+    # Observation normalisation constants
+    MAX_GAP_SECONDS = 10.0
+    MAX_POSITION = 20.0
+    NUM_COMPOUND_TYPES = 3.0
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
                  opponent_class: Type[Opponent] = BenchmarkOpponent, reward_config: RewardConfig = None):
@@ -31,19 +36,10 @@ class F1OpponentEnv(gym.Env):
         # Action Space: 0=Stay Out, 1=Soft, 2=Medium, 3=Hard
         self.action_space = spaces.Discrete(4)
 
-        # Observation Space:
-            # lap_fraction
-            # compound_one_hot
-            # tyre_age_norm
-            # tyre_wear_norm
-
-            # num_compounds_used (normalized)
-            # position
-            # time_to_leader
-            # time_to_ahead
-            # time_to_behind
-            # sc_active (0 or 1)
-        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+        # Observation Space definition
+        # Includes: lap_fraction, compound_one_hot (3), tyre_age_norm, tyre_wear_norm, 
+        # num_compounds_norm, position, 3x time gaps (ahead, leader, behind), sc_active
+        self.obs_size = 1 + 3 + 1 + 1 + 1 + 1 + 3 + 1
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(self.obs_size,), dtype=np.float32
         )
@@ -53,6 +49,9 @@ class F1OpponentEnv(gym.Env):
 
         # Opponents list
         self.opponents: List[Opponent] = []
+        
+        # Sorted Race Standings
+        self.race_standings = []
 
         self.reset()
 
@@ -70,12 +69,13 @@ class F1OpponentEnv(gym.Env):
         self.compounds_used = {self.starting_compound}  # Track starting compound
         self.events.reset()
         
-        # Initialize opponents
+        # Initialise opponents
         self.opponents = [
             self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
             for i in range(self.num_opponents)
         ]
 
+        self.update_race_standings()
         obs = self.make_obs()
 
         self.race_log = []
@@ -105,19 +105,19 @@ class F1OpponentEnv(gym.Env):
         tyre_wear_norm = np.clip(self.tyre_wear, 0.0, 1.0)
 
         # Calculate position and time gaps
-        position = self.position
+        # (Relies on update_race_standings being called)
         time_to_leader = self.calculate_time_to_leader()
         time_to_ahead = self.calculate_time_to_ahead()
         time_to_behind = self.calculate_time_to_behind()
 
-        # Normalise times (assuming max gap is 10 seconds)
-        time_to_leader_norm = np.clip(time_to_leader / 10.0, 0.0, 1.0)
-        time_to_ahead_norm = np.clip(time_to_ahead / 10.0, 0.0, 1.0)
-        time_to_behind_norm = np.clip(time_to_behind / 10.0, 0.0, 1.0)
-        position_norm = np.clip(position / 20.0, 0.0, 1.0)
+        # Normalise times
+        time_to_leader_norm = np.clip(time_to_leader / self.MAX_GAP_SECONDS, 0.0, 1.0)
+        time_to_ahead_norm = np.clip(time_to_ahead / self.MAX_GAP_SECONDS, 0.0, 1.0)
+        time_to_behind_norm = np.clip(time_to_behind / self.MAX_GAP_SECONDS, 0.0, 1.0)
+        position_norm = np.clip(self.position / self.MAX_POSITION, 0.0, 1.0)
         
-        # Number of different compounds used so far (normalised to 0-1)
-        num_compounds_norm = len(self.compounds_used) / 3.0
+        # Number of different compounds used so far (normalised)
+        num_compounds_norm = len(self.compounds_used) / self.NUM_COMPOUND_TYPES
 
         # Event flag
         sc_active = 1.0 if self.events.active_event == "safety_car" else 0.0
@@ -125,52 +125,31 @@ class F1OpponentEnv(gym.Env):
         obs = np.concatenate([
             np.array([lap_fraction], dtype=np.float32),
             compound_one_hot,
-            np.array([tyre_age_norm, tyre_wear_norm, num_compounds_norm, position_norm, time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm, sc_active], dtype=np.float32)
+            np.array([tyre_age_norm, tyre_wear_norm, num_compounds_norm, position_norm, 
+                      time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm, sc_active], dtype=np.float32)
         ])
         return obs
 
     def calculate_time_to_behind(self) -> float:
-        """Calculate time gap to the car behind"""
-
-        # Create list of (total_time, is_agent)
-        times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
-        times.append((self.total_time, -1))
-        times.sort()
-
-        agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
-
-        if agent_id == len(times) - 1:
+        # Find index of agent
+        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
+        if agent_idx == len(self.race_standings) - 1:
             return 0.0
         
-        # Returns the time difference to the car behind (or 0 if last)
-        return max(0.0, times[agent_id + 1][0] - self.total_time)
+        # Next car in list has higher total_time (is behind)
+        return max(0.0, self.race_standings[agent_idx + 1][0] - self.total_time)
     
     def calculate_time_to_leader(self) -> float:
-        """Calculate time gap to the race leader"""
-
-        # Find the minimum total time among all cars ahead
-        min_time = self.total_time
-        for opp in self.opponents:
-            if opp.current_lap >= self.current_lap:
-                min_time = min(min_time, opp.total_time)
-        
-        return max(0.0, self.total_time - min_time)
+        leader_time = self.race_standings[0][0]
+        return max(0.0, self.total_time - leader_time)
     
     def calculate_time_to_ahead(self) -> float:
-        """Calculate time gap to the car ahead"""
-
-        # Create list of (total_time, is_agent)
-        times = [(opp.total_time, opp.opponent_id) for opp in self.opponents]
-        times.append((self.total_time, -1))
-        times.sort()
-        
-        agent_id = next(i for i, (_, id) in enumerate(times) if id == -1)
-        
-        if agent_id == 0:
+        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
+        if agent_idx == 0:
             return 0.0
         
-        # Returns the time difference to the car ahead (or 0 if first)
-        return max(0.0, self.total_time - times[agent_id - 1][0])
+        # Previous car in list has lower total_time (is ahead)
+        return max(0.0, self.total_time - self.race_standings[agent_idx - 1][0])
     
     def step(self, action: int):
         """Perform one step in the environment with the given action"""
@@ -222,8 +201,6 @@ class F1OpponentEnv(gym.Env):
 
         # Position Rewards
         reward += (prev_position - self.position) * config.position_gain_reward
-        time_to_behind_norm = np.clip(self.calculate_time_to_behind() / 10.0, 0.0, 1.0)
-        reward += time_to_behind_norm * 0.5
 
         # Strategic Pit Stop Reward
         if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
@@ -285,20 +262,21 @@ class F1OpponentEnv(gym.Env):
             if opp.current_lap < self.track.laps:
                 opp.step(self.events)
 
-        self.update_positions()
+        self.update_race_standings()
 
-    def update_positions(self):
-        """Update the agent's position based on total times"""
-
-        # Create list of (total_time, is_agent)
-        times = [(opp.total_time, False) for opp in self.opponents]
-        times.append((self.total_time, True))
+    def update_race_standings(self):
+        """Update the internal race order and agent position"""
+        # Create list of (total_time, is_agent, id)
+        times = [(opp.total_time, False, opp.opponent_id) for opp in self.opponents]
+        times.append((self.total_time, True, -1))
         
-        # Sort by time (ascending - faster times are better)
+        # Sort by total_time
         times.sort(key=lambda x: x[0])
         
-        # Find agent position
-        self.position = next(i + 1 for i, (_, is_agent) in enumerate(times) if is_agent)
+        self.race_standings = times
+        
+        # Find agent position (1-based)
+        self.position = next(i + 1 for i, (_, is_agent, _) in enumerate(times) if is_agent)
     
     def logger_output(self):
         """Print the lap information to the console"""
