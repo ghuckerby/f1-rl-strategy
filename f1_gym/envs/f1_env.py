@@ -71,9 +71,24 @@ class F1OpponentEnv(gym.Env):
         
         # Initialise opponents
         self.opponents = [
-            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
+            self.opponent_class(i, self.track, starting_compound=1)
             for i in range(self.num_opponents)
         ]
+
+        # Randomise starting grid positions
+        # Each grid position adds a small time offset (0.5s per position)
+        grid_positions = list(range(self.num_opponents + 1))  # 0 to num_opponents
+        self.np_random.shuffle(grid_positions)
+        
+        # Assign agent's starting position time offset
+        agent_grid_pos = grid_positions[0]
+        self.total_time = agent_grid_pos * 0.5
+        self.position = agent_grid_pos + 1  # 1-based position
+        
+        # Assign opponents' starting position time offsets
+        for i, opp in enumerate(self.opponents):
+            opp_grid_pos = grid_positions[i + 1]
+            opp.total_time = opp_grid_pos * 0.5
 
         self.update_race_standings()
         obs = self.make_obs()
@@ -203,10 +218,11 @@ class F1OpponentEnv(gym.Env):
         # reward += (prev_position - self.position) * config.position_gain_reward
 
         # Strategic Pit Stop Reward
-        if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
-            reward += config.strategic_pit_reward
-            if action != self.current_compound:
-                reward += config.compound_change_reward
+        # if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
+        #     reward += config.strategic_pit_reward
+
+        if action != self.current_compound:
+            reward += config.compound_change_reward
 
         # Progressive Tyre Wear Penalty
         if self.tyre_wear > config.tyre_wear_threshold:
