@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import Opponent, RandomOpponent, HeuristicOpponent, BenchmarkOpponent
+from f1_gym.components.opponents import Opponent, RandomOpponent, HeuristicOpponent, BenchmarkOpponent, HardBenchmarkOpponent
 from f1_gym.components.events import RaceEvents
 from f1_gym.config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
@@ -16,7 +16,7 @@ class F1OpponentEnv(gym.Env):
     NUM_COMPOUND_TYPES = 3.0
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = BenchmarkOpponent, reward_config: RewardConfig = None):
+                 opponent_class: Type[Opponent] = HardBenchmarkOpponent, reward_config: RewardConfig = None):
         
         super().__init__()
 
@@ -75,8 +75,7 @@ class F1OpponentEnv(gym.Env):
             for i in range(self.num_opponents)
         ]
 
-        # Randomise starting grid positions
-        # Each grid position adds a small time offset (0.5s per position)
+        # Randomise starting grid positions + add time offset
         grid_positions = list(range(self.num_opponents + 1))  # 0 to num_opponents
         self.np_random.shuffle(grid_positions)
         
