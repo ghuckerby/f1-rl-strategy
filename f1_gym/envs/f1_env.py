@@ -11,7 +11,7 @@ import random
 class F1OpponentEnv(gym.Env):
     
     # Observation normalisation constants
-    MAX_GAP_SECONDS = 10.0
+    MAX_GAP_SECONDS = 60.0
     MAX_POSITION = 20.0
     NUM_COMPOUND_TYPES = 3.0
 
@@ -197,7 +197,7 @@ class F1OpponentEnv(gym.Env):
         reward = 0.0
 
         # Speed Reward
-        reward += -self.lap_time * config.lap_time_reward_weight
+        reward += (config.time_benchmark-self.lap_time) * config.lap_time_reward_weight
 
         # Position Rewards
         reward += (prev_position - self.position) * config.position_gain_reward

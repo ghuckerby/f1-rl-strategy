@@ -15,7 +15,7 @@ def train_f1_agent(
         # Steps before learning starts
         learning_starts=100_000,
         # Size of each training batch
-        batch_size=32,
+        batch_size=128,
         # Soft update coefficient
         tau=0.005,
         # How often to update the target network
@@ -122,7 +122,7 @@ def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes
         total_rewards.append(episode_reward)
         total_positions.append(env.position)
 
-        print(f"\nEpisode {episode + 1} completed.")
+        print(f"\nEpisode {episode + 1} completed. Reward: {episode_reward:.2f}, Final Position: {env.position}/20\n")
     
     print(f"\nReward Summary:\n")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")

@@ -6,6 +6,7 @@ class RewardConfig:
 
     # Base Rewards
     lap_time_reward_weight: float = 1.0
+    time_benchmark = 95.0
 
     position_gain_reward: float = 10.0
     final_position_reward: float = 150.0
