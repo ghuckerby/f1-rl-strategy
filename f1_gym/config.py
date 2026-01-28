@@ -8,8 +8,8 @@ class RewardConfig:
     lap_time_reward_weight: float = 1.0
     time_benchmark = 95.0
 
+    # Position Rewards
     position_gain_reward: float = 10.0
-    final_position_reward: float = 150.0
 
     # Pit Stop Strategy Window
     pit_window_start: int = 15
@@ -23,9 +23,9 @@ class RewardConfig:
 
     # Rule enforcement
     rule_penalty_threshold_one: int = 10
-    rule_penalty_one_value: float = -100.0
+    rule_penalty_one_value: float = -20.0
     rule_penalty_threshold_two: int = 20
-    rule_penalty_two_value: float = -50.0
+    rule_penalty_two_value: float = -10.0
 
     rule_penalty_violation: float = -1000.0
 

@@ -200,7 +200,7 @@ class F1OpponentEnv(gym.Env):
         reward += (config.time_benchmark-self.lap_time) * config.lap_time_reward_weight
 
         # Position Rewards
-        reward += (prev_position - self.position) * config.position_gain_reward
+        # reward += (prev_position - self.position) * config.position_gain_reward
 
         # Strategic Pit Stop Reward
         if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
