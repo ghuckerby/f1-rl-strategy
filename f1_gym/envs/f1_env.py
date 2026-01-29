@@ -16,7 +16,7 @@ class F1OpponentEnv(gym.Env):
     NUM_COMPOUND_TYPES = 3.0
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = HardBenchmarkOpponent, reward_config: RewardConfig = None):
+                 opponent_class: Type[Opponent] = BenchmarkOpponent, reward_config: RewardConfig = None):
         
         super().__init__()
 
@@ -71,7 +71,7 @@ class F1OpponentEnv(gym.Env):
         
         # Initialise opponents
         self.opponents = [
-            self.opponent_class(i, self.track, starting_compound=1)
+            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
             for i in range(self.num_opponents)
         ]
 
