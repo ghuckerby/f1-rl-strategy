@@ -3,6 +3,7 @@ import sys
 import os
 
 from f1_gym.agents.train_dqn import evaluate_model, train_f1_agent, test_env
+from f1_gym.agents.train_ppo import evaluate_ppo_model, train_f1_ppo
 from f1_gym.visualisation.visualise import visualise_model
 
 def main():
