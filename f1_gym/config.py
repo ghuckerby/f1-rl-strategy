@@ -11,21 +11,10 @@ class RewardConfig:
     # Position Rewards
     position_gain_reward: float = 10.0
 
-    # Pit Stop Strategy Window
-    pit_window_start: int = 15
-    pit_window_end: int = 40
-    strategic_pit_reward: float = 0.0
-    compound_change_reward: float = 5.0
-
     # Tyre Wear Penalty
     tyre_wear_threshold: float = 0.5
     tyre_wear_penalty: float = -10.0
 
-    # Rule enforcement
-    rule_penalty_threshold_one: int = 10
-    rule_penalty_one_value: float = -20.0
-    rule_penalty_threshold_two: int = 20
-    rule_penalty_two_value: float = -10.0
-
-    rule_penalty_violation: float = -1000.0
+    # Rule penalty big enough to offset any gains
+    rule_penalty_violation: float = -2000.0
 

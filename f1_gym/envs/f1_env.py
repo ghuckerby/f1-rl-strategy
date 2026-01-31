@@ -170,6 +170,9 @@ class F1OpponentEnv(gym.Env):
 
         self.events.step()
 
+        # Small position reward
+        # reward = (20 - self.position) * 0.1
+
         # Track previous position for reward shaping
         prev_position = self.position
         pitted = False
@@ -179,6 +182,7 @@ class F1OpponentEnv(gym.Env):
         self.update_agent(action)
         self.update_opponents()
 
+        # Calculate reward
         reward = self.calculate_reward(action, prev_position, pitted)
 
         terminated = self.current_lap >= self.track.laps
@@ -210,31 +214,18 @@ class F1OpponentEnv(gym.Env):
         config = self.reward_config
         reward = 0.0
 
-        # Speed Reward
-        reward += (config.time_benchmark-self.lap_time) * config.lap_time_reward_weight
+        # Lap Time Reward
+        reward += (config.time_benchmark - self.lap_time) * config.lap_time_reward_weight
 
-        # Position Rewards
-        # reward += (prev_position - self.position) * config.position_gain_reward
-
-        # Strategic Pit Stop Reward
-        # if pitted and (config.pit_window_start <= self.current_lap <= config.pit_window_end):
-        #     reward += config.strategic_pit_reward
-
-        if action != self.current_compound:
-            reward += config.compound_change_reward
+        # Position Reward
+        reward += (prev_position - self.position) * config.position_gain_reward
 
         # Progressive Tyre Wear Penalty
         if self.tyre_wear > config.tyre_wear_threshold:
             reward += config.tyre_wear_penalty * (self.tyre_wear ** 2)
 
-        # Rule Enforcement Penalties
-        laps_remaining = self.track.laps - self.current_lap
+        # Rule Enforcement Penalty
         if len(self.compounds_used) < 2:
-            if laps_remaining < config.rule_penalty_threshold_one:
-                reward += config.rule_penalty_one_value
-            elif laps_remaining < config.rule_penalty_threshold_two:
-                reward += config.rule_penalty_two_value
-            
             if self.current_lap >= self.track.laps:
                 reward += config.rule_penalty_violation
 

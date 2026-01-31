@@ -193,8 +193,8 @@ class BenchmarkOpponent(Opponent):
             {"type": 1, "pit_laps": [25], "compounds": [3, 1]},
             {"type": 1, "pit_laps": [26], "compounds": [3, 1]},
             # 2-Stop: Mixed variations
-            {"type": 2, "pit_laps": [12, 31], "compounds": [3, 2, 1]}, # H->M->S
-            {"type": 2, "pit_laps": [12, 32], "compounds": [3, 1, 2]}, # H->S->M
+            {"type": 2, "pit_laps": [12, 31], "compounds": [3, 2, 1]},
+            {"type": 2, "pit_laps": [12, 32], "compounds": [3, 1, 2]},
         ]
     }
 

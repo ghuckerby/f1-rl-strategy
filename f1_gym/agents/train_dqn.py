@@ -35,7 +35,6 @@ def train_f1_agent(
 ):
     """Train an RL agent to compete in the F1 opponent environment using a DQN algorithm"""
     
-    # WandB Initialization for tracking training
     run = wandb.init(
         project="f1-rl",
         name=f"f1_rl_dqn_{total_timesteps//1_000_000}M",
