@@ -10,3 +10,4 @@ f1_gym/models/checkpoints_ppo/
 f1_gym/models/best_ppo/
 
 __pycache__/
+.DS_Store/
