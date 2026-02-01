@@ -9,20 +9,22 @@ f1-rl-strategy/
 ├── main.py                     # Main entry point for CLI commands
 ├── requirements.txt            # Dependencies
 ├── f1_gym/                     # Main package
-│   ├── agents/                 # RL agent implementations and training logic
-│   │   └── train.py            # Training and evaluation functions
+│   ├── agents/                 # RL agent implementations
+│   │   └── train_dqn.py        # Training and evaluation using a DQN algorithm
+│   │   └── train_ppo.py        # Training and evaluation using a PPO algorithm
 │   ├── components/             # Simulation components
-│   │   ├── envs/               # Gymnasium environment definitions
-│   │   │   └── f1_env.py       # F1OpponentEnv class
-│   │   ├── tracks.py           # Track and tyre parameters
+│   │   ├── events.py           # Race event handling (Safety Cars, slow stops, etc.)
 │   │   ├── opponents.py        # Opponent AIs
-│   │   └── events.py           # Race event handling (Safety Cars etc.)
+│   │   └── parameters.py       # Tyre and track parameters
+│   ├── envs/                   # Gymnasium environments
+│   │   └── f1_env.py           # F1OpponentEnv class (main environment)
+│   ├── logs/                   # Saved Training Logs + Visualisations
 │   ├── models/                 # Saved RL models
 │   └── visualisation/          # Visualisation tools
 │       └── visualise.py        # Plotting race results
 ├── fastf1_cache/               # Cache for FastF1 data
 └── scripts/
-    └── fastf1_loader.py        # Script to load real F1 data for calibration
+    └── time_benchmark.py       # Script to calculate strategies for opponents
 ```
 
 ## Installation
@@ -48,27 +50,51 @@ The project is controlled with `main.py`.
 
 ### Training the Agent
 
-To train the RL agent, use the `train` command. You can specify the total number of timesteps for training.
+To train the RL agent, use the `train-dqn` or `train-ppo` commands. There are also additional parameter commands listed in `main.py`.
+
+**DQN:**
 
 ```
-python main.py train --timesteps 1000000
+python main.py train-dqn
+```
+
+**PPO:**
+
+```
+python main.py train-ppo
 ```
 
 ### Evaluating the Agent
 
-To evaluate a trained model, use the `evaluate` command.
+To evaluate a trained model, use the `evaluate-dqn` or `evaluate-ppo` commands.
 This executes the trained policy on a number of races and outputs a quantitative analysis.
 
+**DQN:**
+
 ```
-python main.py evaluate --model f1_gym/models/f1_rl_dqn.zip --episodes 100
+python main.py evaluate-dqn --episodes 1000
+```
+
+**PPO:**
+
+```
+python main.py evaluate-ppo --episodes 1000
 ```
 
 ### Visualising a Race
 
-To run a single race with the trained agent and generate a custom summary plot, use the `visualise` command.
+To run a single race with the trained agent and generate a custom summary plot, use the `visualise-dqn` or `visualise-ppo` commands.
+
+**DQN:**
 
 ```
-python main.py visualise --model f1_gym/models/f1_rl_dqn.zip --output f1_gym/logs/race_summary.png
+python main.py visualise-dqn --output f1_gym/logs/race_summary.png
+```
+
+**PPO:**
+
+```
+python main.py visualise-ppo --output f1_gym/logs/race_summary_ppo.png
 ```
 
 ### Testing the Environment
@@ -86,13 +112,15 @@ python main.py test
 A custom Gymnasium environment `F1OpponentEnv` that simulates an F1 race.
 
 - **Action Space**: Discrete(4) - 0: Stay Out, 1: Soft, 2: Medium, 3: Hard.
-- **Observation Space**: Includes lap fraction, current compound (one-hot), tyre age, tyre wear, position, and time gaps to other drivers.
+- **Observation Space**: Includes lap fraction, current compound (one-hot), tyre age, tyre wear, number of compounds used, position, time gaps (leader, ahead, behind), and safety car status.
 - **Reward**: Based on minimizing race time and improving position.
-
-### Data Loading (`scripts/fastf1_loader.py`)
-
-Uses the `fastf1` library to load real Formula 1 session data. It calculates tyre degradation parameters (base lap time and degradation rate) from actual race laps to calibrate the simulation.
 
 ### Opponents
 
-The environment includes `RandomOpponent` agents to simulate other drivers on the track, providing a competitive context for the RL agent.
+The environment supports various opponent types to simulate other drivers on the track. The default is `AdaptiveBenchmarkOpponent`. The available opponents are:
+
+- **RandomOpponent**: Makes random pit stop decisions.
+- **HeuristicOpponent**: Uses a simple heuristic strategy.
+- **BenchmarkOpponent**: Follows a pre-calculated optimal strategy.
+- **HardBenchmarkOpponent**: A more challenging version of the benchmark opponent.
+- **AdaptiveBenchmarkOpponent**: Adapts its strategy based on race conditions.
