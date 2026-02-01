@@ -37,6 +37,13 @@ def main():
     vis_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_dqn.zip", help="Path to the trained model")
     vis_parser.add_argument("--output", type=str, default="f1_gym/logs/race_summary.png", help="Output path for the plot")
 
+    # Visualise PPO command
+    vis_ppo_parser = subparsers.add_parser("visualise-ppo", help="Run a race and plot results (PPO)")
+    vis_ppo_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo.zip", help="Path to the trained model")
+    vis_ppo_parser.add_argument("--output", type=str, default="f1_gym/logs/race_summary_ppo.png", help="Output path for the plot")
+    vis_ppo_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_vecnormalize.pkl", 
+                                  help="Path to VecNormalize stats")
+
     # Test environment command
     test_parser = subparsers.add_parser("test", help="Test the F1 environment")
 
@@ -61,10 +68,13 @@ def main():
         )
 
     elif args.command == "visualise-dqn":
-        visualise_model(model_path=args.model, output_path=args.output)
+        visualise_model(model_path=args.model, output_path=args.output, algo="dqn")
 
     elif args.command == "test":
         test_env()
+
+    elif args.command == "visualise-ppo":
+        visualise_model(model_path=args.model, output_path=args.output, algo="ppo", vecnormalize_path=args.vecnormalize)
 
     else:
         parser.print_help()

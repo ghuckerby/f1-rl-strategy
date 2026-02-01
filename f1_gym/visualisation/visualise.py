@@ -4,8 +4,11 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import os
+import random
+import time
 
-from stable_baselines3 import DQN
+from stable_baselines3 import DQN, PPO
+from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv, VecEnv
 from f1_gym.envs.f1_env import F1OpponentEnv
 
 PATH = "f1_gym/models/f1_rl_dqn.zip"
@@ -19,45 +22,84 @@ COMPOUND_COLOURS = {
 NAMES = {1: 'Soft', 2: 'Medium', 3: 'Hard'}
 
 def run_race(env, model):
-    obs, info = env.reset()
-    done = False
+    base_env = env
+    normalizer = None
+    
+    # Handle VecNormalize wrapper
+    if isinstance(env, VecNormalize):
+        normalizer = env
+        env = env.venv
 
+    # Seeding for random safety car events
+    if isinstance(env, VecEnv):
+        base_env = env.envs[0]
+        seed = int(time.time() * 1000) % 2**32
+        random.seed(seed)
+        np.random.seed(seed)
+        
+        obs, info = base_env.reset()
+    else:
+        seed = int(time.time() * 1000) % 2**32
+        random.seed(seed)
+        np.random.seed(seed)
+        
+        obs, info = env.reset()
+        base_env = env
+
+    done = False
+    
     all_drivers_history = {'Agent': []}
-    for opp in env.opponents:
+    pit_stops = {'Agent': []}
+    for opp in base_env.opponents:
         all_drivers_history[f'Opponent {opp.opponent_id}'] = []
+        pit_stops[f'Opponent {opp.opponent_id}'] = []
     
     sc_history = []
 
     total_reward = 0
     while not done:
-        action, _states = model.predict(obs, deterministic=True)
-        obs, reward, terminated, truncated, info = env.step(int(action))
+
+        model_obs = obs
+        
+        if normalizer:
+            model_obs = normalizer.normalize_obs(obs)
+            
+        action, _states = model.predict(model_obs, deterministic=True)
+        obs, reward, terminated, truncated, info = base_env.step(int(action))
         done = terminated or truncated
+
         total_reward += reward
 
-        all_drivers_history['Agent'].append(env.current_compound)
-        for opp in env.opponents:
+        all_drivers_history['Agent'].append(base_env.current_compound)
+        if base_env.tyre_age == 1 and base_env.current_lap > 1:
+            pit_stops['Agent'].append(len(all_drivers_history['Agent']) - 1)
+
+        for opp in base_env.opponents:
             all_drivers_history[f'Opponent {opp.opponent_id}'].append(opp.current_compound)
+            if opp.tyre_age == 1 and opp.current_lap > 1:
+                pit_stops[f'Opponent {opp.opponent_id}'].append(len(all_drivers_history[f'Opponent {opp.opponent_id}']) - 1)
         
         sc_history.append(info.get('sc_active', False))
 
-    driver_times = [('Agent', env.total_time)]
-    for opp in env.opponents:
+    driver_times = [('Agent', base_env.total_time)]
+    for opp in base_env.opponents:
         driver_times.append((f'Opponent {opp.opponent_id}', opp.total_time))
 
     driver_times.sort(key=lambda x: x[1])
 
     return{
         'history': all_drivers_history,
+        'pit_stops': pit_stops,
         'sc_history': sc_history,
         'standings': driver_times,
-        'position': env.position,
+        'position': base_env.position,
         'total_reward': total_reward,
-        'laps': env.current_lap
+        'laps': base_env.current_lap
     }
 
 def plot_race(data, output_path):
     history = data['history']
+    pit_stops = data.get('pit_stops', {})
     sc_history = data.get('sc_history', [])
     standings = data['standings']
 
@@ -67,7 +109,7 @@ def plot_race(data, output_path):
     fig, ax = plt.subplots(figsize=(16, 10))
     ax.set_facecolor('#333333')
 
-    # Draw Safety Car windows
+    # Safety Car windows
     if sc_history:
         current_start = -1
         for i, is_sc in enumerate(sc_history):
@@ -81,6 +123,7 @@ def plot_race(data, output_path):
 
     for y_pos, (driver_name, total_time) in enumerate(reversed(standings)):
         compounds_used = history[driver_name]
+        driver_pits = pit_stops.get(driver_name, [])
         xranges = []
         colors = []
 
@@ -91,7 +134,8 @@ def plot_race(data, output_path):
         current_start = 0
 
         for lap_id, comp in enumerate(compounds_used):
-            if comp != current_compound:
+            is_pit = lap_id in driver_pits
+            if comp != current_compound or is_pit:
                 width = lap_id - current_start
                 xranges.append((current_start + 1, width))
                 colors.append(COMPOUND_COLOURS.get(current_compound, '#CCCCCC'))
@@ -103,7 +147,7 @@ def plot_race(data, output_path):
         xranges.append((current_start + 1, width))
         colors.append(COMPOUND_COLOURS.get(current_compound, '#CCCCCC'))
 
-        ax.broken_barh(xranges, (y_pos - 0.4, 0.8), facecolors=colors, edgecolor='black', linewidth=0.5)
+        ax.broken_barh(xranges, (y_pos - 0.4, 0.8), facecolors=colors, edgecolor='black', linewidth=1.0)
         ax.text(total_laps + 1, y_pos, f"{total_time:.2f}s", va='center', fontsize=14, color='white')
 
     ax.set_yticks(range(num_drivers))
@@ -126,19 +170,40 @@ def plot_race(data, output_path):
     print(f"Saved race summary plot to {output_path}")
     plt.close()
 
-def visualise_model(model_path, output_path):
+def visualise_model(model_path, output_path, algo="dqn", vecnormalize_path=None):
+
+    random.seed()
+    np.random.seed()
 
     if not os.path.exists(model_path):
         print(f"Error: Model not found at {model_path}")
         return
 
-    env = F1OpponentEnv()
-    model = DQN.load(model_path)
+    base_env = F1OpponentEnv()
+    
+    if algo.lower() == "ppo":
+        model = PPO.load(model_path)
+        env = DummyVecEnv([lambda: base_env])
+        if vecnormalize_path and os.path.exists(vecnormalize_path):
+            env = VecNormalize.load(vecnormalize_path, env)
+            env.training = False
+            env.norm_reward = False
+        else:
+            print("Warning: Running without normalisation.")
+    elif algo.lower() == "dqn":
+        model = DQN.load(model_path)
+        env = base_env
+    else:
+        print(f"Error: Unknown algorithm {algo}")
+        return
 
     race_data = run_race(env, model)
     pos = race_data['position']
     time = race_data['standings'][0][1] if pos == 1 else 0
     print(f"Final Position: {pos}, Total Time: {time:.2f}s")
+    
+    if isinstance(env, VecEnv):
+        env.close()
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plot_race(race_data, output_path)

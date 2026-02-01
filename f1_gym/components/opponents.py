@@ -1,5 +1,5 @@
 
-from f1_gym.components.tracks import TrackParams, TyreCompound, calculate_lap_time, compounds
+from f1_gym.components.parameters import TrackParams, TyreCompound, calculate_lap_time, compounds
 from f1_gym.components.events import RaceEvents
 import random
 from dataclasses import dataclass
@@ -287,4 +287,143 @@ class HardBenchmarkOpponent(Opponent):
         self.lap_time = 0.0
         self.strategy = self.generate_strategy()
         self.pit_laps = self.strategy["pit_laps"]
+        self.pit_compounds = self.strategy["compounds"]
+
+# Adapative Opponent
+# Uses predefined optimal strategies and adapts based on race conditions
+class AdaptiveBenchmarkOpponent(Opponent):
+    STRATEGIES = {
+        1: [
+            # 1-Stop: Soft -> Medium
+            {"type": 1, "pit_laps": [25], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [24], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [26], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [23], "compounds": [1, 2]},
+            {"type": 1, "pit_laps": [27], "compounds": [1, 2]},
+            # 2-Stop: Soft -> Medium -> Soft
+            {"type": 2, "pit_laps": [17, 33], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [18, 33], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [18, 34], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [17, 34], "compounds": [1, 2, 1]},
+            {"type": 2, "pit_laps": [17, 32], "compounds": [1, 2, 1]},
+        ],
+        2: [
+            # 1-Stop: Medium -> Soft
+            {"type": 1, "pit_laps": [26], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [27], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [25], "compounds": [2, 1]},
+            {"type": 1, "pit_laps": [28], "compounds": [2, 1]},
+            # 2-Stop: Medium -> Soft -> Medium
+            {"type": 2, "pit_laps": [16, 34], "compounds": [2, 1, 2]},
+            {"type": 2, "pit_laps": [17, 35], "compounds": [2, 1, 2]},
+            {"type": 2, "pit_laps": [16, 35], "compounds": [2, 1, 2]},
+        ],
+        3: [
+            # 1-Stop: Hard -> Soft
+            {"type": 1, "pit_laps": [25], "compounds": [3, 1]},
+            {"type": 1, "pit_laps": [26], "compounds": [3, 1]},
+            # 2-Stop: Mixed variations
+            {"type": 2, "pit_laps": [12, 31], "compounds": [3, 2, 1]},
+            {"type": 2, "pit_laps": [12, 32], "compounds": [3, 1, 2]},
+        ]
+    }
+
+    def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
+        super().__init__(opponent_id, track, starting_compound)
+        self.has_reacted = False
+
+    def generate_strategy(self) -> Dict[str, Any]:
+        options = self.STRATEGIES[self.starting_compound]
+        return random.choice(options)
+    
+    def sc_pit_decision(self, events: RaceEvents) -> bool:
+
+        # No pit if:
+            # Already reacted to this SC
+            # Exceed planned stops
+            # Early or late
+            # Fresh tyres
+        if self.has_reacted:
+            return False
+        if self.num_pit_stops >= self.strategy["type"]:
+            return False
+        if self.current_lap < 5 or self.current_lap > self.track.laps - 5:
+            return False
+        if self.tyre_age < 8:
+            return False
+        
+        # Pit if:
+            # Safety car is close to planned pit stop
+            # Tyres are old
+        next_stop = None
+        for pit_lap in self.pit_laps:
+            if pit_lap > self.current_lap:
+                next_stop = pit_lap
+                break
+        if next_stop and abs(next_stop - self.current_lap) <= 10:
+            return True
+        if self.tyre_age > 15:
+            return True
+        
+        return False
+    
+    def get_next_compound(self) -> int:
+        if self.num_pit_stops < len(self.pit_compounds) - 1:
+            return self.pit_compounds[self.num_pit_stops + 1]
+        
+        # Fallback
+        if self.current_compound == 1:
+            return 2
+        else:
+            return 1
+    
+    def step(self, events: RaceEvents):
+        pit_time = 0.0
+        lap_speed_multiplier = events.get_lap_time_multiplier()
+        pit_loss_multiplier = events.get_pit_loss_multiplier()
+        
+        is_safety_car = events.active_event == "safety_car"
+        should_pit = False
+        
+        # Reset SC react flag
+        if not is_safety_car:
+            self.has_reacted = False
+        
+        # Pit Schedule
+        if self.current_lap + 1 in self.pit_laps:
+            should_pit = True
+        # Safety Car Opportunistic Pit
+        elif is_safety_car and self.sc_pit_decision(events):
+            should_pit = True
+            self.has_reacted = True
+            # Update pit_laps to remove next planned stop
+            planned_stops = [p for p in self.pit_laps if p > self.current_lap]
+            if planned_stops:
+                self.pit_laps.remove(planned_stops[0])
+        
+        if should_pit:
+            base_loss = self.track.pit_loss * pit_loss_multiplier
+            pit_delay = events.get_pit_delay()
+            pit_time = base_loss + pit_delay
+            self.current_compound = self.get_next_compound()
+            self.tyre_age = 0
+            self.num_pit_stops += 1
+        
+        compound_obj = compounds[self.current_compound]
+        base_lap = calculate_lap_time(compound_obj, self.tyre_age) * lap_speed_multiplier
+        self.lap_time = base_lap + pit_time
+        self.total_time += self.lap_time
+        self.current_lap += 1
+        self.tyre_age += 1
+
+    def reset(self):
+        self.current_lap = 0
+        self.current_compound = self.starting_compound
+        self.tyre_age = 0
+        self.total_time = 0.0
+        self.num_pit_stops = 0
+        self.lap_time = 0.0
+        self.has_reacted = False
+        self.strategy = self.generate_strategy()
+        self.pit_laps = self.strategy["pit_laps"].copy()
         self.pit_compounds = self.strategy["compounds"]

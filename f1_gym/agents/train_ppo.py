@@ -5,10 +5,15 @@ from typing import Callable, Optional, Any, Dict
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.callbacks import BaseCallback, CallbackList, EvalCallback, CheckpointCallback
+from stable_baselines3.common.callbacks import (
+    BaseCallback,
+    EvalCallback,
+    CheckpointCallback,
+    CallbackList,
+)
 import torch.nn as nn
 
-from f1_gym.config import RewardConfig
+from f1_gym.reward_config import RewardConfig
 from f1_gym.envs.f1_env import F1OpponentEnv
 
 import wandb
@@ -24,7 +29,7 @@ def make_env(rank: int, seed: int = 0) -> Callable:
     set_random_seed(seed)
     return _init
 
-# Custom callback for F1 Metrics during training
+# Custom callback for F1 Metrics during training in wandb
 class F1MetricsCallback(BaseCallback):
 
     def __init__(self, verbose: int = 0):
@@ -343,6 +348,7 @@ def evaluate_ppo_model(
             done = dones[0]
             
             # Print lap-by-lap output
+            # (Not using logger_output because it didn't work properly)
             if verbose and infos[0].get("lap", 0) > 0:
                 row = infos[0]
                 compound_names = {1: "S", 2: "M", 3: "H"}

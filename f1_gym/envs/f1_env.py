@@ -1,10 +1,13 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from f1_gym.components.tracks import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import Opponent, RandomOpponent, HeuristicOpponent, BenchmarkOpponent, HardBenchmarkOpponent
+from f1_gym.components.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
+from f1_gym.components.opponents import (
+    Opponent, RandomOpponent, HeuristicOpponent,
+    BenchmarkOpponent, HardBenchmarkOpponent, AdaptiveBenchmarkOpponent
+)
 from f1_gym.components.events import RaceEvents
-from f1_gym.config import RewardConfig
+from f1_gym.reward_config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
 import random
 
@@ -16,7 +19,7 @@ class F1OpponentEnv(gym.Env):
     NUM_COMPOUND_TYPES = 3.0
 
     def __init__(self, track: TrackParams | None = None, starting_compound: TyreCompound = 1, 
-                 opponent_class: Type[Opponent] = BenchmarkOpponent, reward_config: RewardConfig = None):
+                 opponent_class: Type[Opponent] = AdaptiveBenchmarkOpponent, reward_config: RewardConfig = None):
         
         super().__init__()
 
@@ -71,20 +74,20 @@ class F1OpponentEnv(gym.Env):
         
         # Initialise opponents
         self.opponents = [
-            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
+            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2]))
             for i in range(self.num_opponents)
         ]
 
-        # Randomise starting grid positions + add time offset
-        grid_positions = list(range(self.num_opponents + 1))  # 0 to num_opponents
+        # Randomise starting grid positions + add time offset (0.5s per position)
+        grid_positions = list(range(self.num_opponents + 1))
         self.np_random.shuffle(grid_positions)
         
-        # Assign agent's starting position time offset
+        # Assign agent starting position time offset
         agent_grid_pos = grid_positions[0]
         self.total_time = agent_grid_pos * 0.5
-        self.position = agent_grid_pos + 1  # 1-based position
+        self.position = agent_grid_pos + 1
         
-        # Assign opponents' starting position time offsets
+        # Assign opponent starting position time offsets
         for i, opp in enumerate(self.opponents):
             opp_grid_pos = grid_positions[i + 1]
             opp.total_time = opp_grid_pos * 0.5
@@ -170,9 +173,6 @@ class F1OpponentEnv(gym.Env):
 
         self.events.step()
 
-        # Small position reward
-        # reward = (20 - self.position) * 0.1
-
         # Track previous position for reward shaping
         prev_position = self.position
         pitted = False
@@ -220,11 +220,7 @@ class F1OpponentEnv(gym.Env):
         # Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # Progressive Tyre Wear Penalty
-        if self.tyre_wear > config.tyre_wear_threshold:
-            reward += config.tyre_wear_penalty * (self.tyre_wear ** 2)
-
-        # Rule Enforcement Penalty
+        # Rule Enforcement Penalty (at least 2 compounds used)
         if len(self.compounds_used) < 2:
             if self.current_lap >= self.track.laps:
                 reward += config.rule_penalty_violation
@@ -271,17 +267,16 @@ class F1OpponentEnv(gym.Env):
         self.update_race_standings()
 
     def update_race_standings(self):
-        """Update the internal race order and agent position"""
+        """Update the race order and agent position"""
         # Create list of (total_time, is_agent, id)
         times = [(opp.total_time, False, opp.opponent_id) for opp in self.opponents]
         times.append((self.total_time, True, -1))
         
         # Sort by total_time
         times.sort(key=lambda x: x[0])
-        
         self.race_standings = times
         
-        # Find agent position (1-based)
+        # Find agent position
         self.position = next(i + 1 for i, (_, is_agent, _) in enumerate(times) if is_agent)
     
     def logger_output(self):

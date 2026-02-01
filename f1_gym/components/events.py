@@ -5,7 +5,7 @@ from typing import Optional
 @dataclass
 class EventParams:
     # Safety Car
-    sc_prob: float = 0.00           # Chance of safety car per lap
+    sc_prob: float = 0.05           # Chance of safety car per lap
     sc_speed_factor: float = 1.5    # Lap times are 1.5x slower under safety car
     sc_pit_factor: float = 0.5      # Time lost pitting is reduced
 
@@ -27,8 +27,6 @@ class RaceEvents:
         self.current_event_lap = 0
 
     def step(self):
-        """Advance event state by one lap"""
-        
         if self.active_event:
             self.current_event_lap += 1
             if self.current_event_lap >= self.event_duration:
@@ -40,8 +38,6 @@ class RaceEvents:
         return self.active_event
     
     def trigger_safety_car(self):
-        """Trigger a safety car event"""
-
         self.active_event = "safety_car"
         self.event_duration = random.randint(3, 6)  # Safety car lasts 3-6 laps
         self.current_event_lap = 0
