@@ -74,7 +74,7 @@ class F1OpponentEnv(gym.Env):
         
         # Initialise opponents
         self.opponents = [
-            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2]))
+            self.opponent_class(i, self.track, starting_compound=random.choice([1, 2, 3]))
             for i in range(self.num_opponents)
         ]
 
