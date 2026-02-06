@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import json
 import os
+import pandas as pd
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
@@ -93,7 +94,12 @@ class FastF1DataExtractor:
         return None
     
     def calculate_sc_probability(self, sc_events: List[SafetyCarEvent], total_laps: int) -> float:
-        return None
+        sc_starts = len(sc_events)
+
+        total_sc_laps = sum(e.duration for e in sc_events)
+        normal_laps = total_laps - total_sc_laps
+        
+        return sc_starts / normal_laps if normal_laps > 0 else 0.0
     
     def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
         return None
@@ -105,10 +111,70 @@ class FastF1DataExtractor:
         return None
     
     def get_track_parameters(self, session: ff1.core.Session) -> TrackParameters:
-        return None
+        laps = session.laps.copy()
+        total_laps = int(laps['LapNumber'].max())
+        track_name = session.event['EventName']
+        valid_laps = laps[
+            {laps['IsAccurate'] == True} &
+            {~laps['LapTime'].isna()}
+        ]
+
+        lap_times = valid_laps['LapTime'].dt.total_seconds()
+        fastest_lap = lap_times.min()
+        average_lap = lap_times.mean()
+
+        pit_loss, pit_loss_std = self.get_pit_loss(session)
+
+        return TrackParameters(
+            name=track_name,
+            total_laps=total_laps,
+            pit_loss_time=pit_loss,
+            pit_loss_std=pit_loss_std,
+            fastest_lap=fastest_lap,
+            average_lap=average_lap
+        )
     
     def get_race_config(self, year: int, gp: str, target_driver: str) -> RaceConfig:
-        return None
+        
+        print(f"Loading session: {year} {gp}")
+        session = self.load_session(year, gp, 'R')
+
+        print(f"Extracting track parameters")
+        track_params = self.get_track_parameters(session)
+        
+        print(f"Extracting tyre parameters")
+        tyre_params = self.get_tyre_parameters(session)
+
+        print(f"Extracting safety car events")
+        sc_events = self.get_safety_car_events(session)
+        sc_prob = self.calculate_sc_probability(sc_events, track_params.total_laps)
+
+        print(f"Extracting target driver strategies")
+        target_strategy = self.get_driver_strategy(session, target_driver)
+
+        all_drivers = session.laps['Driver'].unique()
+        opponent_strategies = []
+        for driver in all_drivers:
+            if driver != target_driver:
+                try:
+                    opponent_strategies.append(self.get_driver_strategy(session, driver))
+                except Exception as e:
+                    print(f"Error extracting strategy for driver {driver}: {e}")
+                    continue
+
+        opponent_strategies.sort(key=lambda x: x.finishing_position)
+
+        return RaceConfig(
+            year=year,
+            name=gp,
+            track=track_params,
+            tyre_params=tyre_params,
+            sc_events=sc_events,
+            sc_probability=sc_prob,
+            opponents=opponent_strategies,
+            target_driver=target_driver,
+            target_driver_strategy=target_strategy
+        )
     
     def get_season_config(
             self, year: int, 
@@ -116,4 +182,47 @@ class FastF1DataExtractor:
             test_races: Optional[List[str]] = None,
             exclude_wet_races: bool = True
     ) -> SeasonConfig:
+        
+        schedule = ff1.get_event_schedule(year)
+        race_events = schedule[schedule['EventFormat'] == 'Race']
+
+        all_races = []
+        completed_gps = []
+
+        for _, event in race_events.iterrows():
+            gp_name = event['EventName']
+
+            if pd.isna(event['Session5Date']):
+                continue
+
+            try:
+                print(f"Processing: {gp_name}")
+                race_config = self.get_race_config(year, gp_name, target_driver)
+
+                if exclude_wet_races:
+                    wet_used = any(
+                        4 in s.pit_compounds or 5 in s.pit_compounds
+                        for s in race_config.opponent_strategies
+                    )
+                    if wet_used:
+                        print(f"Excluding {gp_name} - wet race")
+                        continue
+
+                all_races.append(race_config)
+                completed_gps.append(gp_name)
+
+            except Exception as e:
+                print(f"Error processing {gp_name}: {e}")
+                continue
+        
+        train_races = [gp for gp in completed_gps if gp not in test_races]
+
+        return SeasonConfig(
+            year=year,
+            target_driver=target_driver,
+            races = all_races,
+            train_races = train_races,
+            test_races = test_races
+        )
+
         return None
