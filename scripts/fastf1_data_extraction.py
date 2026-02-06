@@ -1,12 +1,13 @@
 
 import fastf1 as ff1
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+import json
+import os
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Data Classes
-
 @dataclass
 class TyreParameters:
     compound: str
@@ -41,8 +42,27 @@ class TrackParameters:
     fastest_lap: float
     average_lap: float
 
-# Compound Mapping
+@dataclass
+class RaceConfig:
+    year: int
+    name: str
+    track: TrackParameters
+    tyre_params: Dict[int, TyreParameters]
+    sc_events: List[SafetyCarEvent]
+    sc_probability: float
+    opponents: List[OpponentStrategy]
+    target_driver: str
+    target_driver_strategy: OpponentStrategy
 
+@dataclass
+class SeasonConfig:
+    year: int
+    target_driver: str
+    races: List[RaceConfig]
+    train_races: List[str]
+    test_races: List[str]
+
+# Compound Mapping
 COMPOUND_MAP = {
     'SOFT': 1,
     'MEDIUM': 2,
@@ -52,7 +72,6 @@ COMPOUND_MAP = {
 }
 
 # Main Extractor Class
-
 class FastF1DataExtractor:
 
     def __init__(self, cache_dir: str = "fastf1_cache/cache"):
@@ -79,5 +98,22 @@ class FastF1DataExtractor:
     def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
         return None
     
-    def get_tyre_parameters(self, session: ff1.core.Session) -> TrackParameters:
+    def get_tyre_parameters(self, session: ff1.core.Session) -> Dict[int, TyreParameters]:
+        return None
+    
+    def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
+        return None
+    
+    def get_track_parameters(self, session: ff1.core.Session) -> TrackParameters:
+        return None
+    
+    def get_race_config(self, year: int, gp: str, target_driver: str) -> RaceConfig:
+        return None
+    
+    def get_season_config(
+            self, year: int, 
+            target_driver: str, 
+            test_races: Optional[List[str]] = None,
+            exclude_wet_races: bool = True
+    ) -> SeasonConfig:
         return None

@@ -16,5 +16,5 @@ class RewardConfig:
     tyre_wear_penalty: float = -10.0
 
     # Rule penalty big enough to offset any gains
-    rule_penalty_violation: float = -2000.0
+    rule_penalty_violation: float = -1500.0
 

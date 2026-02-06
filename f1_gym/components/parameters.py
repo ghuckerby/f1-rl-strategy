@@ -34,7 +34,7 @@ compounds = {
     3: TyreCompound(
         name="HARD",
         base_lap_time=92.0,
-        deg_rate=0.07,
+        deg_rate=0.05,
     )
 }
 
