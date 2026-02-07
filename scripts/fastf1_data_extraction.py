@@ -1,20 +1,24 @@
 
 import fastf1 as ff1
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, asdict
 import json
 import os
 import pandas as pd
+import numpy as np
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Data Classes
 @dataclass
 class TyreParameters:
-    compound: str
+    compound: str 
     compound_id: int
     base_lap_time: float
     deg_rate: float
+    avg_stint_length: float
+    max_stint_length: float
+    sample_count: int
 
 @dataclass
 class OpponentStrategy:
@@ -72,57 +76,253 @@ COMPOUND_MAP = {
     'WET': 5
 }
 
+def map_compound(compound_str: str) -> int:
+    return COMPOUND_MAP.get(compound_str.upper(), -1)
+
 # Main Extractor Class
 class FastF1DataExtractor:
 
     def __init__(self, cache_dir: str = "fastf1_cache/cache"):
+        # Enable FastF1 caching
         ff1.Cache.enable_cache(cache_dir)
         self.cache_dir = cache_dir
 
     def load_session(self, year: int, gp: str, session_type: str = 'R') -> ff1.core.Session:
+        # Load session and data
         session = ff1.get_session(year, gp, session_type)
         session.load(laps=True, telemetry=False, weather=True, messages=True)
         return session
     
     def get_tyre_parameters(self, session: ff1.core.Session) -> Dict[int, TyreParameters]:
-        return None
+        
+        laps = session.laps.copy()
+
+        # Filter invalid laps (pit and SC laps)
+        valid_laps = laps[
+            (laps['IsAccurate'] == True) &
+            (laps['PitInTime'].isna()) &
+            (laps['PitOutTime'].isna()) &
+            (~laps['LapTime'].isna())
+        ].copy()
+        valid_laps['LaptimeSec'] = valid_laps['LapTime'].dt.total_seconds()
+
+        tyre_params = {}
+        for compound_str in ['SOFT', 'MEDIUM', 'HARD']:
+            compound_id = COMPOUND_MAP[compound_str]
+            compound_laps = valid_laps[valid_laps['Compound'] == compound_str].copy()
+
+            if len(compound_laps) == 0:
+                continue
+
+            # Tyre Age
+            compound_laps = compound_laps.sort_values(['Driver', 'LapNumber'])
+            compound_laps['TyreAge'] = compound_laps.groupby(['Driver', 'Stint']).cumcount() + 1
+
+            if len(compound_laps) < 5:
+                continue
+
+            # Fit linear model: time = base + deg_rate * age
+            X = compound_laps['TyreAge'].values
+            y = compound_laps['LaptimeSec'].values
+
+            n = len(X)
+            sum_x = np.sum(X)
+            sum_y = np.sum(y)
+            sum_xx = np.sum(X * X)
+            sum_xy = np.sum(X * y)
+
+            denom = n * sum_xx - sum_x * sum_x
+            if abs(denom) < 1e-10:
+                continue
+            else:
+                deg_rate = (n * sum_xy - sum_x * sum_y) / denom
+                base_lap_time = (sum_y - deg_rate * sum_x) / n
+
+            # Deg rate
+            deg_rate = max(0.01, min(0.5, deg_rate))
+
+            # Stint statistics
+            stint_lengths = compound_laps.groupby(['Driver', 'Stint']).size()
+            avg_stint_length = stint_lengths.mean() if len(stint_lengths) > 0 else 0
+            max_stint_length = stint_lengths.max() if len(stint_lengths) > 0 else 0
+
+            tyre_params[compound_id] = TyreParameters(
+                compound=compound_str,
+                compound_id=compound_id,
+                base_lap_time=base_lap_time,
+                deg_rate=deg_rate,
+                avg_stint_length=avg_stint_length,
+                max_stint_length=max_stint_length,
+                sample_count = len(compound_laps)
+            )
     
     def get_pit_loss(self, session: ff1.core.Session) -> Tuple[float, float]:
-        return None
+        
+        laps = session.laps.copy()
+        
+        # Get pit laps
+        pit_laps = laps[~laps['PitInTime'].isna()].copy()
+        if len(pit_laps) == 0:
+            return 25.0, 5.0 # Default values before i come up with better option
+
+        # Pit stop duration
+        pit_losses = []
+        for _, lap in pit_laps.iterrows():
+            driver = lap['Driver']
+            lap_num = lap['LapNumber']
+            driver_laps = laps[
+                (laps['Driver'] == driver) & 
+                (laps['PitInTime'].isna()) &
+                (laps['PitOutTime'].isna()) &
+                (laps['IsAccurate'] == True) &
+                (~laps['LapTime'].isna())
+            ]
+            if len(driver_laps) < 3:
+                continue
+
+            # Normal lap time
+            med_lap = driver_laps['LapTime'].dt.total_seconds().median()
+
+            # Pit lap time
+            if pd.isna(lap['LapTime']):
+                continue
+            pit_lap_time = lap['LapTime'].total_seconds()
+
+            # Pit loss is difference
+            pit_loss = pit_lap_time - med_lap
+            pit_losses.append(pit_loss)
+        
+        if len(pit_losses) == 0:
+            return 25.0, 5.0 # Default values before i come up with better option
+        
+        return float(np.mean(pit_losses)), float(np.std(pit_losses))
     
     def get_safety_car_events(self, session: ff1.core.Session) -> List[SafetyCarEvent]:
-        return None
+        
+        events = []
+        laps = session.laps.copy()
+
+        if 'TrackStatus' in laps.columns:
+
+            sc_laps = set()
+
+            # Track Status Code: 1=Green, 2=Yellow, 4=SC, 5=Red, 6=VSC, 7=SC Ending
+            for _, lap in laps.iterrows():
+                status = lap.get('TrackStatus', '')
+                if pd.isna(status):
+                    continue
+
+                # Check SC status codes
+                status_str = str(status)
+                if '4' in status_str or '6' in status_str or '7' in status_str:
+                    sc_laps.add(lap['LapNumber'])
+
+            if sc_laps:
+                # Group SC laps into events
+                sc_laps = sorted(sc_laps)
+                sc_start = sc_laps[0]
+                sc_end = sc_laps[0]
+
+                for lap in sc_laps[1:]:
+                    if lap == sc_end + 1:
+                        sc_end = lap
+                    else:
+                        events.append(SafetyCarEvent(
+                            start_lap=sc_start, 
+                            end_lap=sc_end, 
+                            duration=sc_end - sc_start + 1))
+                        sc_start = lap
+                        sc_end = lap
+
+                events.append(SafetyCarEvent(
+                    start_lap=sc_start, 
+                    end_lap=sc_end, 
+                    duration=sc_end - sc_start + 1))
+                
+        return events
     
     def calculate_sc_probability(self, sc_events: List[SafetyCarEvent], total_laps: int) -> float:
+        # Laps under SC
         sc_starts = len(sc_events)
 
+        # Probability per lap
         total_sc_laps = sum(e.duration for e in sc_events)
         normal_laps = total_laps - total_sc_laps
         
         return sc_starts / normal_laps if normal_laps > 0 else 0.0
     
     def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
-        return None
-    
-    def get_tyre_parameters(self, session: ff1.core.Session) -> Dict[int, TyreParameters]:
-        return None
-    
-    def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
-        return None
+        
+        laps = session.laps.copy()
+        driver_laps = laps[laps['Driver'] == driver_code].sort_values('LapNumber')
+
+        if len(driver_laps) == 0:
+            raise ValueError(f"No laps found for driver {driver_code}")
+        
+        # Driver info
+        driver_info = session.get_driver(driver_code)
+        driver_name = f"{driver_info.get('FirstName', '')} {driver_info.get('LastName', '')}".strip()
+        if not driver_name:
+            driver_name = driver_code
+
+        # Starting compound
+        first_lap = driver_laps.iloc[0]
+        start_compound = map_compound(first_lap['Compound'])
+
+        # Pit laps and compounds
+        pit_laps = []
+        pit_compounds = [start_compound]
+
+        previous_compound = start_compound
+        for _, lap in driver_laps.iterrows():
+            current_compound = map_compound(lap['Compound'])
+            if current_compound != previous_compound:
+                pit_laps.append(lap['LapNumber'])
+                pit_compounds.append(current_compound)
+                previous_compound = current_compound
+
+        # Lap times
+        lap_times = []
+        for _, lap in driver_laps.iterrows():
+            if pd.isna(lap['LapTime']):
+                lap_times.append(0.0)
+            else:
+                lap_times.append(lap['LapTime'].total_seconds())
+
+        # Finishing position and total time
+        last_lap = driver_laps.iloc[-1]
+        finishing_position = int(last_lap['Position']) if not pd.isna(last_lap['Position']) else 20
+        total_time = sum(t for t in lap_times if t > 0)
+
+        return OpponentStrategy(
+            driver_code=driver_code,
+            driver_name=driver_name,
+            starting_compound=start_compound,
+            pit_laps=pit_laps,
+            pit_compounds=pit_compounds,
+            total_time=total_time,
+            finishing_position=finishing_position,
+            num_pit_stops=len(pit_laps),
+            lap_times=lap_times
+        )
+
     
     def get_track_parameters(self, session: ff1.core.Session) -> TrackParameters:
+
         laps = session.laps.copy()
         total_laps = int(laps['LapNumber'].max())
         track_name = session.event['EventName']
-        valid_laps = laps[
-            {laps['IsAccurate'] == True} &
-            {~laps['LapTime'].isna()}
-        ]
 
+        # Fastest and average lap times
+        valid_laps = laps[
+            (laps['IsAccurate'] == True) &
+            (~laps['LapTime'].isna())
+        ]
         lap_times = valid_laps['LapTime'].dt.total_seconds()
         fastest_lap = lap_times.min()
         average_lap = lap_times.mean()
 
+        # Pit loss and standard deviation
         pit_loss, pit_loss_std = self.get_pit_loss(session)
 
         return TrackParameters(
@@ -136,6 +336,7 @@ class FastF1DataExtractor:
     
     def get_race_config(self, year: int, gp: str, target_driver: str) -> RaceConfig:
         
+        # Load session and parameters
         print(f"Loading session: {year} {gp}")
         session = self.load_session(year, gp, 'R')
 
@@ -152,6 +353,7 @@ class FastF1DataExtractor:
         print(f"Extracting target driver strategies")
         target_strategy = self.get_driver_strategy(session, target_driver)
 
+        # Get all drivers and their strategies
         all_drivers = session.laps['Driver'].unique()
         opponent_strategies = []
         for driver in all_drivers:
@@ -162,6 +364,7 @@ class FastF1DataExtractor:
                     print(f"Error extracting strategy for driver {driver}: {e}")
                     continue
 
+        # sort opponents by finishing position
         opponent_strategies.sort(key=lambda x: x.finishing_position)
 
         return RaceConfig(
@@ -183,6 +386,7 @@ class FastF1DataExtractor:
             exclude_wet_races: bool = True
     ) -> SeasonConfig:
         
+        # Get full schedule and filter to race events
         schedule = ff1.get_event_schedule(year)
         race_events = schedule[schedule['EventFormat'] == 'Race']
 
@@ -192,6 +396,7 @@ class FastF1DataExtractor:
         for _, event in race_events.iterrows():
             gp_name = event['EventName']
 
+            # Skip races that haven't happened yet (no session date) or are missing data
             if pd.isna(event['Session5Date']):
                 continue
 
@@ -199,7 +404,9 @@ class FastF1DataExtractor:
                 print(f"Processing: {gp_name}")
                 race_config = self.get_race_config(year, gp_name, target_driver)
 
+                # Check for wet condition (optional)
                 if exclude_wet_races:
+                    # Check if any opponent used intermediates or wets in their strategy
                     wet_used = any(
                         4 in s.pit_compounds or 5 in s.pit_compounds
                         for s in race_config.opponent_strategies
@@ -215,6 +422,7 @@ class FastF1DataExtractor:
                 print(f"Error processing {gp_name}: {e}")
                 continue
         
+        # Determine train/test split
         train_races = [gp for gp in completed_gps if gp not in test_races]
 
         return SeasonConfig(
@@ -225,4 +433,46 @@ class FastF1DataExtractor:
             test_races = test_races
         )
 
-        return None
+    def save_race_config(self, race_config: RaceConfig, output_dir: str = "data/races"):
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"{race_config.year}_{race_config.name.replace(' ', '_')}.json"
+        filepath = os.path.join(output_dir, filename)
+        with open(filepath, 'w') as f:
+            json.dump(race_config.to_dict(), f, indent=2, default=str)
+
+        print(f"Saved race config to {filepath}")
+        return filepath
+    
+    def save_season_config(self, season_config: SeasonConfig, output_dir: str = "data/seasons"):
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"{season_config.year}_{season_config.target_driver}_season.json"
+        filepath = os.path.join(output_dir, filename)
+        
+        data = {
+            "year": season_config.year,
+            "target_driver": season_config.target_driver,
+            "train_races": season_config.train_races,
+            "test_races": season_config.test_races,
+        }
+
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2, default=str)
+
+        print(f"Saved season config to {filepath}")
+        return filepath
+    
+if __name__ == "__main__":
+    extractor = FastF1DataExtractor()
+
+    print("\nTest Single Race Config Extraction")
+    race_config = extractor.get_race_config(2024, 'British Grand Prix', 'VER')
+    extractor.save_race_config(race_config)
+
+    print("\nTest Full Season Config Extraction")
+    season_config = extractor.get_season_config(
+        year=2024, 
+        target_driver='VER', 
+        test_races=['British Grand Prix', 'Hungarian Grand Prix', 'Belgian Grand Prix',
+                    'Dutch Grand Prix', 'Italian Grand Prix']
+    )
+    extractor.save_season_config(season_config)
