@@ -10,13 +10,8 @@ import numpy as np
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Issues:
-# - Some pit loss values are abnormally low (3.82s) or high (1683s)
-#     Fix by finding the pit laps and calculating pit loss as difference between pit lap and normal lap
-#     where a normal lap is defined as a lap on the same compound, by the same driver, that is not a pit lap and is accurate
 # - Degradation rate is too simplistic (linear regression)
 # - Wet tyre races
-# - Improper handling of DNFs
-#     Some finishing times are too short and won't work in RL environment
 # - Max stint length is a string
 
 # Data Classes
@@ -167,8 +162,8 @@ class FastF1DataExtractor:
 
             # Stint statistics
             stint_lengths = compound_laps.groupby(['Driver', 'Stint']).size()
-            avg_stint_length = stint_lengths.mean() if len(stint_lengths) > 0 else 0
-            max_stint_length = stint_lengths.max() if len(stint_lengths) > 0 else 0
+            avg_stint_length = float(stint_lengths.mean()) if len(stint_lengths) > 0 else 0
+            max_stint_length = float(stint_lengths.max()) if len(stint_lengths) > 0 else 0
 
             tyre_params[compound_id] = TyreParameters(
                 compound=compound_str,
