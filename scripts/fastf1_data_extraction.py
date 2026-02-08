@@ -59,6 +59,19 @@ class RaceConfig:
     target_driver: str
     target_driver_strategy: OpponentStrategy
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "year": self.year,
+            "name": self.name,
+            "track": asdict(self.track),
+            "tyre_params": {k: asdict(v) for k, v in self.tyre_params.items()},
+            "sc_events": [asdict(e) for e in self.sc_events],
+            "sc_probability": self.sc_probability,
+            "opponents": [asdict(o) for o in self.opponents],
+            "target_driver": self.target_driver,
+            "target_driver_strategy": asdict(self.target_driver_strategy)
+        }
+
 @dataclass
 class SeasonConfig:
     year: int
@@ -155,6 +168,8 @@ class FastF1DataExtractor:
                 max_stint_length=max_stint_length,
                 sample_count = len(compound_laps)
             )
+
+        return tyre_params
     
     def get_pit_loss(self, session: ff1.core.Session) -> Tuple[float, float]:
         
@@ -386,9 +401,9 @@ class FastF1DataExtractor:
             exclude_wet_races: bool = True
     ) -> SeasonConfig:
         
-        # Get full schedule and filter to race events
+        # Get full schedule and filter to race events (exclude testing)
         schedule = ff1.get_event_schedule(year)
-        race_events = schedule[schedule['EventFormat'] == 'Race']
+        race_events = schedule[schedule['EventFormat'] != 'testing']
 
         all_races = []
         completed_gps = []
@@ -409,7 +424,7 @@ class FastF1DataExtractor:
                     # Check if any opponent used intermediates or wets in their strategy
                     wet_used = any(
                         4 in s.pit_compounds or 5 in s.pit_compounds
-                        for s in race_config.opponent_strategies
+                        for s in race_config.opponents
                     )
                     if wet_used:
                         print(f"Excluding {gp_name} - wet race")
@@ -453,6 +468,7 @@ class FastF1DataExtractor:
             "target_driver": season_config.target_driver,
             "train_races": season_config.train_races,
             "test_races": season_config.test_races,
+            "races": [race.to_dict() for race in season_config.races]
         }
 
         with open(filepath, 'w') as f:
@@ -465,14 +481,14 @@ if __name__ == "__main__":
     extractor = FastF1DataExtractor()
 
     print("\nTest Single Race Config Extraction")
-    race_config = extractor.get_race_config(2024, 'British Grand Prix', 'VER')
+    race_config = extractor.get_race_config(2024, 'British Grand Prix', 'HAM')
     extractor.save_race_config(race_config)
 
     print("\nTest Full Season Config Extraction")
     season_config = extractor.get_season_config(
         year=2024, 
-        target_driver='VER', 
-        test_races=['British Grand Prix', 'Hungarian Grand Prix', 'Belgian Grand Prix',
-                    'Dutch Grand Prix', 'Italian Grand Prix']
+        target_driver='HAM', 
+        test_races=['Miami Grand Prix', 'Austrian Grand Prix', 'Singapore Grand Prix',
+                    'Abu Dhabi Grand Prix', 'Italian Grand Prix']
     )
     extractor.save_season_config(season_config)
