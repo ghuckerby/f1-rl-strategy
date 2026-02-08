@@ -11,8 +11,7 @@ ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Issues:
 # - Degradation rate is too simplistic (linear regression)
-# - Wet tyre races
-# - Max stint length is a string
+# - Some tracks have excessive DNFS (not taking into account finishing a lap behind leader)
 
 # Data Classes
 @dataclass
@@ -348,7 +347,7 @@ class FastF1DataExtractor:
         # DNF detection: driver completed fewer laps than the race total
         total_race_laps = int(laps['LapNumber'].max())
         driver_completed_laps = int(driver_laps['LapNumber'].max())
-        dnf = driver_completed_laps < total_race_laps
+        dnf = driver_completed_laps < (total_race_laps - 2) # Allow for finishing a lap behind leader
 
         return OpponentStrategy(
             driver_code=driver_code,
