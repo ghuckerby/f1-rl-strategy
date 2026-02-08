@@ -4,8 +4,8 @@
   "track": {
     "name": "Miami Grand Prix",
     "total_laps": 57,
-    "pit_loss_time": 14.12192857142857,
-    "pit_loss_std": 11.925755804675655,
+    "pit_loss_time": 39.51214285714285,
+    "pit_loss_std": 23.414921424953246,
     "fastest_lap": 90.634,
     "average_lap": 93.01273661670237
   },
@@ -63,7 +63,7 @@
         2,
         3
       ],
-      "total_time": 5293.236,
+      "total_time": 5385.393,
       "finishing_position": 1,
       "num_pit_stops": 1,
       "lap_times": [
@@ -98,7 +98,7 @@
         133.364,
         138.015,
         117.513,
-        0.0,
+        92.157,
         91.157,
         91.289,
         91.391,
@@ -138,7 +138,7 @@
         2,
         3
       ],
-      "total_time": 5302.455,
+      "total_time": 5394.978,
       "finishing_position": 2,
       "num_pit_stops": 1,
       "lap_times": [
@@ -173,7 +173,7 @@
         146.519,
         124.42,
         101.077,
-        0.0,
+        92.523,
         92.227,
         91.611,
         91.409,
@@ -213,7 +213,7 @@
         2,
         3
       ],
-      "total_time": 5307.7300000000005,
+      "total_time": 5400.123,
       "finishing_position": 3,
       "num_pit_stops": 1,
       "lap_times": [
@@ -248,7 +248,7 @@
         145.594,
         125.271,
         102.14,
-        0.0,
+        92.393,
         92.787,
         91.499,
         91.449,
@@ -971,7 +971,7 @@
         3,
         2
       ],
-      "total_time": 5349.191,
+      "total_time": 5442.029,
       "finishing_position": 14,
       "num_pit_stops": 2,
       "lap_times": [
@@ -1006,7 +1006,7 @@
         142.836,
         125.882,
         102.757,
-        0.0,
+        92.838,
         93.248,
         92.143,
         91.372,
@@ -1425,7 +1425,7 @@
         2,
         3
       ],
-      "total_time": 2583.54,
+      "total_time": 2677.755,
       "finishing_position": 20,
       "num_pit_stops": 1,
       "lap_times": [
@@ -1456,7 +1456,7 @@
         93.802,
         94.215,
         93.555,
-        0.0
+        94.215
       ],
       "dnf": true
     }

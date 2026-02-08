@@ -17,4 +17,3 @@ class RewardConfig:
 
     # Rule penalty big enough to offset any gains
     rule_penalty_violation: float = -1500.0
-

@@ -10,10 +10,6 @@ import numpy as np
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Issues:
-# - Target driver appears in opponent list
-#     Fix by filtering out target driver from opponent strategies
-# - Some lap times are 0.0
-#     Fix by replacing with median lap time
 # - Some pit loss values are abnormally low (3.82s) or high (1683s)
 #     Fix by finding the pit laps and calculating pit loss as difference between pit lap and normal lap
 #     where a normal lap is defined as a lap on the same compound, by the same driver, that is not a pit lap and is accurate
@@ -189,43 +185,67 @@ class FastF1DataExtractor:
     def get_pit_loss(self, session: ff1.core.Session) -> Tuple[float, float]:
         
         laps = session.laps.copy()
-        
-        # Get pit laps
-        pit_laps = laps[~laps['PitInTime'].isna()].copy()
-        if len(pit_laps) == 0:
-            return 25.0, 5.0 # Default values before i come up with better option
+
+        # Get normal laps (exclude pits, SC, invalid laps)
+        normal_laps = laps[
+            (laps['IsAccurate'] == True) &
+            (laps['PitInTime'].isna()) &
+            (laps['PitOutTime'].isna()) &
+            (~laps['LapTime'].isna())
+        ].copy()
+        normal_laps['LaptimeSec'] = normal_laps['LapTime'].dt.total_seconds()
+
+        # Median for imputation of lap times
+        median_lap = normal_laps['LaptimeSec'].median()
 
         # Pit stop duration
         pit_losses = []
-        for _, lap in pit_laps.iterrows():
+        pit_in_laps = laps[~laps['PitInTime'].isna()].copy()
+        for _, lap in pit_in_laps.iterrows():
             driver = lap['Driver']
             lap_num = lap['LapNumber']
-            driver_laps = laps[
-                (laps['Driver'] == driver) & 
-                (laps['PitInTime'].isna()) &
-                (laps['PitOutTime'].isna()) &
-                (laps['IsAccurate'] == True) &
-                (~laps['LapTime'].isna())
-            ]
-            if len(driver_laps) < 3:
-                continue
-
-            # Normal lap time
-            med_lap = driver_laps['LapTime'].dt.total_seconds().median()
-
-            # Pit lap time
+            
             if pd.isna(lap['LapTime']):
                 continue
-            pit_lap_time = lap['LapTime'].total_seconds()
 
-            # Pit loss is difference
-            pit_loss = pit_lap_time - med_lap
-            pit_losses.append(pit_loss)
+            # Calculate pit loss
+            in_lap_time = lap['LapTime'].total_seconds()
+
+            # Skip outliers (caused by issues or crashes)
+            if in_lap_time > 3 * median_lap:
+                continue
+
+            driver_normal_laps = normal_laps[normal_laps['Driver'] == driver]
+            driver_median_lap = driver_normal_laps['LaptimeSec'].median()
+            out_lap = laps[
+                (laps['Driver'] == driver) &
+                (laps['LapNumber'] == lap_num + 1) &
+                (~laps['LapTime'].isna())
+            ]
+
+            # Calcualte pit loss as difference between pit lap and normal lap
+            # some tracks mean the out lap is the longer one, so factor in both
+            if len(out_lap) > 0:
+                out_lap_time = out_lap.iloc[0]['LapTime'].total_seconds()
+                pit_loss = (in_lap_time + out_lap_time) - 2 * driver_median_lap
+            else:
+                pit_loss = in_lap_time - driver_median_lap
+            
+            if pit_loss > 0:
+                pit_losses.append(pit_loss)
         
-        if len(pit_losses) == 0:
-            return 25.0, 5.0 # Default values before i come up with better option
+        # IQR outlier filtering
+        pit_losses = np.array(pit_losses)
+        q1, q3 = np.percentile(pit_losses, [25, 75])
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        filtered = pit_losses[(pit_losses >= lower) & (pit_losses <= upper)]
+
+        if len(filtered) == 0:
+            filtered = pit_losses
         
-        return float(np.mean(pit_losses)), float(np.std(pit_losses))
+        return float(np.mean(filtered)), float(np.std(filtered))
     
     def get_safety_car_events(self, session: ff1.core.Session) -> List[SafetyCarEvent]:
         
@@ -318,6 +338,12 @@ class FastF1DataExtractor:
                 lap_times.append(0.0)
             else:
                 lap_times.append(lap['LapTime'].total_seconds())
+
+        # Replace 0.0 lap times with median
+        valid_times = [t for t in lap_times if t > 0]
+        if valid_times:
+            median_time = float(f"{np.median(valid_times):.3f}")
+            lap_times = [t if t > 0 else median_time for t in lap_times]
 
         # Finishing position and total time
         last_lap = driver_laps.iloc[-1]
