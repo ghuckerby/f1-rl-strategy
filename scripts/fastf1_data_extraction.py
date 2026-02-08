@@ -9,6 +9,20 @@ import numpy as np
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
+# Issues:
+# - Target driver appears in opponent list
+#     Fix by filtering out target driver from opponent strategies
+# - Some lap times are 0.0
+#     Fix by replacing with median lap time
+# - Some pit loss values are abnormally low (3.82s) or high (1683s)
+#     Fix by finding the pit laps and calculating pit loss as difference between pit lap and normal lap
+#     where a normal lap is defined as a lap on the same compound, by the same driver, that is not a pit lap and is accurate
+# - Degradation rate is too simplistic (linear regression)
+# - Wet tyre races
+# - Improper handling of DNFs
+#     Some finishing times are too short and won't work in RL environment
+# - Max stint length is a string
+
 # Data Classes
 @dataclass
 class TyreParameters:
@@ -31,6 +45,7 @@ class OpponentStrategy:
     finishing_position: int
     num_pit_stops: int
     lap_times: List[float]
+    dnf: bool
 
 @dataclass
 class SafetyCarEvent:
@@ -309,6 +324,11 @@ class FastF1DataExtractor:
         finishing_position = int(last_lap['Position']) if not pd.isna(last_lap['Position']) else 20
         total_time = sum(t for t in lap_times if t > 0)
 
+        # DNF detection: driver completed fewer laps than the race total
+        total_race_laps = int(laps['LapNumber'].max())
+        driver_completed_laps = int(driver_laps['LapNumber'].max())
+        dnf = driver_completed_laps < total_race_laps
+
         return OpponentStrategy(
             driver_code=driver_code,
             driver_name=driver_name,
@@ -318,7 +338,8 @@ class FastF1DataExtractor:
             total_time=total_time,
             finishing_position=finishing_position,
             num_pit_stops=len(pit_laps),
-            lap_times=lap_times
+            lap_times=lap_times,
+            dnf=dnf
         )
 
     
@@ -481,7 +502,7 @@ if __name__ == "__main__":
     extractor = FastF1DataExtractor()
 
     print("\nTest Single Race Config Extraction")
-    race_config = extractor.get_race_config(2024, 'British Grand Prix', 'HAM')
+    race_config = extractor.get_race_config(2024, 'Miami Grand Prix', 'HAM')
     extractor.save_race_config(race_config)
 
     print("\nTest Full Season Config Extraction")
