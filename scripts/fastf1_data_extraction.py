@@ -533,3 +533,51 @@ if __name__ == "__main__":
                     'Abu Dhabi Grand Prix', 'Italian Grand Prix']
     )
     extractor.save_season_config(season_config)
+
+# Utility Functions for Environment Integration
+def create_opponent(
+    strategy: OpponentStrategy,
+    opponent_id: int
+) -> Dict[str, Any]:
+    return {
+        'opponent_id': opponent_id,
+        'driver_code': strategy.driver_code,
+        'driver_name': strategy.driver_name,
+        'starting_compound': strategy.starting_compound,
+        'pit_laps': strategy.pit_laps,
+        'pit_compounds': strategy.pit_compounds,
+        'lap_times': strategy.lap_times,
+        'total_time': strategy.total_time,
+        'finishing_position': strategy.finishing_position,
+    }
+
+def create_track_parameters(config: RaceConfig) -> Dict[str, Any]:
+    return {
+        'laps': config.track.total_laps,
+        'pit_loss_time': config.track.pit_loss_time,
+        'pit_loss_std': config.track.pit_loss_std,
+        'name': config.track.name,
+    }
+
+def create_tyre_parameters(config: RaceConfig) -> Dict[int, Dict[str, float]]:
+    compounds = {}
+    for compound_id, params in config.tyre_params.items():
+        compounds[compound_id] = {
+            'name': params.compound,
+            'base_lap_time': params.base_lap_time,
+            'deg_rate': params.deg_rate,
+        }
+    return compounds
+
+def create_event_parameters(config: RaceConfig) -> Dict[str, Any]:
+    return {
+        'sc_probability': config.sc_probability,
+        'sc_events': [
+            {
+                'start_lap': e.start_lap,
+                'end_lap': e.end_lap,
+                'duration': e.duration
+            }
+            for e in config.sc_events
+        ]
+    }
