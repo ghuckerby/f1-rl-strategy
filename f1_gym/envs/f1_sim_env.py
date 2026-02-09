@@ -1,12 +1,12 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from f1_gym.components.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import (
+from f1_gym.components.sim.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
+from f1_gym.components.sim.opponents import (
     Opponent, RandomOpponent, HeuristicOpponent,
     BenchmarkOpponent, HardBenchmarkOpponent, AdaptiveBenchmarkOpponent
 )
-from f1_gym.components.events import RaceEvents
+from f1_gym.components.sim.events import RaceEvents
 from f1_gym.reward_config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
 import random

@@ -11,7 +11,6 @@ ff1.Cache.enable_cache("fastf1_cache/cache")
 
 # Issues:
 # - Degradation rate is too simplistic (linear regression)
-# - Some tracks have excessive DNFS (not taking into account finishing a lap behind leader)
 
 # Data Classes
 @dataclass

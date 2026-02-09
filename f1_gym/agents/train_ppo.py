@@ -14,7 +14,7 @@ from stable_baselines3.common.callbacks import (
 import torch.nn as nn
 
 from f1_gym.reward_config import RewardConfig
-from f1_gym.envs.f1_env import F1OpponentEnv
+from f1_gym.envs.f1_sim_env import F1OpponentEnv
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
