@@ -2,7 +2,7 @@
 import numpy as np
 import os
 from stable_baselines3 import DQN
-from f1_gym.envs.f1_env import F1OpponentEnv
+from f1_gym.envs.f1_sim_env import F1OpponentEnv
 
 import wandb
 from wandb.integration.sb3 import WandbCallback

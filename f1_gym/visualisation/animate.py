@@ -10,7 +10,7 @@ import time
 
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv, VecEnv
-from f1_gym.envs.f1_env import F1OpponentEnv
+from f1_gym.envs.f1_sim_env import F1OpponentEnv
 
 PATH = "f1_gym/models/f1_rl_dqn.zip"
 OUTPUT = "f1_gym/logs/race_summary.png"

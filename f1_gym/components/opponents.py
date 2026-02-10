@@ -1,6 +1,6 @@
 
-from f1_gym.components.sim.parameters import TrackParams, TyreCompound, calculate_lap_time, compounds
-from f1_gym.components.sim.events import RaceEvents
+from f1_gym.components.parameters import TrackParams, TyreCompound, calculate_lap_time, compounds
+from f1_gym.components.events import RaceEvents
 import random
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple

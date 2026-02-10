@@ -1,12 +1,12 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from f1_gym.components.sim.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.sim.opponents import (
+from f1_gym.components.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
+from f1_gym.components.opponents import (
     Opponent, RandomOpponent, HeuristicOpponent,
     BenchmarkOpponent, HardBenchmarkOpponent, AdaptiveBenchmarkOpponent
 )
-from f1_gym.components.sim.events import RaceEvents
+from f1_gym.components.events import RaceEvents
 from f1_gym.reward_config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
 import random
@@ -146,27 +146,6 @@ class F1OpponentEnv(gym.Env):
                       time_to_leader_norm, time_to_ahead_norm, time_to_behind_norm, sc_active], dtype=np.float32)
         ])
         return obs
-
-    def calculate_time_to_behind(self) -> float:
-        # Find index of agent
-        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
-        if agent_idx == len(self.race_standings) - 1:
-            return 0.0
-        
-        # Next car in list has higher total_time (is behind)
-        return max(0.0, self.race_standings[agent_idx + 1][0] - self.total_time)
-    
-    def calculate_time_to_leader(self) -> float:
-        leader_time = self.race_standings[0][0]
-        return max(0.0, self.total_time - leader_time)
-    
-    def calculate_time_to_ahead(self) -> float:
-        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
-        if agent_idx == 0:
-            return 0.0
-        
-        # Previous car in list has lower total_time (is ahead)
-        return max(0.0, self.total_time - self.race_standings[agent_idx - 1][0])
     
     def step(self, action: int):
         """Perform one step in the environment with the given action"""
@@ -181,6 +160,7 @@ class F1OpponentEnv(gym.Env):
 
         self.update_agent(action)
         self.update_opponents()
+        self.update_race_standings()
 
         # Calculate reward
         reward = self.calculate_reward(action, prev_position, pitted)
@@ -205,7 +185,6 @@ class F1OpponentEnv(gym.Env):
             # Final position reward
             final_position_reward = (20 - self.position) * 100
             reward += final_position_reward
-
             info["episode_log"] = list(self.race_log)
         
         return self.make_obs(), reward, terminated, False, info
@@ -259,12 +238,8 @@ class F1OpponentEnv(gym.Env):
 
     def update_opponents(self):
         """Advance all opponents by one lap and update positions"""
-
         for opp in self.opponents:
-            if opp.current_lap < self.track.laps:
-                opp.step(self.events)
-
-        self.update_race_standings()
+            opp.step(self.events)
 
     def update_race_standings(self):
         """Update the race order and agent position"""
@@ -278,6 +253,27 @@ class F1OpponentEnv(gym.Env):
         
         # Find agent position
         self.position = next(i + 1 for i, (_, is_agent, _) in enumerate(times) if is_agent)
+
+    def calculate_time_to_leader(self) -> float:
+        leader_time = self.race_standings[0][0]
+        return max(0.0, self.total_time - leader_time)
+
+    def calculate_time_to_behind(self) -> float:
+        # Find index of agent
+        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
+        if agent_idx == len(self.race_standings) - 1:
+            return 0.0
+        
+        # Next car in list has higher total_time (is behind)
+        return max(0.0, self.race_standings[agent_idx + 1][0] - self.total_time)
+    
+    def calculate_time_to_ahead(self) -> float:
+        agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
+        if agent_idx == 0:
+            return 0.0
+        
+        # Previous car in list has lower total_time (is ahead)
+        return max(0.0, self.total_time - self.race_standings[agent_idx - 1][0])
     
     def logger_output(self):
         """Print the lap information to the console"""

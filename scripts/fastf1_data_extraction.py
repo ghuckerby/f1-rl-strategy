@@ -28,6 +28,7 @@ class OpponentStrategy:
     driver_code: str
     driver_name: str
     starting_compound: int
+    starting_position: int
     pit_laps: List[int]
     pit_compounds: List[int]
     total_time: float
@@ -308,9 +309,16 @@ class FastF1DataExtractor:
         if not driver_name:
             driver_name = driver_code
 
-        # Starting compound
+        # Starting compound and grid position
         first_lap = driver_laps.iloc[0]
         start_compound = map_compound(first_lap['Compound'])
+        
+        # Grid position (starting position)
+        if 'GridPosition' in first_lap and not pd.isna(first_lap['GridPosition']):
+            starting_position = int(first_lap['GridPosition'])
+        else:
+            # Fallback: estimate from first lap position
+            starting_position = int(first_lap['Position']) if not pd.isna(first_lap['Position']) else 20
 
         # Pit laps and compounds
         pit_laps = []
@@ -352,6 +360,7 @@ class FastF1DataExtractor:
             driver_code=driver_code,
             driver_name=driver_name,
             starting_compound=start_compound,
+            starting_position=starting_position,
             pit_laps=pit_laps,
             pit_compounds=pit_compounds,
             total_time=total_time,
@@ -543,6 +552,7 @@ def create_opponent(
         'driver_code': strategy.driver_code,
         'driver_name': strategy.driver_name,
         'starting_compound': strategy.starting_compound,
+        'starting_position': strategy.starting_position,
         'pit_laps': strategy.pit_laps,
         'pit_compounds': strategy.pit_compounds,
         'lap_times': strategy.lap_times,
