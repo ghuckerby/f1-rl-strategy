@@ -3,7 +3,7 @@ from gymnasium import spaces
 import numpy as np
 from typing import Dict, Any, List, Optional
 
-from f1_gym.components.real.parameters import RealRaceParams
+from f1_gym.components.real.parameters import RaceParams
 from f1_gym.components.real.opponents import RealOpponent
 from f1_gym.components.real.events import RealRaceEvents
 from f1_gym.reward_config import RewardConfig
@@ -22,7 +22,7 @@ class F1RealEnv(gym.Env):
         self.reward_config = reward_config or RewardConfig()
 
         # Components from data
-        self.params = RealRaceParams.from_race_data(race_data)
+        self.params = RaceParams.from_race_data(race_data)
         self.events = RealRaceEvents.from_race_data(race_data)
 
         # Target driver (agent replaces this driver)

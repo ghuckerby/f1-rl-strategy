@@ -2,7 +2,7 @@ import argparse
 import sys
 import os
 
-from f1_gym.agents.train_dqn import evaluate_model, train_f1_agent, test_env
+from f1_gym.agents.train_dqn import evaluate_model, train_f1_agent
 from f1_gym.agents.train_ppo import train_f1_ppo, evaluate_ppo_model
 from f1_gym.visualisation.visualise import visualise_model
 from f1_gym.visualisation.animate import animate_model
@@ -52,9 +52,6 @@ def main():
     animate_ppo_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_vecnormalize.pkl", 
                                   help="Path to VecNormalize stats")
 
-    # Test environment command
-    test_parser = subparsers.add_parser("test", help="Test the F1 environment")
-
     args = parser.parse_args()
 
     if args.command == "train-dqn":
@@ -77,9 +74,6 @@ def main():
 
     elif args.command == "visualise-dqn":
         visualise_model(model_path=args.model, output_path=args.output, algo="dqn")
-
-    elif args.command == "test":
-        test_env()
 
     elif args.command == "visualise-ppo":
         visualise_model(model_path=args.model, output_path=args.output, algo="ppo", vecnormalize_path=args.vecnormalize)

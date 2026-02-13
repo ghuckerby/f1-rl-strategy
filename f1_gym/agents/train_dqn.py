@@ -136,30 +136,3 @@ def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes
     print(f"Max Position: {np.max(total_positions):.2f}")
     
     env.close()
-
-def test_env():
-    """Simple test of the F1OpponentEnv environment"""
-    
-    print("Testing F1 Environment")
-    env = F1OpponentEnv()
-    obs, _ = env.reset()
-
-    print(f"Initial obs shape: {obs.shape}")
-    print(f"Action space: {env.action_space}")
-    print(f"Observation space: {env.observation_space}")
-
-    print("Running with 50 Random Actions")
-    total_reward = 0
-    for step in range(50):
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, info = env.step(action)
-        total_reward += reward
-
-        if (step + 1) % 10 == 0:
-            print(f"Step {step + 1}: Position {env.position}, "
-                  f"Lap {env.current_lap}, Accumulated Reward: {total_reward:.2f}")
-            
-        if terminated:
-            print(f"Race finished, Final Position: {env.position}/20")
-            print(f"Final Cumulative reward: {total_reward:.2f}")
-            break

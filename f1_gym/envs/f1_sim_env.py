@@ -1,12 +1,12 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from f1_gym.components.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
-from f1_gym.components.opponents import (
+from f1_gym.components.sim.parameters import compounds, TrackParams, TyreCompound, calculate_lap_time
+from f1_gym.components.sim.opponents import (
     Opponent, RandomOpponent, HeuristicOpponent,
     BenchmarkOpponent, HardBenchmarkOpponent, AdaptiveBenchmarkOpponent
 )
-from f1_gym.components.events import RaceEvents
+from f1_gym.components.sim.events import RaceEvents
 from f1_gym.reward_config import RewardConfig
 from typing import List, Dict, Any, Tuple, Type
 import random
@@ -94,20 +94,8 @@ class F1OpponentEnv(gym.Env):
 
         self.update_race_standings()
         obs = self.make_obs()
-
         self.race_log = []
-        info = {
-            "lap": self.current_lap,
-            "compound": int(self.current_compound),
-            "tyre_age": int(self.tyre_age),
-            "tyre_wear": float(self.tyre_wear),
-            "total_time": float(self.total_time),
-            "pitted": False,
-            "action": None,
-            "lap_time": None,
-            "position": self.position,
-            "sc_active": False,
-        }
+        info = self.make_info(pitted = False, action = None)
         self.race_log.append(info)
         
         return obs, info
@@ -147,6 +135,20 @@ class F1OpponentEnv(gym.Env):
         ])
         return obs
     
+    def make_info(self, pitted: bool, action: int) -> Dict[str, Any]:
+        return {
+            "lap": self.current_lap,
+            "compound": int(self.current_compound),
+            "tyre_age": int(self.tyre_age),
+            "tyre_wear": float(self.tyre_wear),
+            "total_time": float(self.total_time),
+            "pitted": bool(pitted),
+            "action": int(action) if action is not None else None,
+            "lap_time": float(self.lap_time) if self.lap_time > 0 else None,
+            "position": self.position,
+            "sc_active": bool(self.events.active_event),
+        }
+    
     def step(self, action: int):
         """Perform one step in the environment with the given action"""
 
@@ -164,21 +166,8 @@ class F1OpponentEnv(gym.Env):
 
         # Calculate reward
         reward = self.calculate_reward(action, prev_position, pitted)
-
         terminated = self.current_lap >= self.track.laps
-
-        info = {
-            "lap": int(self.current_lap),
-            "compound": int(self.current_compound),
-            "tyre_age": int(self.tyre_age),
-            "tyre_wear": float(self.tyre_wear),
-            "total_time": float(self.total_time),
-            "pitted": bool(pitted),
-            "action": int(action),
-            "lap_time": float(self.lap_time),
-            "position": self.position,
-            "sc_active": bool(self.events.active_event),
-        }
+        info = self.make_info(pitted, action)
         self.race_log.append(info)
 
         if terminated:

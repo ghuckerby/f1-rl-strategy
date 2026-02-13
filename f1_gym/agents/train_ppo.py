@@ -21,13 +21,13 @@ from wandb.integration.sb3 import WandbCallback
 
 # Helper for creating multiple environments
 def make_env(rank: int, seed: int = 0) -> Callable:
-    def _init() -> F1OpponentEnv:
+    def init() -> F1OpponentEnv:
         env = F1OpponentEnv()
         env = Monitor(env)
         env.reset(seed=seed + rank)
         return env
     set_random_seed(seed)
-    return _init
+    return init
 
 # Custom callback for F1 Metrics during training in wandb
 class F1MetricsCallback(BaseCallback):

@@ -157,7 +157,7 @@ class FastF1DataExtractor:
                 base_lap_time = (sum_y - deg_rate * sum_x) / n
 
             # Deg rate
-            deg_rate = max(0.01, min(0.5, deg_rate))
+            # deg_rate = max(0.001, min(0.5, deg_rate))
 
             # Stint statistics
             stint_lengths = compound_laps.groupby(['Driver', 'Stint']).size()
