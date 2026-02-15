@@ -15,14 +15,14 @@ class F1RealEnv(gym.Env):
     MAX_POSITION = 20.0
     NUM_COMPOUNDS = 3
 
-    def __init__(self, race_data: Dict[str, Any], reward_config: Optional[RewardConfig] = None):
+    def __init__(self, race_data: Dict[str, Any], reward_config: Optional[RewardConfig] = None, predictor: Optional[Any] = None):
         super().__init__()
 
         self.race_data = race_data
         self.reward_config = reward_config or RewardConfig()
 
         # Components from data
-        self.params = RaceParams.from_race_data(race_data)
+        self.params = RaceParams.from_race_data(race_data, predictor=predictor)
         self.events = RealRaceEvents.from_race_data(race_data)
 
         # Target driver (agent replaces this driver)

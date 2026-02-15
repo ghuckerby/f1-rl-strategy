@@ -68,7 +68,7 @@ class RealOpponent:
             driver_code=data['driver_code'],
             driver_name=data['driver_name'],
             starting_compound=data['starting_compound'],
-            starting_position=data('starting_position'),
+            starting_position=data['starting_position'],
             pit_laps=pit_laps,
             pit_compounds=data.get('pit_compounds', []),
             lap_times=data.get('lap_times', []),

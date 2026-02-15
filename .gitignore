@@ -8,6 +8,7 @@ f1_gym/logs/tensorboard/
 f1_gym/logs/eval/
 f1_gym/models/checkpoints_ppo/
 f1_gym/models/best_ppo/
+f1_gym/models/lap_predictors/
 
 __pycache__/
 .DS_Store/

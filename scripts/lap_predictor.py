@@ -3,12 +3,12 @@ import numpy as np
 import os
 from sklearn.ensemble import RandomForestRegressor
 import joblib
-from scripts.fastf1_data_extraction import FastF1DataExtractor, COMPOUND_MAP
 
 class LapPredictor:
     MODEL_DIR = "f1_gym/models/lap_predictors"
 
     def __init__(self):
+        from fastf1_data_extraction import FastF1DataExtractor
         self.extractor = FastF1DataExtractor()
         self.models: dict[str, RandomForestRegressor] = {}
 
@@ -20,6 +20,7 @@ class LapPredictor:
         return os.path.join(self.MODEL_DIR, f"{self.race_to_filename(race_name)}.pkl")
 
     def create_dataset(self, year: int, race_name: str) -> pd.DataFrame:
+        from fastf1_data_extraction import COMPOUND_MAP
         session = self.extractor.load_session(year, race_name)
         laps = session.laps.copy()
 
@@ -98,24 +99,27 @@ if __name__ == "__main__":
     predictor = LapPredictor()
 
     training_races = [
-        'Bahrain Grand Prix',
-        'Saudi Arabian Grand Prix',
-        'Australian Grand Prix',
-        'Japanese Grand Prix',
-        'Chinese Grand Prix',
-        'Miami Grand Prix',
-        'Emilia Romagna Grand Prix',
-        'Monaco Grand Prix',
-        'Canadian Grand Prix',
-        'Spanish Grand Prix',
-        'Austrian Grand Prix',
-        'British Grand Prix',
-        'Hungarian Grand Prix',
-        'Belgian Grand Prix',
-        'Dutch Grand Prix',
-        'Italian Grand Prix',
-        'Azerbaijan Grand Prix',
-        'Singapore Grand Prix',
+        "Bahrain Grand Prix",
+        "Saudi Arabian Grand Prix",
+        "Australian Grand Prix",
+        "Japanese Grand Prix",
+        "Chinese Grand Prix",
+        "Emilia Romagna Grand Prix",
+        "Monaco Grand Prix",
+        "Spanish Grand Prix",
+        "Hungarian Grand Prix",
+        "Belgian Grand Prix",
+        "Dutch Grand Prix",
+        "Azerbaijan Grand Prix",
+        "United States Grand Prix",
+        "Mexico City Grand Prix",
+        "Las Vegas Grand Prix",
+        "Qatar Grand Prix",
+        "Miami Grand Prix",
+        "Austrian Grand Prix",
+        "Singapore Grand Prix",
+        "Abu Dhabi Grand Prix",
+        "Italian Grand Prix"
     ]
 
     predictor.train_races(2024, training_races)

@@ -4,31 +4,17 @@ import sys
 import os
 import pandas as pd
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-from scripts.lap_predictor import LapPredictor
-
 @dataclass
 class TyreCompound:
     compound_id: int
     compound: str
-    base_lap_time: float
-    deg_rate: float
-    avg_stint_length: float
-    max_stint_length: float
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TyreCompound':
         return cls(
             compound_id=data['compound_id'],
             compound=data['compound'],
-            base_lap_time=data['base_lap_time'],
-            deg_rate=data['deg_rate'],
-            avg_stint_length=data['avg_stint_length'],
-            max_stint_length=data['max_stint_length']
         )
-    
-    def calculate_lap_time(self, age: int) -> float:
-        return self.base_lap_time + self.deg_rate * (age - 1)
 
 @dataclass
 class TrackParams:
@@ -54,36 +40,25 @@ class TrackParams:
 class RaceParams:
     track: TrackParams
     compounds: Dict[int, TyreCompound] = field(default_factory=dict)
-    predictor: Optional[Any] = field(init=False, default=None)
-
-    def __post_init__(self):
-        try:
-            self.predictor = LapPredictor.load_model(self.track.name)
-            print(f"Loaded lap predictor for {self.track.name}")
-        except FileNotFoundError:
-            print(f"No lap predictor found for {self.track.name}, using default formula.")
-        except Exception as e:
-            print(f"Error loading lap predictor: {e}")
+    predictor: Optional[Any] = None
 
     def get_compound(self, compound_id: int) -> TyreCompound:
         return self.compounds.get(compound_id)
     
     def calculate_lap_time(self, compound_id: int, age: int, current_lap: int = 1) -> float:
-        if self.predictor:
-            df = pd.DataFrame([{
-                'LapNumber': current_lap,
-                'TyreAge': age,
-                'CompoundID': compound_id
-            }])
-            return float(self.predictor.predict(df[['LapNumber', 'TyreAge', 'CompoundID']])[0])
+        df = pd.DataFrame([{
+            'LapNumber': current_lap,
+            'TyreAge': age,
+            'CompoundID': compound_id
+        }])
 
-        compound = self.get_compound(compound_id)
-        if compound:
-            return compound.calculate_lap_time(age)
-        return None
+        return float(self.predictor.predict(df[['LapNumber', 'TyreAge', 'CompoundID']])[0])
     
     @classmethod
-    def from_race_data(cls, race_data: Dict[str, Any]) -> 'RaceParams':
+    def from_race_data(cls, race_data: Dict[str, Any], predictor: Optional[Any] = None) -> 'RaceParams':
         track = TrackParams.from_dict(race_data['track'])
-        compounds = {compound['compound_id']: TyreCompound.from_dict(compound) for compound in race_data['compounds']}
-        return cls(track=track, compounds=compounds)
+        tyre_compounds = race_data.get('tyre_compounds', {})
+        compounds = {
+            int(k): TyreCompound.from_dict(v) for k, v in tyre_compounds.items()
+        }
+        return cls(track=track, compounds=compounds, predictor=predictor)
