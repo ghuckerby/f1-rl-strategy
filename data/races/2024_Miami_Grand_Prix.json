@@ -9,33 +9,18 @@
     "fastest_lap": 90.634,
     "average_lap": 93.01273661670237
   },
-  "tyre_params": {
-    "1": {
-      "compound": "SOFT",
-      "compound_id": 1,
-      "base_lap_time": 93.68679620034537,
-      "deg_rate": -0.04406239205526333,
-      "avg_stint_length": 12.333333333333334,
-      "max_stint_length": 25.0,
-      "sample_count": 37
-    },
+  "tyre_compounds": {
     "2": {
       "compound": "MEDIUM",
-      "compound_id": 2,
-      "base_lap_time": 93.68907337787216,
-      "deg_rate": -0.05220402723157013,
-      "avg_stint_length": 19.36,
-      "max_stint_length": 29.0,
-      "sample_count": 484
+      "compound_id": 2
     },
     "3": {
       "compound": "HARD",
-      "compound_id": 3,
-      "base_lap_time": 93.45048861869402,
-      "deg_rate": -0.042153366633394355,
-      "avg_stint_length": 21.736842105263158,
-      "max_stint_length": 37.0,
-      "sample_count": 413
+      "compound_id": 3
+    },
+    "1": {
+      "compound": "SOFT",
+      "compound_id": 1
     }
   },
   "sc_events": [

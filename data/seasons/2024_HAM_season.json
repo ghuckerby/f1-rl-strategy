@@ -38,24 +38,14 @@
         "fastest_lap": 92.608,
         "average_lap": 96.93123828125
       },
-      "tyre_params": {
+      "tyre_compounds": {
         "1": {
           "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 97.85003741971107,
-          "deg_rate": -0.07301380255446273,
-          "avg_stint_length": 11.72,
-          "max_stint_length": 20.0,
-          "sample_count": 293
+          "compound_id": 1
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 96.5337854691701,
-          "deg_rate": 0.02147916523307903,
-          "avg_stint_length": 19.756756756756758,
-          "max_stint_length": 29.0,
-          "sample_count": 731
+          "compound_id": 3
         }
       },
       "sc_events": [],
@@ -498,33 +488,18 @@
         "fastest_lap": 91.632,
         "average_lap": 94.35604289215685
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 94.1589853377009,
-          "deg_rate": -0.14370186658348688,
-          "avg_stint_length": 9.166666666666666,
-          "max_stint_length": 13.0,
-          "sample_count": 55
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 95.80299159544124,
-          "deg_rate": -0.06488993645200197,
-          "avg_stint_length": 11.235294117647058,
-          "max_stint_length": 36.0,
-          "sample_count": 191
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 95.66251689929874,
-          "deg_rate": -0.07103425871194788,
-          "avg_stint_length": 38.0,
-          "max_stint_length": 41.0,
-          "sample_count": 570
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -948,33 +923,18 @@
         "fastest_lap": 79.813,
         "average_lap": 82.4635332555426
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 84.40882378854617,
-          "deg_rate": -0.2084801762114249,
-          "avg_stint_length": 4.0,
-          "max_stint_length": 5.0,
-          "sample_count": 12
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 83.23103309870298,
-          "deg_rate": -0.01328766557866764,
-          "avg_stint_length": 9.25,
-          "max_stint_length": 22.0,
-          "sample_count": 148
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 82.14582318028135,
-          "deg_rate": 0.013504320684155743,
-          "avg_stint_length": 19.36111111111111,
-          "max_stint_length": 33.0,
-          "sample_count": 697
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -1405,33 +1365,18 @@
         "fastest_lap": 93.706,
         "average_lap": 97.71558471337579
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 101.80250028765384,
-          "deg_rate": -0.47697280711846923,
-          "avg_stint_length": 6.875,
-          "max_stint_length": 17.0,
-          "sample_count": 55
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 97.65018079082873,
-          "deg_rate": -0.007056114127260147,
-          "avg_stint_length": 13.647058823529411,
-          "max_stint_length": 22.0,
-          "sample_count": 232
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 98.05664633990385,
-          "deg_rate": -0.04148079352397656,
-          "avg_stint_length": 17.785714285714285,
-          "max_stint_length": 29.0,
-          "sample_count": 498
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -1850,33 +1795,18 @@
         "fastest_lap": 97.81,
         "average_lap": 101.520812335958
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 102.43409002770083,
-          "deg_rate": -0.07975484764543132,
-          "avg_stint_length": 9.333333333333334,
-          "max_stint_length": 15.0,
-          "sample_count": 56
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 102.06790411147603,
-          "deg_rate": 0.009137314516473339,
-          "avg_stint_length": 10.481481481481481,
-          "max_stint_length": 25.0,
-          "sample_count": 283
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 101.0703948682702,
-          "deg_rate": -0.0017016672228067117,
-          "avg_stint_length": 16.92,
-          "max_stint_length": 27.0,
-          "sample_count": 423
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -2330,33 +2260,18 @@
         "fastest_lap": 90.634,
         "average_lap": 93.01273661670237
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 93.68679620034537,
-          "deg_rate": -0.04406239205526333,
-          "avg_stint_length": 12.333333333333334,
-          "max_stint_length": 25.0,
-          "sample_count": 37
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 93.68907337787216,
-          "deg_rate": -0.05220402723157013,
-          "avg_stint_length": 19.36,
-          "max_stint_length": 29.0,
-          "sample_count": 484
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 93.45048861869402,
-          "deg_rate": -0.042153366633394355,
-          "avg_stint_length": 21.736842105263158,
-          "max_stint_length": 37.0,
-          "sample_count": 413
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -2816,33 +2731,18 @@
         "fastest_lap": 78.589,
         "average_lap": 81.96482989690722
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 83.18824660633484,
-          "deg_rate": -0.16244117647058612,
-          "avg_stint_length": 4.333333333333333,
-          "max_stint_length": 6.0,
-          "sample_count": 13
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 81.4801721567589,
-          "deg_rate": 0.041366025791921536,
-          "avg_stint_length": 19.458333333333332,
-          "max_stint_length": 35.0,
-          "sample_count": 467
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 81.5515695422295,
-          "deg_rate": 0.019456537833111475,
-          "avg_stint_length": 36.0,
-          "max_stint_length": 53.0,
-          "sample_count": 684
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -3301,33 +3201,18 @@
         "fastest_lap": 74.165,
         "average_lap": 79.5161609098568
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 77.97112547957894,
-          "deg_rate": 0.029157721764564177,
-          "avg_stint_length": 16.0,
-          "max_stint_length": 27.0,
-          "sample_count": 32
+      "tyre_compounds": {
+        "3": {
+          "compound": "HARD",
+          "compound_id": 3
         },
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 81.80397035265146,
-          "deg_rate": -0.06229967514286956,
-          "avg_stint_length": 48.875,
-          "max_stint_length": 76.0,
-          "sample_count": 391
+          "compound_id": 2
         },
-        "3": {
-          "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 80.90966759748395,
-          "deg_rate": -0.04440161933924487,
-          "avg_stint_length": 58.76923076923077,
-          "max_stint_length": 76.0,
-          "sample_count": 764
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -3789,33 +3674,18 @@
         "fastest_lap": 77.115,
         "average_lap": 80.61461940298507
       },
-      "tyre_params": {
+      "tyre_compounds": {
         "1": {
           "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 80.94978293963192,
-          "deg_rate": -0.020495169609019516,
-          "avg_stint_length": 15.3,
-          "max_stint_length": 23.0,
-          "sample_count": 459
+          "compound_id": 1
         },
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 80.6040302113783,
-          "deg_rate": 0.01619300728249297,
-          "avg_stint_length": 21.105263157894736,
-          "max_stint_length": 30.0,
-          "sample_count": 401
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 79.78051340818196,
-          "deg_rate": 0.029798064411453325,
-          "avg_stint_length": 26.615384615384617,
-          "max_stint_length": 36.0,
-          "sample_count": 346
+          "compound_id": 3
         }
       },
       "sc_events": [],
@@ -4288,33 +4158,18 @@
         "fastest_lap": 67.694,
         "average_lap": 71.09808116627265
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 69.47769999999998,
-          "deg_rate": -0.30319999999999253,
-          "avg_stint_length": 3.0,
-          "max_stint_length": 5.0,
-          "sample_count": 6
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 70.53900894523892,
-          "deg_rate": 0.05181819346543864,
-          "avg_stint_length": 17.41176470588235,
-          "max_stint_length": 26.0,
-          "sample_count": 592
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 70.73679688212555,
-          "deg_rate": 0.032044077763343455,
-          "avg_stint_length": 24.85185185185185,
-          "max_stint_length": 31.0,
-          "sample_count": 671
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -4799,33 +4654,18 @@
         "fastest_lap": 80.305,
         "average_lap": 84.39835566188198
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 84.881708198052,
-          "deg_rate": -0.002420860389620784,
-          "avg_stint_length": 5.666666666666667,
-          "max_stint_length": 12.0,
-          "sample_count": 34
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 83.951203891074,
-          "deg_rate": 0.0017063647145244977,
-          "avg_stint_length": 17.347826086956523,
-          "max_stint_length": 29.0,
-          "sample_count": 399
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 84.0789162939138,
-          "deg_rate": 0.03400576622068985,
-          "avg_stint_length": 27.366666666666667,
-          "max_stint_length": 40.0,
-          "sample_count": 821
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -5299,33 +5139,18 @@
         "fastest_lap": 104.701,
         "average_lap": 109.05980426098536
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 109.58251594969016,
-          "deg_rate": -0.04755860371855908,
-          "avg_stint_length": 14.25,
-          "max_stint_length": 28.0,
-          "sample_count": 57
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 110.32484358589737,
-          "deg_rate": -0.0525082946279872,
-          "avg_stint_length": 11.74074074074074,
-          "max_stint_length": 31.0,
-          "sample_count": 317
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 108.54498791225336,
-          "deg_rate": -0.018792687324275352,
-          "avg_stint_length": 16.391304347826086,
-          "max_stint_length": 33.0,
-          "sample_count": 377
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -5755,33 +5580,18 @@
         "fastest_lap": 73.817,
         "average_lap": 76.26420310192023
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 76.27077022217678,
-          "deg_rate": -0.0250591031063842,
-          "avg_stint_length": 17.333333333333332,
-          "max_stint_length": 23.0,
-          "sample_count": 104
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 76.89924072018988,
-          "deg_rate": 0.000292553160332552,
-          "avg_stint_length": 23.5,
-          "max_stint_length": 31.0,
-          "sample_count": 470
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 75.96207989008131,
-          "deg_rate": -0.0024886993853415543,
-          "avg_stint_length": 39.0,
-          "max_stint_length": 56.0,
-          "sample_count": 780
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -6261,24 +6071,18 @@
         "fastest_lap": 81.432,
         "average_lap": 84.80729881337648
       },
-      "tyre_params": {
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 85.64204267857623,
-          "deg_rate": -0.05267712034794356,
-          "avg_stint_length": 12.631578947368421,
-          "max_stint_length": 20.0,
-          "sample_count": 240
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 84.59524573175038,
-          "deg_rate": 0.004400556883173586,
-          "avg_stint_length": 22.866666666666667,
-          "max_stint_length": 41.0,
-          "sample_count": 686
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -6712,24 +6516,14 @@
         "fastest_lap": 105.255,
         "average_lap": 108.96723382519863
       },
-      "tyre_params": {
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 109.8723713221217,
-          "deg_rate": -0.10389440287848642,
-          "avg_stint_length": 11.625,
-          "max_stint_length": 17.0,
-          "sample_count": 186
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 109.45073562720852,
-          "deg_rate": -0.029214134559304897,
-          "avg_stint_length": 34.75,
-          "max_stint_length": 48.0,
-          "sample_count": 695
+          "compound_id": 3
         }
       },
       "sc_events": [
@@ -7186,33 +6980,18 @@
         "fastest_lap": 94.486,
         "average_lap": 98.60702524797114
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 98.21762393634712,
-          "deg_rate": -0.021429446802685215,
-          "avg_stint_length": 13.0,
-          "max_stint_length": 27.0,
-          "sample_count": 91
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 98.63254166335251,
-          "deg_rate": 0.021752563640983245,
-          "avg_stint_length": 26.63157894736842,
-          "max_stint_length": 36.0,
-          "sample_count": 506
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 98.17301928375318,
-          "deg_rate": 0.011612184468240977,
-          "avg_stint_length": 30.11764705882353,
-          "max_stint_length": 48.0,
-          "sample_count": 512
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -7666,24 +7445,18 @@
         "fastest_lap": 97.33,
         "average_lap": 100.2585144076841
       },
-      "tyre_params": {
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 100.95487903286694,
-          "deg_rate": -0.030456949191195765,
-          "avg_stint_length": 18.09090909090909,
-          "max_stint_length": 27.0,
-          "sample_count": 398
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 100.36047085368767,
-          "deg_rate": -0.02404455522030871,
-          "avg_stint_length": 28.210526315789473,
-          "max_stint_length": 39.0,
-          "sample_count": 536
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -8137,33 +7910,18 @@
         "fastest_lap": 78.336,
         "average_lap": 82.17011969839774
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 77.20033333333328,
-          "deg_rate": 1.8552500000000312,
-          "avg_stint_length": 2.0,
-          "max_stint_length": 4.0,
-          "sample_count": 6
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 82.17169108426192,
-          "deg_rate": 0.022391128084896388,
-          "avg_stint_length": 21.94736842105263,
-          "max_stint_length": 32.0,
-          "sample_count": 417
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 82.34219307186719,
-          "deg_rate": -0.016865180919703373,
-          "avg_stint_length": 37.529411764705884,
-          "max_stint_length": 44.0,
-          "sample_count": 638
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -8622,33 +8380,18 @@
         "fastest_lap": 95.48,
         "average_lap": 98.51816949152543
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 99.0957142857142,
-          "deg_rate": -0.4442857142856675,
-          "avg_stint_length": 2.5,
-          "max_stint_length": 3.0,
-          "sample_count": 5
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 99.21204825409906,
-          "deg_rate": 0.07857393517491991,
-          "avg_stint_length": 9.526315789473685,
-          "max_stint_length": 16.0,
-          "sample_count": 181
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 98.29495384484406,
-          "deg_rate": -0.009407766178073205,
-          "avg_stint_length": 17.77777777777778,
-          "max_stint_length": 32.0,
-          "sample_count": 640
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [],
@@ -9078,33 +8821,18 @@
         "fastest_lap": 82.384,
         "average_lap": 86.12469456066945
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 86.75889418512656,
-          "deg_rate": 0.04531586234177375,
-          "avg_stint_length": 14.0,
-          "max_stint_length": 15.0,
-          "sample_count": 42
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 87.83050742089,
-          "deg_rate": -0.09352129805646561,
-          "avg_stint_length": 25.105263157894736,
-          "max_stint_length": 30.0,
-          "sample_count": 477
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 85.44657929739601,
-          "deg_rate": -0.053917871538329325,
-          "avg_stint_length": 11.647058823529411,
-          "max_stint_length": 26.0,
-          "sample_count": 198
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [
@@ -9539,33 +9267,18 @@
         "fastest_lap": 85.637,
         "average_lap": 89.4974049945711
       },
-      "tyre_params": {
-        "1": {
-          "compound": "SOFT",
-          "compound_id": 1,
-          "base_lap_time": 87.88990103801119,
-          "deg_rate": 0.13446344797015033,
-          "avg_stint_length": 12.0,
-          "max_stint_length": 23.0,
-          "sample_count": 24
-        },
+      "tyre_compounds": {
         "2": {
           "compound": "MEDIUM",
-          "compound_id": 2,
-          "base_lap_time": 90.00471218768907,
-          "deg_rate": -0.01491505938158209,
-          "avg_stint_length": 14.411764705882353,
-          "max_stint_length": 25.0,
-          "sample_count": 245
+          "compound_id": 2
         },
         "3": {
           "compound": "HARD",
-          "compound_id": 3,
-          "base_lap_time": 89.34469331706455,
-          "deg_rate": 0.0010502299330785226,
-          "avg_stint_length": 27.166666666666668,
-          "max_stint_length": 44.0,
-          "sample_count": 652
+          "compound_id": 3
+        },
+        "1": {
+          "compound": "SOFT",
+          "compound_id": 1
         }
       },
       "sc_events": [

@@ -1,5 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+import sys
+import os
+import pandas as pd
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+from scripts.lap_predictor import LapPredictor
 
 @dataclass
 class TyreCompound:
@@ -48,11 +54,29 @@ class TrackParams:
 class RaceParams:
     track: TrackParams
     compounds: Dict[int, TyreCompound] = field(default_factory=dict)
+    predictor: Optional[Any] = field(init=False, default=None)
+
+    def __post_init__(self):
+        try:
+            self.predictor = LapPredictor.load_model(self.track.name)
+            print(f"Loaded lap predictor for {self.track.name}")
+        except FileNotFoundError:
+            print(f"No lap predictor found for {self.track.name}, using default formula.")
+        except Exception as e:
+            print(f"Error loading lap predictor: {e}")
 
     def get_compound(self, compound_id: int) -> TyreCompound:
         return self.compounds.get(compound_id)
     
-    def calculate_lap_time(self, compound_id: int, age: int) -> float:
+    def calculate_lap_time(self, compound_id: int, age: int, current_lap: int = 1) -> float:
+        if self.predictor:
+            df = pd.DataFrame([{
+                'LapNumber': current_lap,
+                'TyreAge': age,
+                'CompoundID': compound_id
+            }])
+            return float(self.predictor.predict(df[['LapNumber', 'TyreAge', 'CompoundID']])[0])
+
         compound = self.get_compound(compound_id)
         if compound:
             return compound.calculate_lap_time(age)

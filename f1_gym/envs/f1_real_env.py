@@ -209,11 +209,15 @@ class F1RealEnv(gym.Env):
             self.tyre_age = 0
 
         # Calculate lap time
-        compound = self.params.get_compound(self.current_compound)
-        if compound:
-            base_lap = compound.calculate_lap_time(self.tyre_age) * lap_speed_multiplier
-        else:
-            base_lap = self.params.track.average_lap * lap_speed_multiplier
+        base_lap = self.params.calculate_lap_time(
+            self.current_compound, 
+            self.tyre_age, 
+            self.current_lap + 1
+        )
+        if base_lap is None:
+             base_lap = self.params.track.average_lap
+        
+        base_lap *= lap_speed_multiplier
         
         # Lap time and state updates
         self.lap_time = base_lap + pit_time

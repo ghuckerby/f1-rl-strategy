@@ -9,19 +9,11 @@ import numpy as np
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
-# Issues:
-# - Degradation rate is too simplistic (linear regression)
-
 # Data Classes
 @dataclass
-class TyreParameters:
+class TyreCompound:
     compound: str 
     compound_id: int
-    base_lap_time: float
-    deg_rate: float
-    avg_stint_length: float
-    max_stint_length: float
-    sample_count: int
 
 @dataclass
 class OpponentStrategy:
@@ -57,7 +49,7 @@ class RaceConfig:
     year: int
     name: str
     track: TrackParameters
-    tyre_params: Dict[int, TyreParameters]
+    tyre_compounds: Dict[int, TyreCompound]
     sc_events: List[SafetyCarEvent]
     sc_probability: float
     opponents: List[OpponentStrategy]
@@ -69,7 +61,7 @@ class RaceConfig:
             "year": self.year,
             "name": self.name,
             "track": asdict(self.track),
-            "tyre_params": {k: asdict(v) for k, v in self.tyre_params.items()},
+            "tyre_compounds": {k: asdict(v) for k, v in self.tyre_compounds.items()},
             "sc_events": [asdict(e) for e in self.sc_events],
             "sc_probability": self.sc_probability,
             "opponents": [asdict(o) for o in self.opponents],
@@ -111,8 +103,7 @@ class FastF1DataExtractor:
         session.load(laps=True, telemetry=False, weather=True, messages=True)
         return session
     
-    def get_tyre_parameters(self, session: ff1.core.Session) -> Dict[int, TyreParameters]:
-        
+    def get_tyre_compounds(self, session: ff1.core.Session) -> Dict[int, TyreCompound]:
         laps = session.laps.copy()
 
         # Filter invalid laps (pit and SC laps)
@@ -122,59 +113,21 @@ class FastF1DataExtractor:
             (laps['PitOutTime'].isna()) &
             (~laps['LapTime'].isna())
         ].copy()
-        valid_laps['LaptimeSec'] = valid_laps['LapTime'].dt.total_seconds()
-
-        tyre_params = {}
-        for compound_str in ['SOFT', 'MEDIUM', 'HARD']:
-            compound_id = COMPOUND_MAP[compound_str]
-            compound_laps = valid_laps[valid_laps['Compound'] == compound_str].copy()
-
-            if len(compound_laps) == 0:
+        
+        # Get compounds used in the race
+        used_compounds = valid_laps['Compound'].unique()
+        tyre_compounds = {}
+        for compound_str in used_compounds:
+            if pd.isna(compound_str) or compound_str.upper() not in COMPOUND_MAP:
                 continue
 
-            # Tyre Age
-            compound_laps = compound_laps.sort_values(['Driver', 'LapNumber'])
-            compound_laps['TyreAge'] = compound_laps.groupby(['Driver', 'Stint']).cumcount() + 1
-
-            if len(compound_laps) < 5:
-                continue
-
-            # Fit linear model: time = base + deg_rate * age
-            X = compound_laps['TyreAge'].values
-            y = compound_laps['LaptimeSec'].values
-
-            n = len(X)
-            sum_x = np.sum(X)
-            sum_y = np.sum(y)
-            sum_xx = np.sum(X * X)
-            sum_xy = np.sum(X * y)
-
-            denom = n * sum_xx - sum_x * sum_x
-            if abs(denom) < 1e-10:
-                continue
-            else:
-                deg_rate = (n * sum_xy - sum_x * sum_y) / denom
-                base_lap_time = (sum_y - deg_rate * sum_x) / n
-
-            # Deg rate
-            # deg_rate = max(0.001, min(0.5, deg_rate))
-
-            # Stint statistics
-            stint_lengths = compound_laps.groupby(['Driver', 'Stint']).size()
-            avg_stint_length = float(stint_lengths.mean()) if len(stint_lengths) > 0 else 0
-            max_stint_length = float(stint_lengths.max()) if len(stint_lengths) > 0 else 0
-
-            tyre_params[compound_id] = TyreParameters(
+            compound_id = COMPOUND_MAP[compound_str.upper()]
+            tyre_compounds[compound_id] = TyreCompound(
                 compound=compound_str,
                 compound_id=compound_id,
-                base_lap_time=base_lap_time,
-                deg_rate=deg_rate,
-                avg_stint_length=avg_stint_length,
-                max_stint_length=max_stint_length,
-                sample_count = len(compound_laps)
             )
 
-        return tyre_params
+        return tyre_compounds
     
     def get_pit_loss(self, session: ff1.core.Session) -> Tuple[float, float]:
         
@@ -407,8 +360,8 @@ class FastF1DataExtractor:
         print(f"Extracting track parameters")
         track_params = self.get_track_parameters(session)
         
-        print(f"Extracting tyre parameters")
-        tyre_params = self.get_tyre_parameters(session)
+        print(f"Extracting tyre compounds")
+        tyre_compounds = self.get_tyre_compounds(session)
 
         print(f"Extracting safety car events")
         sc_events = self.get_safety_car_events(session)
@@ -435,7 +388,7 @@ class FastF1DataExtractor:
             year=year,
             name=gp,
             track=track_params,
-            tyre_params=tyre_params,
+            tyre_compounds=tyre_compounds,
             sc_events=sc_events,
             sc_probability=sc_prob,
             opponents=opponent_strategies,
@@ -573,8 +526,6 @@ def create_tyre_parameters(config: RaceConfig) -> Dict[int, Dict[str, float]]:
     for compound_id, params in config.tyre_params.items():
         compounds[compound_id] = {
             'name': params.compound,
-            'base_lap_time': params.base_lap_time,
-            'deg_rate': params.deg_rate,
         }
     return compounds
 
