@@ -188,10 +188,18 @@ class F1OpponentEnv(gym.Env):
         # Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # Rule Enforcement Penalty (at least 2 compounds used)
+        # # Rule Enforcement Penalty (at least 2 compounds used)
+        # if len(self.compounds_used) < 2:
+        #     if self.current_lap >= self.track.laps:
+        #         reward += config.rule_penalty_violation
+
+        # Progressive Rule Enforcement Penalty (at least 2 compounds used)
         if len(self.compounds_used) < 2:
-            if self.current_lap >= self.track.laps:
-                reward += config.rule_penalty_violation
+            race_progress = self.current_lap / self.track.laps
+            if race_progress >= config.rule_penalty_start_pct:
+                # Normalise progress within the penalty window to [0, 1]
+                penalty_progress = (race_progress - config.rule_penalty_start_pct) / (1.0 - config.rule_penalty_start_pct)
+                reward += config.rule_penalty_base * (penalty_progress ** config.rule_penalty_exponent)
 
         return reward
     
@@ -283,5 +291,4 @@ class F1OpponentEnv(gym.Env):
             f"Lap {row['lap']:>2} | {sc} | action: {action:>10} | compound: {compound} | "
             f"tyre_age: {row['tyre_age']:>2} | lap_time: {row['lap_time'] or 0:.2f}s | "
             f"total_time: {row['total_time']:.2f}s | pitted: {row['pitted']} | "
-            f"position: {row['position']}"
-        )
+            f"position: {row['position']}")

@@ -3,12 +3,12 @@ import numpy as np
 import os
 from sklearn.ensemble import RandomForestRegressor
 import joblib
+from fastf1_data_extraction import FastF1DataExtractor, COMPOUND_MAP
 
 class LapPredictor:
     MODEL_DIR = "f1_gym/models/lap_predictors"
 
     def __init__(self):
-        from fastf1_data_extraction import FastF1DataExtractor
         self.extractor = FastF1DataExtractor()
         self.models: dict[str, RandomForestRegressor] = {}
 
@@ -20,7 +20,6 @@ class LapPredictor:
         return os.path.join(self.MODEL_DIR, f"{self.race_to_filename(race_name)}.pkl")
 
     def create_dataset(self, year: int, race_name: str) -> pd.DataFrame:
-        from fastf1_data_extraction import COMPOUND_MAP
         session = self.extractor.load_session(year, race_name)
         laps = session.laps.copy()
 

@@ -16,4 +16,9 @@ class RewardConfig:
     tyre_wear_penalty: float = -10.0
 
     # Rule penalty big enough to offset any gains
-    rule_penalty_violation: float = -1500.0
+    # rule_penalty_violation: float = -1500.0
+
+    # Progressive rule penalty (at least 2 compounds must be used)
+    rule_penalty_base: float = -40.0
+    rule_penalty_start_pct: float = 0.4
+    rule_penalty_exponent: float = 2.0
