@@ -49,4 +49,6 @@ class RealRaceEvents:
     @classmethod
     def from_race_data(cls, data: Dict[str, Any]) -> 'RealRaceEvents':
         sc_events = [SafetyCarEvent.from_dict(event) for event in data.get('sc_events', [])]
-        return cls(sc_events=sc_events)
+        sc_speed_factor = data.get('sc_speed_factor', 1.4)
+        sc_pit_factor = data.get('sc_pit_factor', 0.5)
+        return cls(sc_events=sc_events, sc_speed_factor=sc_speed_factor, sc_pit_factor=sc_pit_factor)

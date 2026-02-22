@@ -12,3 +12,5 @@ f1_gym/models/lap_predictors/
 
 __pycache__/
 .DS_Store/
+
+verify.py

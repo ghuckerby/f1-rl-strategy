@@ -188,9 +188,12 @@ class F1RealEnv(gym.Env):
         # Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # Rule Enforcement
-        if len(self.compounds_used) < 2 and self.current_lap >= self.total_laps:
-            reward += config.rule_penalty_violation
+        # Progressive Rule Enforcement Penalty (at least 2 compounds used)
+        if len(self.compounds_used) < 2:
+            race_progress = self.current_lap / self.total_laps
+            if race_progress >= config.rule_penalty_start_pct:
+                penalty_progress = (race_progress - config.rule_penalty_start_pct) / (1.0 - config.rule_penalty_start_pct)
+                reward += config.rule_penalty_base * (penalty_progress ** config.rule_penalty_exponent)
 
         return reward
    

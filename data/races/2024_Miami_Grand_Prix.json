@@ -36,6 +36,8 @@
     }
   ],
   "sc_probability": 0.04,
+  "sc_speed_factor": 1.1939350289166468,
+  "sc_pit_factor": 0.3756735421901645,
   "opponents": [
     {
       "driver_code": "NOR",

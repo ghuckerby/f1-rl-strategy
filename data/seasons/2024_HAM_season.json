@@ -50,6 +50,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "VER",
@@ -510,6 +512,8 @@
         }
       ],
       "sc_probability": 0.021739130434782608,
+      "sc_speed_factor": 1.3487286874441942,
+      "sc_pit_factor": 0.5832460977661462,
       "opponents": [
         {
           "driver_code": "VER",
@@ -950,6 +954,8 @@
         }
       ],
       "sc_probability": 0.038461538461538464,
+      "sc_speed_factor": 1.0659613359319204,
+      "sc_pit_factor": 0.9525264942074776,
       "opponents": [
         {
           "driver_code": "SAI",
@@ -1381,6 +1387,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "VER",
@@ -1817,6 +1825,8 @@
         }
       ],
       "sc_probability": 0.022222222222222223,
+      "sc_speed_factor": 1.3557762408622491,
+      "sc_pit_factor": 0.1117884105778574,
       "opponents": [
         {
           "driver_code": "VER",
@@ -2287,6 +2297,8 @@
         }
       ],
       "sc_probability": 0.04,
+      "sc_speed_factor": 1.1939350289166468,
+      "sc_pit_factor": 0.3756735421901645,
       "opponents": [
         {
           "driver_code": "NOR",
@@ -2747,6 +2759,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "VER",
@@ -3223,6 +3237,8 @@
         }
       ],
       "sc_probability": 0.013157894736842105,
+      "sc_speed_factor": 2.0,
+      "sc_pit_factor": 0.5,
       "opponents": [
         {
           "driver_code": "LEC",
@@ -3690,6 +3706,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "VER",
@@ -4180,6 +4198,8 @@
         }
       ],
       "sc_probability": 0.014705882352941176,
+      "sc_speed_factor": 1.05,
+      "sc_pit_factor": 1.0,
       "opponents": [
         {
           "driver_code": "RUS",
@@ -4670,6 +4690,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "PIA",
@@ -5155,6 +5177,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "RUS",
@@ -5596,6 +5620,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "NOR",
@@ -6087,6 +6113,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "LEC",
@@ -6534,6 +6562,8 @@
         }
       ],
       "sc_probability": 0.020833333333333332,
+      "sc_speed_factor": 1.05,
+      "sc_pit_factor": 0.6073135974993102,
       "opponents": [
         {
           "driver_code": "PIA",
@@ -6996,6 +7026,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "NOR",
@@ -7467,6 +7499,8 @@
         }
       ],
       "sc_probability": 0.019230769230769232,
+      "sc_speed_factor": 1.2839401369240526,
+      "sc_pit_factor": 0.6123752421483275,
       "opponents": [
         {
           "driver_code": "LEC",
@@ -7932,6 +7966,8 @@
         }
       ],
       "sc_probability": 0.015384615384615385,
+      "sc_speed_factor": 1.58846266400039,
+      "sc_pit_factor": 0.5,
       "opponents": [
         {
           "driver_code": "SAI",
@@ -8396,6 +8432,8 @@
       },
       "sc_events": [],
       "sc_probability": 0.0,
+      "sc_speed_factor": 0.0,
+      "sc_pit_factor": 0.0,
       "opponents": [
         {
           "driver_code": "RUS",
@@ -8848,6 +8886,8 @@
         }
       ],
       "sc_probability": 0.045454545454545456,
+      "sc_speed_factor": 1.555355091717041,
+      "sc_pit_factor": 0.13777900009561572,
       "opponents": [
         {
           "driver_code": "VER",
@@ -9289,6 +9329,8 @@
         }
       ],
       "sc_probability": 0.017857142857142856,
+      "sc_speed_factor": 1.2164472950362522,
+      "sc_pit_factor": 0.32455850080650195,
       "opponents": [
         {
           "driver_code": "NOR",

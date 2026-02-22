@@ -52,6 +52,8 @@ class RaceConfig:
     tyre_compounds: Dict[int, TyreCompound]
     sc_events: List[SafetyCarEvent]
     sc_probability: float
+    sc_speed_factor: float
+    sc_pit_factor: float
     opponents: List[OpponentStrategy]
     target_driver: str
     target_driver_strategy: OpponentStrategy
@@ -64,9 +66,11 @@ class RaceConfig:
             "tyre_compounds": {k: asdict(v) for k, v in self.tyre_compounds.items()},
             "sc_events": [asdict(e) for e in self.sc_events],
             "sc_probability": self.sc_probability,
+            "sc_speed_factor": self.sc_speed_factor,
+            "sc_pit_factor": self.sc_pit_factor,
             "opponents": [asdict(o) for o in self.opponents],
             "target_driver": self.target_driver,
-            "target_driver_strategy": asdict(self.target_driver_strategy)
+            "target_driver_strategy": asdict(self.target_driver_strategy),
         }
 
 @dataclass
@@ -322,7 +326,100 @@ class FastF1DataExtractor:
             lap_times=lap_times,
             dnf=dnf
         )
+    
+    def get_sc_factors(self, session: ff1.core.Session, track_params: TrackParameters, sc_events: List[SafetyCarEvent]) -> Tuple[float, float]:
 
+        # No safety car in this race
+        if not sc_events:
+            return 0.0, 0.0
+
+        laps = session.laps.copy()
+
+        # Build set of all lap numbers under safety car
+        sc_lap_numbers = set()
+        for event in sc_events:
+            for lap_num in range(int(event.start_lap), int(event.end_lap) + 1):
+                sc_lap_numbers.add(lap_num)
+
+        # Normal laps: valid laps that are not under SC and not pit laps
+        normal_laps = laps[
+            (laps['IsAccurate'] == True) &
+            (laps['PitInTime'].isna()) &
+            (laps['PitOutTime'].isna()) &
+            (~laps['LapTime'].isna()) &
+            (~laps['LapNumber'].isin(sc_lap_numbers))
+        ].copy()
+        normal_laps['LaptimeSec'] = normal_laps['LapTime'].dt.total_seconds()
+        normal_median = normal_laps['LaptimeSec'].median()
+
+        # SC laps: laps within SC periods with valid timing
+        sc_laps = laps[
+            (laps['LapNumber'].isin(sc_lap_numbers)) &
+            (~laps['LapTime'].isna())
+        ].copy()
+        sc_laps['LaptimeSec'] = sc_laps['LapTime'].dt.total_seconds()
+
+        # SC Speed Factor: median SC lap time / median normal lap time
+        if len(sc_laps) >= 3 and not pd.isna(normal_median):
+            sc_median = sc_laps['LaptimeSec'].median()
+            sc_speed_factor = sc_median / normal_median
+            # Clamp to reasonable range
+            sc_speed_factor = max(1.05, min(sc_speed_factor, 2.0))
+        else:
+            # Insufficient data — fall back to simulation default
+            sc_speed_factor = 1.4
+
+        # SC Pit Factor: mean SC pit loss / normal pit loss
+        # Compare SC pit-in laps to SC non-pit laps because under SC, all laps are slower
+        # Identify pit stops that occurred during SC laps
+        sc_pit_in_laps = laps[
+            (~laps['PitInTime'].isna()) &
+            (laps['LapNumber'].isin(sc_lap_numbers)) &
+            (~laps['LapTime'].isna())
+        ].copy()
+
+        # SC non-pit laps: laps under SC, not pit in/out, with valid time
+        sc_non_pit_laps = laps[
+            (laps['LapNumber'].isin(sc_lap_numbers)) &
+            (laps['PitInTime'].isna()) &
+            (laps['PitOutTime'].isna()) &
+            (~laps['LapTime'].isna())
+        ].copy()
+        sc_non_pit_laps['LaptimeSec'] = sc_non_pit_laps['LapTime'].dt.total_seconds()
+
+        sc_pit_losses = []
+        for _, lap in sc_pit_in_laps.iterrows():
+            driver = lap['Driver']
+            lap_num = lap['LapNumber']
+            in_lap_time = lap['LapTime'].total_seconds()
+
+            driver_sc_laps = sc_non_pit_laps[sc_non_pit_laps['Driver'] == driver]
+            if len(driver_sc_laps) > 0:
+                sc_baseline = driver_sc_laps['LaptimeSec'].median()
+            elif len(sc_non_pit_laps) > 0:
+                sc_baseline = sc_non_pit_laps['LaptimeSec'].median()
+            else:
+                continue
+
+            # Skip extreme outliers (crashes / red flags)
+            if in_lap_time > 3 * sc_baseline:
+                continue
+
+            pit_loss = in_lap_time - sc_baseline
+
+            if pit_loss > 0:
+                sc_pit_losses.append(pit_loss)
+
+        if len(sc_pit_losses) >= 2 and track_params.pit_loss_time > 0:
+            sc_pit_factor = float(np.mean(sc_pit_losses)) / track_params.pit_loss_time
+            sc_pit_factor = max(0.1, min(sc_pit_factor, 1.0))
+        elif len(sc_pit_losses) == 1 and track_params.pit_loss_time > 0:
+            sc_pit_factor = float(sc_pit_losses[0]) / track_params.pit_loss_time
+            sc_pit_factor = max(0.1, min(sc_pit_factor, 1.0))
+        else:
+            sc_pit_factor = 0.5
+
+        return float(sc_speed_factor), float(sc_pit_factor)
     
     def get_track_parameters(self, session: ff1.core.Session) -> TrackParameters:
 
@@ -367,6 +464,9 @@ class FastF1DataExtractor:
         sc_events = self.get_safety_car_events(session)
         sc_prob = self.calculate_sc_probability(sc_events, track_params.total_laps)
 
+        print(f"Extracting safety car pit loss factors")
+        sc_speed_factor, sc_pit_factor = self.get_sc_factors(session, track_params, sc_events)
+
         print(f"Extracting target driver strategies")
         target_strategy = self.get_driver_strategy(session, target_driver)
 
@@ -391,9 +491,11 @@ class FastF1DataExtractor:
             tyre_compounds=tyre_compounds,
             sc_events=sc_events,
             sc_probability=sc_prob,
+            sc_speed_factor=sc_speed_factor,
+            sc_pit_factor=sc_pit_factor,
             opponents=opponent_strategies,
             target_driver=target_driver,
-            target_driver_strategy=target_strategy
+            target_driver_strategy=target_strategy,
         )
     
     def get_season_config(

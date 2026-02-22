@@ -15,14 +15,18 @@ import torch.nn as nn
 
 from f1_gym.reward_config import RewardConfig
 from f1_gym.envs.f1_sim_env import F1OpponentEnv
+from f1_gym.envs.f1_real_env import F1RealEnv
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
 # Helper for creating multiple environments
-def make_env(rank: int, seed: int = 0) -> Callable:
-    def init() -> F1OpponentEnv:
-        env = F1OpponentEnv()
+def make_env(rank: int, seed: int = 0, race_data: Optional[Dict] = None, predictor: Optional[Any] = None) -> Callable:
+    def init() -> F1RealEnv:
+        if race_data is not None:
+            env = F1RealEnv(race_data=race_data, predictor=predictor)
+        else:
+            env = F1OpponentEnv()
         env = Monitor(env)
         env.reset(seed=seed + rank)
         return env
@@ -82,6 +86,10 @@ def linear_schedule(initial_value: float) -> Callable[[float], float]:
 # Main training function
 def train_f1_ppo(
     total_timesteps: int = 2_000_000,
+
+    # Real environment data (None = use sim env)
+    race_data: Optional[Dict] = None,
+    predictor: Optional[Any] = None,
 
     # Environment settings
     n_envs: int = 8,
@@ -163,9 +171,9 @@ def train_f1_ppo(
     # Create vectorized environment
     print(f"Creating {n_envs} parallel environments...")
     if use_subprocess and n_envs > 1:
-        env = SubprocVecEnv([make_env(i, seed) for i in range(n_envs)])
+        env = SubprocVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
     else:
-        env = DummyVecEnv([make_env(i, seed) for i in range(n_envs)])
+        env = DummyVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
     
     # Observation and reward normalisation
     if normalise_obs or normalise_reward:
@@ -179,7 +187,7 @@ def train_f1_ppo(
         )
     
     # Create evaluation environment
-    eval_env = DummyVecEnv([make_env(0, seed + 100)])
+    eval_env = DummyVecEnv([make_env(0, seed + 100, race_data, predictor)])
     if normalise_obs or normalise_reward:
         eval_env = VecNormalize(
             eval_env,
@@ -311,6 +319,8 @@ def evaluate_ppo_model(
     num_episodes: int = 1000,
     deterministic: bool = True,
     verbose: bool = True,
+    race_data: Optional[Dict] = None,
+    predictor: Optional[Any] = None,
 ) -> Dict[str, Any]:
     
     if not os.path.exists(model_path):
@@ -318,7 +328,10 @@ def evaluate_ppo_model(
         return {}
     
     model = PPO.load(model_path)
-    base_env = F1OpponentEnv()
+    if race_data is not None:
+        base_env = F1RealEnv(race_data=race_data, predictor=predictor)
+    else:
+        base_env = F1OpponentEnv()
     env = DummyVecEnv([lambda: base_env])
     
     if vecnormalize_path and os.path.exists(vecnormalize_path):
