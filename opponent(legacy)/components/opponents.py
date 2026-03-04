@@ -39,6 +39,8 @@ class Opponent(ABC):
 # Random Opponent Class
 # Generates a random 1 or 2-stop strategy
 class RandomOpponent(Opponent):
+    """Opponent model that generates a 1 or 2-stop strategy with random pit laps and compounds"""
+
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
         """Initialize Random Opponent with ID, track parameters, and starting compound"""
         super().__init__(opponent_id, track, starting_compound)
@@ -76,8 +78,7 @@ class RandomOpponent(Opponent):
                 "compounds": [start_compound, pit1_compound, pit2_compound]
             }
     
-    def step(self, events: RaceEvents):
-        """Advance one lap"""   
+    def step(self, events: RaceEvents): 
         pit_time = 0.0
 
         lap_speed_multiplier = events.get_lap_time_multiplier()
@@ -100,8 +101,6 @@ class RandomOpponent(Opponent):
         self.tyre_age += 1
     
     def reset(self):
-        """Reset opponent to initial state"""
-
         self.current_lap = 0
         self.current_compound = self.starting_compound
         self.tyre_age = 0
@@ -115,10 +114,14 @@ class RandomOpponent(Opponent):
 # Heuristic Opponent Class
 # Generates a simple heuristic-based 1-stop strategy (pit between 40% and 60% of race)
 class HeuristicOpponent(Opponent):
+    """Opponent model that generates a simple heuristic-based 1-stop strategy (pit between 40% and 60% of race)"""
+
     def __init__(self, opponent_id: int, track: TrackParams, starting_compound: TyreCompound = 1):
         super().__init__(opponent_id, track, starting_compound)
 
     def generate_strategy(self) -> Dict[str, Any]:
+        """Generate a simple heuristic-based 1-stop strategy (pit between 40% and 60% of race)."""
+
         pit_lap = int(self.track.laps * random.uniform(0.4, 0.6))
         pit_compound = 2 if self.starting_compound == 1 else 1
         return {
@@ -162,6 +165,8 @@ class HeuristicOpponent(Opponent):
 # Time Benchmark Opponent
 # Generates predefined optimal strategies from benchmarking based on starting compound
 class BenchmarkOpponent(Opponent):
+    """Opponent model that generates predefined optimal strategies from benchmarking based on starting compound."""
+
     STRATEGIES = {
         1: [  # Soft Start Options
             # 1-Stop: Soft -> Medium
@@ -202,6 +207,8 @@ class BenchmarkOpponent(Opponent):
         super().__init__(opponent_id, track, starting_compound)
 
     def generate_strategy(self) -> Dict[str, Any]:
+        """Select a predefined optimal strategy based on starting compound."""
+
         options = self.STRATEGIES[self.starting_compound]
         return random.choice(options)
     
@@ -240,6 +247,8 @@ class BenchmarkOpponent(Opponent):
 # Hard Benchmark Opponent
 # Generates from the best optimal benchmark strategies
 class HardBenchmarkOpponent(Opponent):
+    """Opponent model that generates from the best optimal benchmark strategies."""
+
     STRATEGIES = {
         1: [
             {"type": 2, "pit_laps": [17, 33], "compounds": [1, 2, 1]},
@@ -254,6 +263,8 @@ class HardBenchmarkOpponent(Opponent):
         super().__init__(opponent_id, track, starting_compound)
 
     def generate_strategy(self) -> Dict[str, Any]:
+        """Select a predefined optimal strategy based on starting compound."""
+
         options = self.STRATEGIES[self.starting_compound]
         return random.choice(options)
     
@@ -292,6 +303,8 @@ class HardBenchmarkOpponent(Opponent):
 # Adapative Opponent
 # Uses predefined optimal strategies and adapts based on race conditions
 class AdaptiveBenchmarkOpponent(Opponent):
+    """Opponent model that uses predefined optimal strategies and adapts based on safety car events"""
+
     STRATEGIES = {
         1: [
             # 1-Stop: Soft -> Medium
@@ -333,10 +346,13 @@ class AdaptiveBenchmarkOpponent(Opponent):
         self.has_reacted = False
 
     def generate_strategy(self) -> Dict[str, Any]:
+        """Select a predefined optimal strategy based on starting compound."""
+
         options = self.STRATEGIES[self.starting_compound]
         return random.choice(options)
     
     def sc_pit_decision(self, events: RaceEvents) -> bool:
+        """Decide whether to pit during a safety car event."""
 
         # No pit if:
             # Already reacted to this SC
@@ -368,6 +384,8 @@ class AdaptiveBenchmarkOpponent(Opponent):
         return False
     
     def get_next_compound(self) -> int:
+        """Get the next compound based on planned strategy or fallback logic."""
+
         if self.num_pit_stops < len(self.pit_compounds) - 1:
             return self.pit_compounds[self.num_pit_stops + 1]
         

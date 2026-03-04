@@ -136,6 +136,8 @@ class F1OpponentEnv(gym.Env):
         return obs
     
     def make_info(self, pitted: bool, action: int) -> Dict[str, Any]:
+        """Helper function to create info dict for the current step"""
+
         return {
             "lap": self.current_lap,
             "compound": int(self.current_compound),
@@ -179,6 +181,8 @@ class F1OpponentEnv(gym.Env):
         return self.make_obs(), reward, terminated, False, info
     
     def calculate_reward(self, action: int, prev_position: int, pitted:bool) -> float:
+        """Calculate the reward for the current step based on the action taken and the resulting state"""
+
         config = self.reward_config
         reward = 0.0
 
@@ -188,13 +192,8 @@ class F1OpponentEnv(gym.Env):
         # Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # Progressive Rule Enforcement Penalty (at least 2 compounds used)
-        if len(self.compounds_used) < 2:
-            race_progress = self.current_lap / self.track.laps
-            if race_progress >= config.rule_penalty_start_pct:
-                # Normalise progress within the penalty window to [0, 1]
-                penalty_progress = (race_progress - config.rule_penalty_start_pct) / (1.0 - config.rule_penalty_start_pct)
-                reward += config.rule_penalty_base * (penalty_progress ** config.rule_penalty_exponent)
+        if len(self.compounds_used) < 2 and self.current_lap >= self.track.laps:
+            reward += config.rule_violation_penalty
 
         return reward
     
@@ -247,10 +246,14 @@ class F1OpponentEnv(gym.Env):
         self.position = next(i + 1 for i, (_, is_agent, _) in enumerate(times) if is_agent)
 
     def calculate_time_to_leader(self) -> float:
+        """Calculate the time gap to the leader (first place)"""
+
         leader_time = self.race_standings[0][0]
         return max(0.0, self.total_time - leader_time)
 
     def calculate_time_to_behind(self) -> float:
+        """Calculate the time gap to the car behind"""
+
         # Find index of agent
         agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
         if agent_idx == len(self.race_standings) - 1:
@@ -260,6 +263,8 @@ class F1OpponentEnv(gym.Env):
         return max(0.0, self.race_standings[agent_idx + 1][0] - self.total_time)
     
     def calculate_time_to_ahead(self) -> float:
+        """Calculate the time gap to the car ahead"""
+
         agent_idx = next(i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent)
         if agent_idx == 0:
             return 0.0

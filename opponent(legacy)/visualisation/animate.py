@@ -12,9 +12,6 @@ from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv, VecEnv
 from env.f1_opponent_env import F1OpponentEnv
 
-PATH = "/models/f1_rl_opponent_dqn.zip"
-OUTPUT = "/logs/race_summary.png"
-
 COMPOUND_COLOURS = {
     1: '#F90429',
     2: '#FFD100',

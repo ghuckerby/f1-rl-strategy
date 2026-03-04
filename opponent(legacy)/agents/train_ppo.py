@@ -2,7 +2,7 @@ import numpy as np
 import os
 from stable_baselines3 import PPO
 from typing import Callable, Optional, Any, Dict
-from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv
+from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.callbacks import (
@@ -30,6 +30,7 @@ def make_env(rank: int, seed: int = 0) -> Callable:
 
 # Custom callback for F1 Metrics during training in wandb
 class F1MetricsCallback(BaseCallback):
+    """Custom callback to log F1-specific metrics to WandB during training."""
 
     def __init__(self, verbose: int = 0):
         super().__init__(verbose)
@@ -84,7 +85,6 @@ def train_f1_ppo(
 
     # Environment settings
     n_envs: int = 8,
-    use_subprocess: bool = False,
     normalise_obs: bool = False,
     normalise_reward: bool = True,
 
@@ -123,6 +123,7 @@ def train_f1_ppo(
     wandb_project: str = "f1-rl-opponent",
     run_name: Optional[str] = None,
 ) -> str:
+    """Train a PPO agent in the F1 Opponent Environment with logging via WandB."""
     
     LOG_DIR = "logs"
     MODEL_DIR = "models"
@@ -161,10 +162,7 @@ def train_f1_ppo(
 
     # Create vectorized environment
     print(f"Creating {n_envs} parallel environments...")
-    if use_subprocess and n_envs > 1:
-        env = SubprocVecEnv([make_env(i, seed) for i in range(n_envs)])
-    else:
-        env = DummyVecEnv([make_env(i, seed) for i in range(n_envs)])
+    env = DummyVecEnv([make_env(i, seed) for i in range(n_envs)])
     
     # Observation and reward normalisation
     if normalise_obs or normalise_reward:
@@ -190,10 +188,7 @@ def train_f1_ppo(
     
     # Setup learning rate schedule
     if use_lr_schedule:
-        if lr_schedule_type == "linear":
-            lr = linear_schedule(learning_rate)
-        else:
-            lr = learning_rate
+        lr = linear_schedule(learning_rate)
     else:
         lr = learning_rate
     
@@ -312,6 +307,8 @@ def evaluate_ppo_model(
     verbose: bool = True,
 ) -> Dict[str, Any]:
     
+    """Evaluate a trained PPO model in the F1 Opponent Environment and log results."""
+    
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
         return {}
@@ -347,7 +344,6 @@ def evaluate_ppo_model(
             done = dones[0]
             
             # Print lap-by-lap output
-            # (Not using logger_output because it didn't work properly)
             if verbose and infos[0].get("lap", 0) > 0:
                 row = infos[0]
                 compound_names = {1: "S", 2: "M", 3: "H"}
@@ -382,7 +378,8 @@ def evaluate_ppo_model(
         
         print(f"\nEpisode {episode + 1} completed. Reward: {episode_reward:.2f}, "
               f"Final Position: {final_position}/20, Total Time: {total_time:.2f}s\n")
-    
+        
+    # Summary statistics
     print(f"\nReward Statistics:")
     print(f"  Mean:   {np.mean(results['rewards']):.2f}")
     print(f"  Std:    {np.std(results['rewards']):.2f}")
@@ -401,7 +398,6 @@ def evaluate_ppo_model(
     print(f"  Best:   {np.min(results['total_times']):.2f}s")
     print(f"  Worst:  {np.max(results['total_times']):.2f}s")
     
-    # Position distribution
     positions = np.array(results['positions'])
     print(f"\nPosition Distribution:")
     print(f"  Wins (P1):      {np.sum(positions == 1)} ({100*np.mean(positions == 1):.1f}%)")

@@ -4,6 +4,8 @@ from typing import Optional
 
 @dataclass
 class EventParams:
+    """Parameters for race events that can affect lap times and pit stops."""
+
     # Safety Car
     sc_prob: float = 0.05           # Chance of safety car per lap
     sc_speed_factor: float = 1.5    # Lap times are 1.5x slower under safety car
@@ -15,6 +17,8 @@ class EventParams:
     slow_stop_std: float = 1.0      # Std deviation of delay
 
 class RaceEvents:
+    """Class to manage race events that can affect lap times and pit stops."""
+
     def __init__(self, params: EventParams = None):
         self.params = params or EventParams()
         self.active_event: Optional[str] = None
@@ -38,21 +42,29 @@ class RaceEvents:
         return self.active_event
     
     def trigger_safety_car(self):
+        """Trigger a safety car event, lasting between 3 to 6 laps."""
+
         self.active_event = "safety_car"
-        self.event_duration = random.randint(3, 6)  # Safety car lasts 3-6 laps
+        self.event_duration = random.randint(3, 6)
         self.current_event_lap = 0
 
     def get_lap_time_multiplier(self) -> float:
+        """Get the lap time multiplier to slow down lap times based on safety cars."""
+
         if self.active_event == "safety_car":
             return self.params.sc_speed_factor
         return 1.0
     
     def get_pit_loss_multiplier(self) -> float:
+        """Get the pit loss multiplier to reduce time lost in the pits based on safety cars."""
+
         if self.active_event == "safety_car":
             return self.params.sc_pit_factor
         return 1.0
     
     def get_pit_delay(self) -> float:
+        """Get the pit delay to simulate slow pit stops based on random chance."""
+
         if random.random() < self.params.slow_stop_prob:
             delay = random.gauss(self.params.slow_stop_mean, self.params.slow_stop_std)
             return max(0.0, delay)

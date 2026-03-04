@@ -21,6 +21,7 @@ def train_f1_agent(
         exploration_final_eps=0.05,
         learning_rate=1e-4,
 ):
+    """Train a DQN agent to compete in the F1 opponent environment."""
     
     # Training Logging
     run = wandb.init(
@@ -78,7 +79,8 @@ def train_f1_agent(
 
     return model_path
 
-def evaluate_model(model_path: str = "models/f1_rl_opponent_dqn.zip", num_episodes: int = 5):
+def evaluate_model(model_path: str="models/f1_rl_opponent_dqn.zip", num_episodes: int = 5):
+    """Evaluate a trained DQN agent in the F1 opponent environment."""
 
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
