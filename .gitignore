@@ -1,5 +1,4 @@
 
-# Ignore fastf1 library cache (big file)
 fastf1_cache/cache/
 
 wandb/
