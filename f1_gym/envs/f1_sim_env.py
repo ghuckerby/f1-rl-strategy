@@ -188,11 +188,6 @@ class F1OpponentEnv(gym.Env):
         # Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # # Rule Enforcement Penalty (at least 2 compounds used)
-        # if len(self.compounds_used) < 2:
-        #     if self.current_lap >= self.track.laps:
-        #         reward += config.rule_penalty_violation
-
         # Progressive Rule Enforcement Penalty (at least 2 compounds used)
         if len(self.compounds_used) < 2:
             race_progress = self.current_lap / self.track.laps

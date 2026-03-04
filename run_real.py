@@ -25,7 +25,7 @@ def main():
 
     # Train
     train_parser = subparsers.add_parser("train", help="Train PPO on a real race")
-    train_parser.add_argument("--timesteps", type=int, default=2_000_000)
+    train_parser.add_argument("--timesteps", type=int, default=1_500_000)
     train_parser.add_argument("--data", type=str, default="data/races/2024_Miami_Grand_Prix.json")
     train_parser.add_argument("--race", type=str, default="Miami Grand Prix")
     train_parser.add_argument("--n-envs", type=int, default=8)
@@ -33,8 +33,8 @@ def main():
 
     # Evaluate
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate PPO on a real race")
-    eval_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo.zip")
-    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_vecnormalize.pkl")
+    eval_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo_miami.zip")
+    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_miami_vecnormalize.pkl")
     eval_parser.add_argument("--episodes", type=int, default=100)
     eval_parser.add_argument("--data", type=str, default="data/races/2024_Miami_Grand_Prix.json")
     eval_parser.add_argument("--race", type=str, default="Miami Grand Prix")

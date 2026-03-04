@@ -27,7 +27,9 @@ class OpponentStrategy:
     finishing_position: int
     num_pit_stops: int
     lap_times: List[float]
+    positions: List[int]
     dnf: bool
+    time_penalty: float = 0.0
 
 @dataclass
 class SafetyCarEvent:
@@ -290,27 +292,76 @@ class FastF1DataExtractor:
                 previous_compound = current_compound
 
         # Lap times
-        lap_times = []
-        for _, lap in driver_laps.iterrows():
-            if pd.isna(lap['LapTime']):
-                lap_times.append(0.0)
-            else:
-                lap_times.append(lap['LapTime'].total_seconds())
+        driver_laps_sorted = driver_laps.sort_values('LapNumber').copy()
 
-        # Replace 0.0 lap times with median
+        # Convert Time column to seconds (absolute session time)
+        if 'Time' in driver_laps_sorted.columns:
+            driver_laps_sorted['TimeSec'] = pd.to_timedelta(
+                driver_laps_sorted['Time']
+            ).dt.total_seconds()
+        else:
+            driver_laps_sorted['TimeSec'] = np.nan
+
+        # LapTime for fallback
+        driver_laps_sorted['LapTimeSec'] = np.nan
+        mask = driver_laps_sorted['LapTime'].notna()
+        driver_laps_sorted.loc[mask, 'LapTimeSec'] = pd.to_timedelta(
+            driver_laps_sorted.loc[mask, 'LapTime']
+        ).dt.total_seconds()
+
+        lap_times: List[float] = []
+        prev_time_sec: Optional[float] = None
+
+        for idx_row, (_, lap) in enumerate(driver_laps_sorted.iterrows()):
+            time_sec = lap['TimeSec']
+            lap_time_sec = lap['LapTimeSec']
+
+            if idx_row == 0:
+                if not pd.isna(lap_time_sec) and lap_time_sec > 0:
+                    elapsed = lap_time_sec
+                elif not pd.isna(time_sec):
+                    if 'LapStartTime' in lap and not pd.isna(lap['LapStartTime']):
+                        start_sec = pd.to_timedelta(lap['LapStartTime']).total_seconds()
+                        elapsed = time_sec - start_sec
+                    else:
+                        elapsed = time_sec
+                else:
+                    elapsed = 0.0
+            else:
+                # Subsequent laps: prefer Time delta, fall back to LapTime
+                if not pd.isna(time_sec) and prev_time_sec is not None and not pd.isna(prev_time_sec):
+                    elapsed = time_sec - prev_time_sec
+                elif not pd.isna(lap_time_sec) and lap_time_sec > 0:
+                    elapsed = lap_time_sec
+                else:
+                    elapsed = 0.0
+
+            lap_times.append(float(f"{elapsed:.3f}"))
+            prev_time_sec = time_sec
+
+        # Final fallback: replace any remaining 0.0 with median (very rare)
         valid_times = [t for t in lap_times if t > 0]
         if valid_times:
             median_time = float(f"{np.median(valid_times):.3f}")
             lap_times = [t if t > 0 else median_time for t in lap_times]
 
+        # Positions
+        positions: List[int] = []
+        for _, lap in driver_laps_sorted.iterrows():
+            pos = lap.get('Position', np.nan)
+            if pd.isna(pos):
+                positions.append(20)  # fallback
+            else:
+                positions.append(int(pos))
+
         # Finishing position and total time
-        last_lap = driver_laps.iloc[-1]
+        last_lap = driver_laps_sorted.iloc[-1]
         finishing_position = int(last_lap['Position']) if not pd.isna(last_lap['Position']) else 20
         total_time = sum(t for t in lap_times if t > 0)
 
         # DNF detection: driver completed fewer laps than the race total
         total_race_laps = int(laps['LapNumber'].max())
-        driver_completed_laps = int(driver_laps['LapNumber'].max())
+        driver_completed_laps = int(driver_laps_sorted['LapNumber'].max())
         dnf = driver_completed_laps < (total_race_laps - 2) # Allow for finishing a lap behind leader
 
         return OpponentStrategy(
@@ -324,6 +375,7 @@ class FastF1DataExtractor:
             finishing_position=finishing_position,
             num_pit_stops=len(pit_laps),
             lap_times=lap_times,
+            positions=positions,
             dnf=dnf
         )
     
@@ -370,8 +422,6 @@ class FastF1DataExtractor:
             sc_speed_factor = 1.4
 
         # SC Pit Factor: mean SC pit loss / normal pit loss
-        # Compare SC pit-in laps to SC non-pit laps because under SC, all laps are slower
-        # Identify pit stops that occurred during SC laps
         sc_pit_in_laps = laps[
             (~laps['PitInTime'].isna()) &
             (laps['LapNumber'].isin(sc_lap_numbers)) &
@@ -448,6 +498,45 @@ class FastF1DataExtractor:
             average_lap=average_lap
         )
     
+    def get_time_penalties(self, session: ff1.core.Session) -> Dict[str, float]:
+        results = session.results
+        laps = session.laps
+
+        if results is None or len(results) == 0:
+            return {}
+
+        # Leader's last-lap absolute time
+        leader_abbr = results.iloc[0]['Abbreviation']
+        leader_laps = laps[laps['Driver'] == leader_abbr].sort_values('LapNumber')
+        if len(leader_laps) == 0:
+            return {}
+        leader_finish = leader_laps['Time'].dt.total_seconds().iloc[-1]
+
+        penalties: Dict[str, float] = {}
+        for _, row in results.iterrows():
+            abbr = row['Abbreviation']
+            if pd.isna(row['Time']):
+                continue  # DNF
+
+            # Official gap from classification
+            official_gap = row['Time'].total_seconds()
+            if row['Position'] == 1:
+                official_gap = 0.0
+
+            # Actual on-track gap from lap data
+            driver_laps = laps[laps['Driver'] == abbr].sort_values('LapNumber')
+            if len(driver_laps) == 0:
+                continue
+            driver_finish = driver_laps['Time'].dt.total_seconds().iloc[-1]
+            actual_gap = driver_finish - leader_finish
+
+            penalty = official_gap - actual_gap
+            if penalty >= 1.0:
+                penalties[abbr] = round(penalty, 0)
+                print(f"Time penalty: {abbr} +{penalties[abbr]:.0f}s")
+
+        return penalties
+
     def get_race_config(self, year: int, gp: str, target_driver: str) -> RaceConfig:
         
         # Load session and parameters
@@ -467,8 +556,15 @@ class FastF1DataExtractor:
         print(f"Extracting safety car pit loss factors")
         sc_speed_factor, sc_pit_factor = self.get_sc_factors(session, track_params, sc_events)
 
+        print(f"Extracting time penalties")
+        penalties = self.get_time_penalties(session)
+
         print(f"Extracting target driver strategies")
         target_strategy = self.get_driver_strategy(session, target_driver)
+
+        # Apply penalty to target driver if any
+        if target_driver in penalties:
+            target_strategy.time_penalty = penalties[target_driver]
 
         # Get all drivers and their strategies
         all_drivers = session.laps['Driver'].unique()
@@ -476,7 +572,11 @@ class FastF1DataExtractor:
         for driver in all_drivers:
             if driver != target_driver:
                 try:
-                    opponent_strategies.append(self.get_driver_strategy(session, driver))
+                    strategy = self.get_driver_strategy(session, driver)
+                    # Apply penalty if applicable
+                    if driver in penalties:
+                        strategy.time_penalty = penalties[driver]
+                    opponent_strategies.append(strategy)
                 except Exception as e:
                     print(f"Error extracting strategy for driver {driver}: {e}")
                     continue

@@ -11,9 +11,11 @@ class RealOpponent:
     pit_laps: List[float]
     pit_compounds: List[int]
     lap_times: List[float]
+    positions: List[int]
     finishing_position: int
     dnf: bool
     total_time: float
+    time_penalty: float = 0.0
     num_pit_stops: int = 0
 
     def step(self) -> float:
@@ -25,7 +27,11 @@ class RealOpponent:
         self.current_lap_time = self.lap_times[self.current_lap]
         self.cumulative_time += self.current_lap_time
 
-        # Update compound if pit occurred (don't need pit delay)
+        # Update position from data
+        if self.current_lap < len(self.positions):
+            self.current_position = self.positions[self.current_lap]
+
+        # Update compound if pit occurred
         lap_number = self.current_lap + 1
         if lap_number in self.pit_laps:
             pit_index = self.pit_laps.index(lap_number)
@@ -33,6 +39,10 @@ class RealOpponent:
                 self.current_compound = self.pit_compounds[pit_index + 1]
 
         self.current_lap += 1
+
+        # Apply time penalty on the final lap (post-race adjustment)
+        if self.current_lap >= len(self.lap_times) and self.time_penalty > 0:
+            self.cumulative_time += self.time_penalty
 
         # Check for dnf
         if self.dnf and self.current_lap >= len(self.lap_times):
@@ -45,6 +55,7 @@ class RealOpponent:
         self.current_compound = self.starting_compound
         self.cumulative_time = 0.0
         self.current_lap_time = 0.0
+        self.current_position = self.starting_position
         self.has_finished = False
 
     def get_position(self, race_time: float):
@@ -72,8 +83,10 @@ class RealOpponent:
             pit_laps=pit_laps,
             pit_compounds=data.get('pit_compounds', []),
             lap_times=data.get('lap_times', []),
+            positions=data.get('positions', []),
             finishing_position=data.get('finishing_position', 0),
             dnf=data.get('dnf', False),
             total_time=data.get('total_time', 0.0),
+            time_penalty=data.get('time_penalty', 0.0),
             num_pit_stops=len(pit_laps)
         )

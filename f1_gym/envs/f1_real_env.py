@@ -171,7 +171,7 @@ class F1RealEnv(gym.Env):
 
         if terminated:
             # Final position reward
-            final_position_reward = (20 - self.position) * 100
+            final_position_reward = (20 - self.position) * self.reward_config.final_position_weight
             reward += final_position_reward
             info["episode_log"] = list(self.race_log)
 
@@ -181,47 +181,59 @@ class F1RealEnv(gym.Env):
         config = self.reward_config
         reward = 0.0
 
-        # Lap Time Reward
-        benchmark = self.params.track.average_lap
+        # 1. Lap Time Reward (Scaled with SC multiplier)
+        benchmark = self.params.track.average_lap * self.events.get_lap_time_multiplier()
         reward += (benchmark - self.lap_time) * config.lap_time_reward_weight
 
-        # Position Reward
+        # 2. Position Reward
         reward += (prev_position - self.position) * config.position_gain_reward
 
-        # Progressive Rule Enforcement Penalty (at least 2 compounds used)
+        # 3. Pit Stop Penalty
+        if pitted:
+            reward += config.pit_stop_penalty
+
+        # 4. Progressive rule penalty for not using 2 compounds
         if len(self.compounds_used) < 2:
             race_progress = self.current_lap / self.total_laps
             if race_progress >= config.rule_penalty_start_pct:
                 penalty_progress = (race_progress - config.rule_penalty_start_pct) / (1.0 - config.rule_penalty_start_pct)
                 reward += config.rule_penalty_base * (penalty_progress ** config.rule_penalty_exponent)
 
-        return reward
+        return float(reward)
    
     def update_agent(self, action: int):
-        pit_time = 0.0
+        agent_is_pitting = action in (1, 2, 3)
+        current_lap_number = self.current_lap + 1
 
-        lap_speed_multiplier = self.events.get_lap_time_multiplier()
         pit_loss_multiplier = self.events.get_pit_loss_multiplier()
 
-        # Pit Stop
-        if action in (1, 2, 3):
+        # Pit Stop — update compound / age BEFORE lap-time calc
+        if agent_is_pitting:
             self.num_pit_stops += 1
-            pit_time = self.pit_loss * pit_loss_multiplier
             self.current_compound = action
             self.compounds_used.add(action)
             self.tyre_age = 0
 
-        # Calculate lap time
-        base_lap = self.params.calculate_lap_time(
-            self.current_compound, 
-            self.tyre_age, 
-            self.current_lap + 1
+        # Calculate lap time anchored to target driver's real pace
+        base_lap = self.params.calculate_adjusted_lap_time(
+            agent_compound_id=self.current_compound,
+            agent_tyre_age=self.tyre_age,
+            current_lap=current_lap_number,
+            agent_is_pitting=agent_is_pitting,
         )
         if base_lap is None:
-             base_lap = self.params.track.average_lap
-        
-        base_lap *= lap_speed_multiplier
-        
+            base_lap = self.params.track.average_lap
+
+        # Add pit-loss only when the agent pits on a lap the target did NOT
+        # pit (case 3 in calculate_adjusted_lap_time).  When the agent pits
+        # on the same lap as the target, the real lap time already includes
+        # the pit-stop delay.
+        pit_time = 0.0
+        if agent_is_pitting:
+            same_lap_as_target = current_lap_number in self.params.target_pit_laps
+            if not same_lap_as_target:
+                pit_time = self.pit_loss * pit_loss_multiplier
+
         # Lap time and state updates
         self.lap_time = base_lap + pit_time
         self.total_time += self.lap_time
@@ -235,19 +247,24 @@ class F1RealEnv(gym.Env):
 
     def update_race_standings(self):
 
-        # List of (total_time, is_agent, driver_code)
-        times = [
-            (opp.cumulative_time, False, opp.driver_code) for opp in self.opponents
+        # Build standings from opponents positions + agent's position
+        active_opponents = [
+            opp for opp in self.opponents
             if not (opp.has_finished and opp.dnf)
         ]
-        times.append((self.total_time, True, "AGENT"))
+        opponents_ahead = sum(
+            1 for opp in active_opponents
+            if opp.cumulative_time < self.total_time
+        )
+        self.position = opponents_ahead + 1
 
-        # Sort by cumulative time
+        times = [
+            (opp.cumulative_time, False, opp.driver_code)
+            for opp in active_opponents
+        ]
+        times.append((self.total_time, True, "AGENT"))
         times.sort(key=lambda x: x[0])
         self.race_standings = times
-
-        # Find agent position
-        self.position = next(i + 1 for i, (_, is_agent, _) in enumerate(times) if is_agent)
     
     def calculate_time_to_leader(self) -> float:
         leader_time = self.race_standings[0][0]

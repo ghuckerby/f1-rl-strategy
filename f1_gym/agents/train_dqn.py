@@ -8,45 +8,33 @@ import wandb
 from wandb.integration.sb3 import WandbCallback
 
 def train_f1_agent(
-        # Time steps for training
         total_timesteps=1_000_000,
-        # Buffer size, size of training memory
         buffer_size=200_000,
-        # Steps before learning starts
         learning_starts=100_000,
-        # Size of each training batch
         batch_size=128,
-        # Soft update coefficient
         tau=0.005,
-        # How often to update the target network
         target_update_interval=1000,
-        # Discount factor
         gamma=0.995,
-        # Frequency of training
         train_freq=4,
-        # Number of gradient steps
         gradient_steps=1,
-        # Fraction of exploration
         exploration_fraction=0.4,
-        # Final epsilon for exploration
         exploration_final_eps=0.05,
-        # Learning rate
         learning_rate=1e-4,
 ):
-    """Train an RL agent to compete in the F1 opponent environment using a DQN algorithm"""
     
+    # Training Logging
     run = wandb.init(
         project="f1-rl",
         name=f"f1_rl_dqn_{total_timesteps//1_000_000}M",
         sync_tensorboard=True,
         reinit=True,
     )
-
     LOG_DIR = "f1_gym/logs"
     MODEL_DIR = "f1_gym/models"
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(MODEL_DIR, exist_ok=True)
 
+    # Environment and Model Setup
     env = F1OpponentEnv()
     model = DQN(
         "MlpPolicy",
@@ -67,17 +55,20 @@ def train_f1_agent(
         tensorboard_log=f"f1_gym/logs/tensorboard/{run.id}"
     )
 
+    # WandB Callback for logging
     callback = WandbCallback(
         model_save_path=f"f1_gym/models/wandb/{run.id}",
         verbose=2
     )
 
+    # Model training
     print("Starting Training")
     model.learn(
         total_timesteps=total_timesteps,
         callback=callback
     )
 
+    # Save model
     model_name = f"f1_rl_dqn.zip"
     model_path = os.path.join(MODEL_DIR, model_name)
     model.save(model_path)
@@ -88,7 +79,6 @@ def train_f1_agent(
     return model_path
 
 def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes: int = 5):
-    """Evaluate a trained model over a number of episodes"""
 
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
@@ -122,7 +112,8 @@ def evaluate_model(model_path: str = "f1_gym/models/f1_rl_dqn.zip", num_episodes
         total_positions.append(env.position)
 
         print(f"\nEpisode {episode + 1} completed. Reward: {episode_reward:.2f}, Final Position: {env.position}/20\n")
-    
+
+    # Summary of results
     print(f"\nReward Summary:\n")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")
     print(f"Std Dev Reward: {np.std(total_rewards):.2f}")

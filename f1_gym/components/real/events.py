@@ -18,8 +18,8 @@ class SafetyCarEvent:
 @dataclass
 class RealRaceEvents:
     sc_events: List[SafetyCarEvent]
-    sc_speed_factor: float = 1.4 # Need to update this
-    sc_pit_factor: float = 0.5 # Need to update this
+    sc_speed_factor: float = 1.4
+    sc_pit_factor: float = 0.5
 
     # State
     current_lap: int = field(default=0, init=False)

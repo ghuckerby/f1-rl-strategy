@@ -94,7 +94,7 @@ def train_f1_ppo(
     # Environment settings
     n_envs: int = 8,
     use_subprocess: bool = False,
-    normalise_obs: bool = True,
+    normalise_obs: bool = False,
     normalise_reward: bool = True,
 
     # PPO Parameters
@@ -103,10 +103,10 @@ def train_f1_ppo(
     lr_schedule_type: str = "linear",
 
     n_steps: int = 2048,
-    batch_size: int = 64,
-    n_epochs: int = 10,
+    batch_size: int = 256,
+    n_epochs: int = 5,
     
-    gamma: float = 0.99,
+    gamma: float = 0.995,
     gae_lambda: float = 0.95,
     clip_range: float = 0.2,
     clip_range_vf: Optional[float] = None,
@@ -208,8 +208,8 @@ def train_f1_ppo(
     
     if net_arch is None:
         net_arch = dict(
-            pi=[256, 256, 128],  # Policy network
-            vf=[256, 256, 128],  # Value network
+            pi=[64, 64],
+            vf=[64, 64],
         )
     
     # Map activation function string to torch module
@@ -294,7 +294,7 @@ def train_f1_ppo(
     )
     
     # Save final model
-    model_name = "f1_rl_ppo"
+    model_name = "f1_rl_ppo_miami"
     model_path = os.path.join(MODEL_DIR, model_name)
     model.save(model_path)
     print(f"Saved model to {model_path}.zip")
@@ -415,7 +415,6 @@ def evaluate_ppo_model(
     print(f"Best: {np.min(results['total_times']):.2f}s")
     print(f"Worst: {np.max(results['total_times']):.2f}s")
     
-    # Position distribution
     positions = np.array(results['positions'])
     print(f"\nPosition Distribution:")
     print(f"Wins (P1): {np.sum(positions == 1)} ({100*np.mean(positions == 1):.1f}%)")
