@@ -14,8 +14,7 @@ from stable_baselines3.common.callbacks import (
 import torch.nn as nn
 
 from f1_gym.reward_config import RewardConfig
-from f1_gym.envs.f1_sim_env import F1OpponentEnv
-from f1_gym.envs.f1_real_env import F1RealEnv
+from f1_gym.env.f1_real_env import F1RealEnv
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -23,10 +22,7 @@ from wandb.integration.sb3 import WandbCallback
 # Helper for creating multiple environments
 def make_env(rank: int, seed: int = 0, race_data: Optional[Dict] = None, predictor: Optional[Any] = None) -> Callable:
     def init() -> F1RealEnv:
-        if race_data is not None:
-            env = F1RealEnv(race_data=race_data, predictor=predictor)
-        else:
-            env = F1OpponentEnv()
+        env = F1RealEnv(race_data=race_data, predictor=predictor)
         env = Monitor(env)
         env.reset(seed=seed + rank)
         return env
@@ -328,10 +324,7 @@ def evaluate_ppo_model(
         return {}
     
     model = PPO.load(model_path)
-    if race_data is not None:
-        base_env = F1RealEnv(race_data=race_data, predictor=predictor)
-    else:
-        base_env = F1OpponentEnv()
+    base_env = F1RealEnv(race_data=race_data, predictor=predictor)
     env = DummyVecEnv([lambda: base_env])
     
     if vecnormalize_path and os.path.exists(vecnormalize_path):

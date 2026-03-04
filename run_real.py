@@ -4,7 +4,6 @@ import os
 import joblib
 from f1_gym.agents.train_ppo import train_f1_ppo, evaluate_ppo_model
 
-
 def load_race_data(json_path: str) -> dict:
     with open(json_path, "r") as f:
         return json.load(f)
@@ -15,7 +14,7 @@ def load_predictor(race_name: str):
     if not os.path.exists(model_path):
         raise FileNotFoundError(
             f"No lap predictor found at {model_path}. "
-            f"Train one first with: python scripts/lap_predictor.py"
+            f"Train one first with: python f1_gym/lap_predictor.py"
         )
     return joblib.load(model_path)
 
