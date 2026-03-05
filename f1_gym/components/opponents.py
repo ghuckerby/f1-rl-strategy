@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 
 @dataclass
 class RealOpponent:
+    """Represents a real opponent in the race, with their lap times, pit stops, and finishing status."""
 
     driver_code: str
     driver_name: str
@@ -19,6 +20,8 @@ class RealOpponent:
     num_pit_stops: int = 0
 
     def step(self) -> float:
+        """Advance the opponent by one lap, updating lap time, position, and compound based on pit stops."""
+
         if self.has_finished or self.current_lap >= len(self.lap_times):
             self.has_finished = True
             return 0.0
@@ -59,6 +62,7 @@ class RealOpponent:
         self.has_finished = False
 
     def get_position(self, race_time: float):
+        """Get the opponent's position at a given race time."""
 
         if race_time <= 0:
             return 0.0
@@ -74,6 +78,8 @@ class RealOpponent:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'RealOpponent':
+        """Creates a RealOpponent instance from a dictionary of opponent data, parsing lap times, pit stops, and finishing status."""
+
         pit_laps = [int(lap) for lap in data.get('pit_laps', [])]
         return cls(
             driver_code=data['driver_code'],

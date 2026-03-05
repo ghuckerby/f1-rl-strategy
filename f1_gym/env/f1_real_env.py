@@ -9,6 +9,7 @@ from f1_gym.components.events import RealRaceEvents
 from f1_gym.reward_config import RewardConfig
 
 class F1RealEnv(gym.Env):
+    """Custom Gym environment for simulating a real F1 race based on historical data, allowing an RL agent to learn optimal pit stop strategies against real opponents and events."""
 
     # Observation normalisation constants
     MAX_GAP_SECONDS = 60.0
@@ -99,6 +100,7 @@ class F1RealEnv(gym.Env):
         return obs, info
 
     def make_obs(self) -> np.ndarray:
+        """Constructs the observation vector for the current state of the race."""
 
         # Create observations (normalisation and one-hot encoding)
         lap_fraction = self.current_lap / self.total_laps
@@ -139,6 +141,7 @@ class F1RealEnv(gym.Env):
         return obs
     
     def make_info(self, pitted: bool, action: Optional[int]) -> Dict[str, Any]:
+        """Constructs the info dictionary for the current state of the race.""" 
         return {
             "lap": int(self.current_lap),
             "compound": int(self.current_compound),
@@ -153,6 +156,7 @@ class F1RealEnv(gym.Env):
         }
     
     def step(self, action: int):
+        """Executes one step of the environment given an action, updating the race state."""
         
         self.events.step()
         prev_position = self.position
@@ -178,6 +182,8 @@ class F1RealEnv(gym.Env):
         return self.make_obs(), reward, terminated, False, info
     
     def calculate_reward(self, action: int, prev_position: int, pitted: bool) -> float:
+        """Calculates the reward for the current step based on lap time, position change, pit stops, and progressive rule penalties."""
+
         config = self.reward_config
         reward = 0.0
 
@@ -202,6 +208,8 @@ class F1RealEnv(gym.Env):
         return float(reward)
    
     def update_agent(self, action: int):
+        """Updates the agent's state based on the chosen action, including pit stops and lap time calculation."""
+
         agent_is_pitting = action in (1, 2, 3)
         current_lap_number = self.current_lap + 1
 
@@ -242,10 +250,12 @@ class F1RealEnv(gym.Env):
         self.tyre_wear = min(self.tyre_age / self.total_laps, 1.0)
 
     def update_opponents(self):
+        """Advances all opponents by one lap, updating their lap times, positions, and compounds based on their individual strategies"""
         for opp in self.opponents:
             opp.step()
 
     def update_race_standings(self):
+        """Updates the race standings based on the current total times of the agent and opponents."""
 
         # Build standings from opponents positions + agent's position
         active_opponents = [
@@ -267,10 +277,12 @@ class F1RealEnv(gym.Env):
         self.race_standings = times
     
     def calculate_time_to_leader(self) -> float:
+        """Calculates the time difference between the agent and the race leader."""
         leader_time = self.race_standings[0][0]
         return max(0.0, self.total_time - leader_time)
     
     def calculate_time_to_ahead(self) -> float:
+        """Calculates the time difference between the agent and the car immediately ahead in the standings."""
         agent_idx = next(
             (i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent), 0
         )
@@ -279,6 +291,7 @@ class F1RealEnv(gym.Env):
         return max(0.0, self.total_time - self.race_standings[agent_idx - 1][0])
     
     def calculate_time_to_behind(self) -> float:
+        """Calculates the time difference between the agent and the car immediately behind in the standings."""
         agent_idx = next(
             (i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent),
             len(self.race_standings) - 1

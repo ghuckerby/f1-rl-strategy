@@ -2,7 +2,7 @@ import numpy as np
 import os
 from stable_baselines3 import PPO
 from typing import Callable, Optional, Any, Dict
-from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv
+from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.callbacks import (
@@ -13,7 +13,6 @@ from stable_baselines3.common.callbacks import (
 )
 import torch.nn as nn
 
-from f1_gym.reward_config import RewardConfig
 from f1_gym.env.f1_real_env import F1RealEnv
 
 import wandb
@@ -21,6 +20,8 @@ from wandb.integration.sb3 import WandbCallback
 
 # Helper for creating multiple environments
 def make_env(rank: int, seed: int = 0, race_data: Optional[Dict] = None, predictor: Optional[Any] = None) -> Callable:
+    """Utility function for multiple training environments."""
+
     def init() -> F1RealEnv:
         env = F1RealEnv(race_data=race_data, predictor=predictor)
         env = Monitor(env)
@@ -31,6 +32,7 @@ def make_env(rank: int, seed: int = 0, race_data: Optional[Dict] = None, predict
 
 # Custom callback for F1 Metrics during training in wandb
 class F1MetricsCallback(BaseCallback):
+    """Custom callback to log F1-specific metrics to WandB during training."""
 
     def __init__(self, verbose: int = 0):
         super().__init__(verbose)
@@ -89,7 +91,6 @@ def train_f1_ppo(
 
     # Environment settings
     n_envs: int = 8,
-    use_subprocess: bool = False,
     normalise_obs: bool = False,
     normalise_reward: bool = True,
 
@@ -128,7 +129,9 @@ def train_f1_ppo(
     wandb_project: str = "f1-rl",
     run_name: Optional[str] = None,
 ) -> str:
+    """Train a PPO agent on the F1 Real Environment with WandB logging."""
     
+    # Logging and model directories
     LOG_DIR = "f1_gym/logs"
     MODEL_DIR = "f1_gym/models"
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -166,10 +169,7 @@ def train_f1_ppo(
 
     # Create vectorized environment
     print(f"Creating {n_envs} parallel environments...")
-    if use_subprocess and n_envs > 1:
-        env = SubprocVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
-    else:
-        env = DummyVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
+    env = DummyVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
     
     # Observation and reward normalisation
     if normalise_obs or normalise_reward:
@@ -195,13 +195,11 @@ def train_f1_ppo(
     
     # Setup learning rate schedule
     if use_lr_schedule:
-        if lr_schedule_type == "linear":
-            lr = linear_schedule(learning_rate)
-        else:
-            lr = learning_rate
+        lr = linear_schedule(learning_rate)
     else:
         lr = learning_rate
     
+    # PPO network architecture
     if net_arch is None:
         net_arch = dict(
             pi=[64, 64],
@@ -318,15 +316,17 @@ def evaluate_ppo_model(
     race_data: Optional[Dict] = None,
     predictor: Optional[Any] = None,
 ) -> Dict[str, Any]:
+    """Evaluate a trained PPO model on the F1 Real Environment and log detailed metrics."""
     
+    # Load the model
     if not os.path.exists(model_path):
         print(f"Model not found at {model_path}")
         return {}
-    
     model = PPO.load(model_path)
     base_env = F1RealEnv(race_data=race_data, predictor=predictor)
     env = DummyVecEnv([lambda: base_env])
     
+    # Load VecNormalize stats if available
     if vecnormalize_path and os.path.exists(vecnormalize_path):
         env = VecNormalize.load(vecnormalize_path, env)
         env.training = False
@@ -341,6 +341,7 @@ def evaluate_ppo_model(
         "total_times": [],
     }
     
+    # Evaluate the model over multiple episodes
     for episode in range(num_episodes):
         obs = env.reset()
         episode_reward = 0
@@ -390,31 +391,32 @@ def evaluate_ppo_model(
         print(f"\nEpisode {episode + 1} completed. Reward: {episode_reward:.2f}, "
               f"Final Position: {final_position}/20, Total Time: {total_time:.2f}s\n")
     
-    print(f"\nReward Statistics:")
+    # Print summary statistics
+    print("\nReward Statistics:")
     print(f"Mean: {np.mean(results['rewards']):.2f}")
     print(f"Std: {np.std(results['rewards']):.2f}")
     print(f"Min: {np.min(results['rewards']):.2f}")
     print(f"Max: {np.max(results['rewards']):.2f}")
     
-    print(f"\nPosition Statistics:")
+    print("\nPosition Statistics:")
     print(f"Mean: {np.mean(results['positions']):.2f}")
     print(f"Std: {np.std(results['positions']):.2f}")
     print(f"Best: {np.min(results['positions'])}")
     print(f"Worst: {np.max(results['positions'])}")
     
-    print(f"\nRace Time Statistics:")
+    print("\nRace Time Statistics:")
     print(f"Mean: {np.mean(results['total_times']):.2f}s")
     print(f"Std: {np.std(results['total_times']):.2f}s")
     print(f"Best: {np.min(results['total_times']):.2f}s")
     print(f"Worst: {np.max(results['total_times']):.2f}s")
     
     positions = np.array(results['positions'])
-    print(f"\nPosition Distribution:")
+    print("\nPosition Distribution:")
     print(f"Wins (P1): {np.sum(positions == 1)} ({100*np.mean(positions == 1):.1f}%)")
     print(f"Podiums (P1-3): {np.sum(positions <= 3)} ({100*np.mean(positions <= 3):.1f}%)")
     print(f"Points (P1-10): {np.sum(positions <= 10)} ({100*np.mean(positions <= 10):.1f}%)")
     
-    print(f"\nStrategy Statistics:")
+    print("\nStrategy Statistics:")
     print(f"Mean Pit Stops: {np.mean(results['pit_stops']):.2f}")
     print(f"Mean Compounds: {np.mean(results['compounds_used']):.2f}")
     print(f"Mean Lap Time: {np.mean(results['lap_times']):.2f}s")

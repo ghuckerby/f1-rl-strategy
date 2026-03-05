@@ -1,16 +1,16 @@
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, List, Set
-import sys
-import os
 import pandas as pd
 
 @dataclass
 class TyreCompound:
+    """Represents a tyre compound used in the race, with its ID and name."""
     compound_id: int
     compound: str
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TyreCompound':
+        """Creates a TyreCompound instance from a dictionary containing compound data."""
         return cls(
             compound_id=data['compound_id'],
             compound=data['compound'],
@@ -18,6 +18,8 @@ class TyreCompound:
 
 @dataclass
 class TrackParams:
+    """Represents the parameters of the race track, including lap counts and typical lap times."""
+
     name: str
     total_laps: int
     pit_loss_time: float
@@ -27,6 +29,7 @@ class TrackParams:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TrackParams':
+        """Creates a TrackParams instance from a dictionary containing track data."""
         return cls(
             name=data['name'],
             total_laps=data['total_laps'],
@@ -38,6 +41,8 @@ class TrackParams:
 
 @dataclass
 class RaceParams:
+    """All relevant parameters for a race, including track details, tyre compounds, lap time predictors, and target driver data for lap time anchoring."""
+
     track: TrackParams
     compounds: Dict[int, TyreCompound] = field(default_factory=dict)
     predictor: Optional[Any] = None
@@ -52,6 +57,7 @@ class RaceParams:
     sc_laps: Set[int] = field(default_factory=set)
 
     def get_compound(self, compound_id: int) -> TyreCompound:
+        """Returns the TyreCompound instance for a given compound ID."""
         return self.compounds.get(compound_id)
 
     # Lap time prediction using ML model
@@ -66,6 +72,7 @@ class RaceParams:
 
     # Basic lap time calculation without anchoring
     def calculate_lap_time(self, compound_id: int, age: int, current_lap: int = 1) -> float:
+        """Calculate the lap time for the agent based on the compound, tyre age, and current lap using the ML predictor."""
         return self.predict(compound_id, age, current_lap)
 
     # Anchored lap-time calculation
@@ -76,6 +83,8 @@ class RaceParams:
         current_lap: int,
         agent_is_pitting: bool,
     ) -> float:
+        """Calculate the agent's lap time for the current lap, adjusted based on the target driver's real data for anchoring."""
+        
         idx = current_lap - 1
         has_target_data = 0 <= idx < len(self.target_lap_times)
         target_real = self.target_lap_times[idx] if has_target_data else None
@@ -113,6 +122,8 @@ class RaceParams:
     
     @classmethod
     def from_race_data(cls, race_data: Dict[str, Any], predictor: Optional[Any] = None) -> 'RaceParams':
+        """Creates a RaceParams instance from a dictionary containing all relevant race data."""
+
         track = TrackParams.from_dict(race_data['track'])
         tyre_compounds = race_data.get('tyre_compounds', {})
         compounds = {

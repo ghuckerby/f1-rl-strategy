@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class RewardConfig:
+    """Configuration for reward calculation in the F1 Gym environment."""
 
     # Base Rewards
     lap_time_reward_weight: float = 0.2
