@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from stable_baselines3 import PPO
-from typing import Callable, Optional, Any, Dict
+from typing import Callable, Optional, Any, Dict, List
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import set_random_seed
@@ -14,16 +14,33 @@ from stable_baselines3.common.callbacks import (
 import torch.nn as nn
 
 from f1_gym.env.f1_real_env import F1RealEnv
+from f1_gym.env.multi_race_env import MultiRaceEnv
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
-# Helper for creating multiple environments
+COMPOUND_NAMES = {0: "?", 1: "SOFT", 2: "MED", 3: "HARD"}
+COMPOUND_SHORT = {0: "?", 1: "S", 2: "M", 3: "H"}
+ACTION_NAMES = {0: "STAY OUT", 1: "BOX SOFT", 2: "BOX MED", 3: "BOX HARD"}
+
+# Helper for creating single-race environments
 def make_env(rank: int, seed: int = 0, race_data: Optional[Dict] = None, predictor: Optional[Any] = None) -> Callable:
     """Utility function for multiple training environments."""
 
     def init() -> F1RealEnv:
         env = F1RealEnv(race_data=race_data, predictor=predictor)
+        env = Monitor(env)
+        env.reset(seed=seed + rank)
+        return env
+    set_random_seed(seed)
+    return init
+
+# Helper for creating multi-race environments
+def make_multi_env(rank: int, seed: int = 0, race_configs: Optional[List[Dict]] = None, predictors: Optional[List[Any]] = None) -> Callable:
+    """Utility function for multi-race training environments."""
+
+    def init() -> MultiRaceEnv:
+        env = MultiRaceEnv(race_configs=race_configs, predictors=predictors)
         env = Monitor(env)
         env.reset(seed=seed + rank)
         return env
@@ -85,9 +102,16 @@ def linear_schedule(initial_value: float) -> Callable[[float], float]:
 def train_f1_ppo(
     total_timesteps: int = 2_000_000,
 
-    # Real environment data (None = use sim env)
+    # Single-race data
     race_data: Optional[Dict] = None,
     predictor: Optional[Any] = None,
+
+    # Multi-race data (takes priority)
+    race_configs: Optional[List[Dict]] = None,
+    predictors: Optional[List[Any]] = None,
+
+    # Model naming
+    model_name: str = "f1_rl_ppo",
 
     # Environment settings
     n_envs: int = 8,
@@ -167,9 +191,16 @@ def train_f1_ppo(
             reinit=True,
         )
 
+    # Decide whether to use multi-race or single-race environments
+    multi_race = race_configs is not None and predictors is not None
+
     # Create vectorized environment
-    print(f"Creating {n_envs} parallel environments...")
-    env = DummyVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
+    if multi_race:
+        print(f"Creating {n_envs} parallel multi-race environments ({len(race_configs)} races)...")
+        env = DummyVecEnv([make_multi_env(i, seed, race_configs, predictors) for i in range(n_envs)])
+    else:
+        print(f"Creating {n_envs} parallel environments...")
+        env = DummyVecEnv([make_env(i, seed, race_data, predictor) for i in range(n_envs)])
     
     # Observation and reward normalisation
     if normalise_obs or normalise_reward:
@@ -183,7 +214,10 @@ def train_f1_ppo(
         )
     
     # Create evaluation environment
-    eval_env = DummyVecEnv([make_env(0, seed + 100, race_data, predictor)])
+    if multi_race:
+        eval_env = DummyVecEnv([make_multi_env(0, seed + 100, race_configs, predictors)])
+    else:
+        eval_env = DummyVecEnv([make_env(0, seed + 100, race_data, predictor)])
     if normalise_obs or normalise_reward:
         eval_env = VecNormalize(
             eval_env,
@@ -288,7 +322,6 @@ def train_f1_ppo(
     )
     
     # Save final model
-    model_name = "f1_rl_ppo_miami"
     model_path = os.path.join(MODEL_DIR, model_name)
     model.save(model_path)
     print(f"Saved model to {model_path}.zip")
@@ -317,6 +350,12 @@ def evaluate_ppo_model(
     predictor: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Evaluate a trained PPO model on the F1 Real Environment and log detailed metrics."""
+
+    print("\n" + "=" * 70) 
+    print("  EVALUATION  —  F1RealEnv (PPO)")
+    print(f"  Model: {model_path}")
+    print(f"  Episodes: {num_episodes}")
+    print("=" * 70)
     
     # Load the model
     if not os.path.exists(model_path):
@@ -332,6 +371,9 @@ def evaluate_ppo_model(
         env.training = False
         env.norm_reward = False
     
+    # Metrics
+    race_name = race_data.get("name", "Unknown Race")
+    total_laps = race_data.get["track"]["total_laps"]
     results = {
         "rewards": [],
         "positions": [],
@@ -355,13 +397,10 @@ def evaluate_ppo_model(
             done = dones[0]
             
             # Print lap-by-lap output
-            # (Not using logger_output because it didn't work properly)
             if verbose and infos[0].get("lap", 0) > 0:
                 row = infos[0]
-                compound_names = {1: "S", 2: "M", 3: "H"}
-                action_names = {0: "STAY_OUT", 1: "BOX_SOFT", 2: "BOX_MED", 3: "BOX_HARD"}
-                compound = compound_names.get(row.get("compound"), "?")
-                action_str = action_names.get(row.get("action"), "?")
+                compound = COMPOUND_NAMES.get(row.get("compound"), "?")
+                action_str = ACTION_NAMES.get(row.get("action"), "?")
                 sc = "SC" if row.get("sc_active") else "--"
                 print(
                     f"Lap {row.get('lap', 0):>2} | {sc} | action: {action_str:>10} | compound: {compound} | "
@@ -373,6 +412,7 @@ def evaluate_ppo_model(
             if done:
                 terminal_info = infos[0]
         
+        # Episode summary
         episode_log = terminal_info["episode_log"]
         final_position = episode_log[-1].get("position", 20)
         total_time = episode_log[-1].get("total_time", 0)
@@ -380,16 +420,119 @@ def evaluate_ppo_model(
         compounds = len(set(lap.get("compound") for lap in episode_log))
         lap_times = [lap.get("lap_time", 0) for lap in episode_log if lap.get("lap_time")]
         avg_lap_time = np.mean(lap_times) if lap_times else 0
-        
+
+        # Stint order
+        stints = []
+        if episode_log:
+            stints.append(COMPOUND_SHORT.get(episode_log[0].get("compound"), "?"))
+            for lap in episode_log:
+                if lap.get("pitted"):
+                    stints.append(COMPOUND_SHORT.get(lap.get("compound"), "?"))
+        compounds_str = " -> ".join(stints)
+
         results["rewards"].append(episode_reward)
         results["positions"].append(final_position)
         results["pit_stops"].append(pit_stops)
         results["compounds_used"].append(compounds)
         results["lap_times"].append(avg_lap_time)
         results["total_times"].append(total_time)
+
+        print(f"\nEpisode {episode + 1}/{num_episodes} completed.")
+        print(f"Agent finished P{final_position}  |  "
+              f"Total Time: {total_time:.2f}s  |  Pit Stops: {pit_stops}  |  "
+              f"Compounds Used: {compounds} ({compounds_str})  |  Reward: {episode_reward:.2f}\n")
         
-        print(f"\nEpisode {episode + 1} completed. Reward: {episode_reward:.2f}, "
-              f"Final Position: {final_position}/20, Total Time: {total_time:.2f}s\n")
+        # Comparison to target driver
+        target = race_data.get("target_driver_strategy", {})
+        target_lap_times = target.get("lap_times", [])
+        target_total_time = target.get("total_time", 0)
+        target_code = target.get("driver_code", "TARGET")
+        target_position = target.get("final_position", "?")
+        if episode_log and target_lap_times:
+            # Lap 1 comparison
+            agent_lap1 = next((l["lap_time"] for l in episode_log if l.get("lap") == 1 and l.get("lap_time")), None)
+            target_lap1 = target_lap_times[0] if target_lap_times else None
+
+            if agent_lap1 and target_lap1:
+                delta1 = agent_lap1 - target_lap1
+                print(f"\n  ANCHORING VALIDATION")
+                print(f"  {'─' * 52}")
+                print(f"  Lap 1  →  Agent: {agent_lap1:.2f}s  |  {target_code}: {target_lap1:.2f}s  |  Δ {delta1:+.2f}s")
+
+            # Overall comparison
+            print(f"  Total  →  Agent: {total_time:.2f}s  |  {target_code}: {target_total_time:.2f}s  |  "
+                  f"Δ {total_time - target_total_time:+.2f}s")
+            print(f"  {target_code} finished P{target_position} (real)  |  Agent finished P{final_position}")
+            print(f"  {'─' * 52}")
+
+        # Standings table
+        print(f"\n  {'RACE STANDINGS':^74}")
+        print(f"  {'─' * 74}")
+        print(
+            f"  {'Pos':>3} | {'Driver':<21} | {'Total Time':>11} | "
+            f"{'Gap':>8} | {'Pen':>5} | {'Stops':>5} | Strategy"
+        )
+        print(f"  {'─' * 74}")
+        standings = []
+        for opponent_data in race_data.get("opponents", []):
+            pit_compounds = opponent_data.get("pit_compounds", [])
+            stints = " -> ".join(COMPOUND_SHORT.get(c, "?") for c in pit_compounds)
+            opponent_dnf = opponent_data.get("dnf", False)
+            opponent_penalty = opponent_data.get("penalty", 0.0)
+            opponent_time = opponent_data.get("total_time", 0) + opponent_penalty
+            opponent_position = opponent_data.get("finishing_position", "?")
+            standings.append({
+                "time": opponent_time,
+                "code": opponent_data.get("driver_code", "???"),
+                "name": opponent_data.get("driver_name", "Unknown"),
+                "pit_stops": len(opponent_data.get("pit_laps", [])),
+                "strategy": stints,
+                "is_agent": False,
+                "dnf": opponent_dnf,
+                "real_position": opponent_position,
+                "penalty": opponent_penalty,
+            })
+
+        # Agent's standings entry
+        agent_position = sum(1 for s in standings if not s["dnf"] and s["time"] < total_time) + 1
+        standings.append({
+            "time": total_time,
+            "code": "AGT",
+            "name": "Agent",
+            "pit_stops": pit_stops,
+            "strategy": compounds_str,
+            "is_agent": True,
+            "dnf": False,
+            "real_position": agent_position,
+            "penalty": 0.0,
+        })
+
+        # Sort by total time (including penalties) DNFs at the end
+        standings.sort(key=lambda x: (x["dnf"], x["time"]))
+        leader_time = standings[0]["time"] if standings and not standings[0]["dnf"] else 0
+        for position, entry in enumerate(standings, 1):
+
+            marker = "   << AGENT" if entry["is_agent"] else ""
+            gap = entry["time"] - leader_time
+            penalty = f"+{penalty:.0f}s" if penalty > 0 else "     "
+
+            if entry["dnf"]:
+                gap_str = "DNF"
+                time_str = "DNF"  
+            elif gap == 0:
+                gap_str = "LEADER"
+                time_str = f"{entry['time']:.2f}s"
+            else:
+                gap_str = f"+{gap:.2f}s"
+                time_str = f"{entry['time']:.2f}s"
+
+            print(
+                f"  {position:>3} | {entry['code']:<4} {entry['name']:<16} | "
+                f"{time_str:>11} | {gap_str:>8} | {penalty:>5} | {entry['pit_stops']:>5} | "
+                f"{entry['strategy']}{marker}"
+            )
+
+        print(f"  {'─' * 74}")
     
     # Print summary statistics
     print("\nReward Statistics:")

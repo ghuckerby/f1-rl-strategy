@@ -602,6 +602,7 @@ class FastF1DataExtractor:
             self, year: int, 
             target_driver: str, 
             test_races: Optional[List[str]] = None,
+            skip_races: Optional[List[str]] = None,
             exclude_wet_races: bool = True
     ) -> SeasonConfig:
         
@@ -642,7 +643,7 @@ class FastF1DataExtractor:
                 continue
         
         # Determine train/test split
-        train_races = [gp for gp in completed_gps if gp not in test_races]
+        train_races = [gp for gp in completed_gps if gp not in test_races and gp not in skip_races]
 
         return SeasonConfig(
             year=year,
@@ -680,66 +681,40 @@ class FastF1DataExtractor:
 
         print(f"Saved season config to {filepath}")
         return filepath
+
+    def save_season_split(self, season_config: SeasonConfig, train_dir: str = "data/training_races", test_dir: str = "data/test_races"):
+        train_set = set(season_config.train_races)
+        test_set = set(season_config.test_races)
+
+        train_count, test_count = 0, 0
+        for race in season_config.races:
+            if race.name in train_set:
+                self.save_race_config(race, output_dir=train_dir)
+                train_count += 1
+            elif race.name in test_set:
+                self.save_race_config(race, output_dir=test_dir)
+                test_count += 1
+            else:
+                # Race not in either split — skip
+                print(f"Skipping {race.name} (not in train or test split)")
+
+        print(f"\nSaved {train_count} training races to {train_dir}/")
+        print(f"Saved {test_count} test races to {test_dir}/")
     
 if __name__ == "__main__":
     extractor = FastF1DataExtractor()
 
-    print("\nTest Single Race Config Extraction")
-    race_config = extractor.get_race_config(2024, 'Miami Grand Prix', 'HAM')
-    extractor.save_race_config(race_config)
-
-    print("\nTest Full Season Config Extraction")
+    print("\nExtracting 2024 season for HAM")
     season_config = extractor.get_season_config(
-        year=2024, 
-        target_driver='HAM', 
+        year=2024,
+        target_driver='HAM',
         test_races=['Miami Grand Prix', 'Austrian Grand Prix', 'Singapore Grand Prix',
-                    'Abu Dhabi Grand Prix', 'Italian Grand Prix']
+                    'Abu Dhabi Grand Prix', 'Italian Grand Prix'],
+        skip_races=['Monaco Grand Prix']
     )
-    extractor.save_season_config(season_config)
 
-# Utility Functions for Environment Integration
-def create_opponent(
-    strategy: OpponentStrategy,
-    opponent_id: int
-) -> Dict[str, Any]:
-    return {
-        'opponent_id': opponent_id,
-        'driver_code': strategy.driver_code,
-        'driver_name': strategy.driver_name,
-        'starting_compound': strategy.starting_compound,
-        'starting_position': strategy.starting_position,
-        'pit_laps': strategy.pit_laps,
-        'pit_compounds': strategy.pit_compounds,
-        'lap_times': strategy.lap_times,
-        'total_time': strategy.total_time,
-        'finishing_position': strategy.finishing_position,
-    }
+    # Save individual race JSONs into training_races/ and test_races/
+    extractor.save_season_split(season_config)
 
-def create_track_parameters(config: RaceConfig) -> Dict[str, Any]:
-    return {
-        'laps': config.track.total_laps,
-        'pit_loss_time': config.track.pit_loss_time,
-        'pit_loss_std': config.track.pit_loss_std,
-        'name': config.track.name,
-    }
-
-def create_tyre_parameters(config: RaceConfig) -> Dict[int, Dict[str, float]]:
-    compounds = {}
-    for compound_id, params in config.tyre_params.items():
-        compounds[compound_id] = {
-            'name': params.compound,
-        }
-    return compounds
-
-def create_event_parameters(config: RaceConfig) -> Dict[str, Any]:
-    return {
-        'sc_probability': config.sc_probability,
-        'sc_events': [
-            {
-                'start_lap': e.start_lap,
-                'end_lap': e.end_lap,
-                'duration': e.duration
-            }
-            for e in config.sc_events
-        ]
-    }
+    # Also save the combined season JSON 
+    # extractor.save_season_config(season_config)
