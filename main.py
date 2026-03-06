@@ -85,9 +85,9 @@ def main():
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate a trained PPO model on the specified test races.")
     eval_parser.add_argument("--test-dir", type=str, default=TEST_DIR, help="Directory containing test race JSON files.")
-    eval_parser.add_argument("--model", type=str, required=True, help="Path to the trained PPO model file.")
-    eval_parser.add_argument("--vecnormalize", type=str, required=True, help="Path to the VecNormalize statistics file.")
-    eval_parser.add_argument("--episodes", type=int, default=100)
+    eval_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo_2024_season.zip", help="Path to the trained PPO model file.")
+    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_2024_season_vecnormalize.pkl", help="Path to the VecNormalize statistics file.")
+    eval_parser.add_argument("--episodes", type=int, default=1)
     eval_parser.add_argument("--seed", type=int, default=6)
 
     args = parser.parse_args()
@@ -98,3 +98,6 @@ def main():
         evaluate(args)
     else:
         parser.print_help()
+
+if __name__ == "__main__":
+    main()

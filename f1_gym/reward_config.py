@@ -9,10 +9,10 @@ class RewardConfig:
     time_benchmark = 95.0
 
     # Position Rewards
-    position_gain_reward: float = 1.0
+    position_gain_reward: float = 2.0
 
     # Pit Stop
-    pit_stop_penalty: float = -3.0
+    pit_stop_penalty: float = -2.0 # Should probably reduce this
 
     # Final position reward: (20 - position) * final_position_weight
     final_position_weight: float = 2.0

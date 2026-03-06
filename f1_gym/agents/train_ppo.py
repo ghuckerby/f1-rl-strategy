@@ -127,11 +127,11 @@ def train_f1_ppo(
     batch_size: int = 256,
     n_epochs: int = 5,
     
-    gamma: float = 0.995,
+    gamma: float = 0.95,
     gae_lambda: float = 0.95,
     clip_range: float = 0.2,
     clip_range_vf: Optional[float] = None,
-    ent_coef: float = 0.01,
+    ent_coef: float = 0.02,
     vf_coef: float = 0.5,
     max_grad_norm: float = 0.5,
     
@@ -373,7 +373,7 @@ def evaluate_ppo_model(
     
     # Metrics
     race_name = race_data.get("name", "Unknown Race")
-    total_laps = race_data.get["track"]["total_laps"]
+    total_laps = race_data.get("track", {}).get("total_laps", 0)
     results = {
         "rewards": [],
         "positions": [],
@@ -385,6 +385,10 @@ def evaluate_ppo_model(
     
     # Evaluate the model over multiple episodes
     for episode in range(num_episodes):
+        print(f"\n{'─' * 70}")
+        print(f"  EPISODE {episode + 1}/{num_episodes}  —  {race_name}  ({total_laps} laps)")
+        print(f"{'─' * 70}")
+
         obs = env.reset()
         episode_reward = 0
         done = False
@@ -447,7 +451,7 @@ def evaluate_ppo_model(
         target_lap_times = target.get("lap_times", [])
         target_total_time = target.get("total_time", 0)
         target_code = target.get("driver_code", "TARGET")
-        target_position = target.get("final_position", "?")
+        target_position = target.get("finishing_position", "?")
         if episode_log and target_lap_times:
             # Lap 1 comparison
             agent_lap1 = next((l["lap_time"] for l in episode_log if l.get("lap") == 1 and l.get("lap_time")), None)
@@ -465,72 +469,40 @@ def evaluate_ppo_model(
             print(f"  {target_code} finished P{target_position} (real)  |  Agent finished P{final_position}")
             print(f"  {'─' * 52}")
 
-        # Standings table
+        # Standings table — (handles lapped drivers classified as +N Lap(s))
         print(f"\n  {'RACE STANDINGS':^74}")
         print(f"  {'─' * 74}")
-        print(
-            f"  {'Pos':>3} | {'Driver':<21} | {'Total Time':>11} | "
-            f"{'Gap':>8} | {'Pen':>5} | {'Stops':>5} | Strategy"
-        )
+        print(f"  {'Pos':>3} | {'Driver':<21} | {'Total Time':>11} | {'Gap':>8} | {'Pen':>5} | {'Stops':>5} | Strategy")
         print(f"  {'─' * 74}")
-        standings = []
-        for opponent_data in race_data.get("opponents", []):
-            pit_compounds = opponent_data.get("pit_compounds", [])
-            stints = " -> ".join(COMPOUND_SHORT.get(c, "?") for c in pit_compounds)
-            opponent_dnf = opponent_data.get("dnf", False)
-            opponent_penalty = opponent_data.get("penalty", 0.0)
-            opponent_time = opponent_data.get("total_time", 0) + opponent_penalty
-            opponent_position = opponent_data.get("finishing_position", "?")
-            standings.append({
-                "time": opponent_time,
-                "code": opponent_data.get("driver_code", "???"),
-                "name": opponent_data.get("driver_name", "Unknown"),
-                "pit_stops": len(opponent_data.get("pit_laps", [])),
-                "strategy": stints,
-                "is_agent": False,
-                "dnf": opponent_dnf,
-                "real_position": opponent_position,
-                "penalty": opponent_penalty,
-            })
 
-        # Agent's standings entry
-        agent_position = sum(1 for s in standings if not s["dnf"] and s["time"] < total_time) + 1
-        standings.append({
-            "time": total_time,
-            "code": "AGT",
-            "name": "Agent",
-            "pit_stops": pit_stops,
-            "strategy": compounds_str,
-            "is_agent": True,
-            "dnf": False,
-            "real_position": agent_position,
-            "penalty": 0.0,
-        })
+        standings = terminal_info.get("final_standings", [])
 
-        # Sort by total time (including penalties) DNFs at the end
-        standings.sort(key=lambda x: (x["dnf"], x["time"]))
-        leader_time = standings[0]["time"] if standings and not standings[0]["dnf"] else 0
-        for position, entry in enumerate(standings, 1):
+        if standings:
+            leader_laps = standings[0].get("laps", total_laps) if standings else total_laps
+            leader_time = standings[0]["time"] if standings and not standings[0]["dnf"] else 0
+            for position, entry in enumerate(standings, 1):
+                marker = "   << AGENT" if entry["is_agent"] else ""
+                penalty = f"+{entry['penalty']:.0f}s" if entry.get("penalty") else "     "
 
-            marker = "   << AGENT" if entry["is_agent"] else ""
-            gap = entry["time"] - leader_time
-            penalty = f"+{penalty:.0f}s" if penalty > 0 else "     "
+                if entry["dnf"]:
+                    gap_str = "DNF"
+                    time_str = "DNF"
+                elif entry.get("laps", leader_laps) < leader_laps:
+                    laps_behind = leader_laps - entry["laps"]
+                    gap_str = f"+{laps_behind} Lap{'s' if laps_behind > 1 else ''}"
+                    time_str = f"{entry['time']:.2f}s"
+                elif entry["time"] == leader_time:
+                    gap_str = "LEADER"
+                    time_str = f"{entry['time']:.2f}s"
+                else:
+                    gap_str = f"+{entry['time'] - leader_time:.2f}s"
+                    time_str = f"{entry['time']:.2f}s"
 
-            if entry["dnf"]:
-                gap_str = "DNF"
-                time_str = "DNF"  
-            elif gap == 0:
-                gap_str = "LEADER"
-                time_str = f"{entry['time']:.2f}s"
-            else:
-                gap_str = f"+{gap:.2f}s"
-                time_str = f"{entry['time']:.2f}s"
-
-            print(
-                f"  {position:>3} | {entry['code']:<4} {entry['name']:<16} | "
-                f"{time_str:>11} | {gap_str:>8} | {penalty:>5} | {entry['pit_stops']:>5} | "
-                f"{entry['strategy']}{marker}"
-            )
+                print(
+                    f"  {position:>3} | {entry['code']:<4} {entry['name']:<16} | "
+                    f"{time_str:>11} | {gap_str:>8} | {penalty:>5} | {entry['pit_stops']:>5} | "
+                    f"{entry['strategy']}{marker}"
+                )
 
         print(f"  {'─' * 74}")
     

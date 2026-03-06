@@ -18,12 +18,20 @@ class RealOpponent:
     total_time: float
     time_penalty: float = 0.0
     num_pit_stops: int = 0
+    total_race_laps: int = 0
 
     def step(self) -> float:
         """Advance the opponent by one lap, updating lap time, position, and compound based on pit stops."""
 
-        if self.has_finished or self.current_lap >= len(self.lap_times):
+        if self.has_finished:
+            return 0.0
+
+        # Apply finished status if gone through all recorded laps
+        if self.current_lap >= len(self.lap_times):
             self.has_finished = True
+            # Apply time penalty once when they finish
+            if self.time_penalty > 0:
+                self.cumulative_time += self.time_penalty
             return 0.0
         
         # Lap times and cumulative time
@@ -42,8 +50,9 @@ class RealOpponent:
                 self.current_compound = self.pit_compounds[pit_index + 1]
 
         self.current_lap += 1
+        self.laps_completed = self.current_lap
 
-        # Apply time penalty on the final lap (post-race adjustment)
+        # Apply time penalty on the final recorded lap
         if self.current_lap >= len(self.lap_times) and self.time_penalty > 0:
             self.cumulative_time += self.time_penalty
 
@@ -55,6 +64,7 @@ class RealOpponent:
 
     def reset(self):
         self.current_lap = 0
+        self.laps_completed = 0
         self.current_compound = self.starting_compound
         self.cumulative_time = 0.0
         self.current_lap_time = 0.0
@@ -94,5 +104,6 @@ class RealOpponent:
             dnf=data.get('dnf', False),
             total_time=data.get('total_time', 0.0),
             time_penalty=data.get('time_penalty', 0.0),
-            num_pit_stops=len(pit_laps)
+            num_pit_stops=len(pit_laps),
+            total_race_laps=data.get('total_race_laps', 0),
         )

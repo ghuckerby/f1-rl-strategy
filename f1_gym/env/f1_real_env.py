@@ -86,6 +86,7 @@ class F1RealEnv(gym.Env):
         opponents_data = self.race_data.get('opponents', [])
         self.opponents = [RealOpponent.from_dict(opp) for opp in opponents_data]
         for opp in self.opponents:
+            opp.total_race_laps = self.total_laps
             opp.reset()
 
         # Set agent's starting position
@@ -178,6 +179,7 @@ class F1RealEnv(gym.Env):
             final_position_reward = (20 - self.position) * self.reward_config.final_position_weight
             reward += final_position_reward
             info["episode_log"] = list(self.race_log)
+            info["final_standings"] = self._build_final_standings()
 
         return self.make_obs(), reward, terminated, False, info
     
@@ -255,50 +257,89 @@ class F1RealEnv(gym.Env):
             opp.step()
 
     def update_race_standings(self):
-        """Updates the race standings based on the current total times of the agent and opponents."""
+        """Updates the race standings based on laps completed then total time"""
 
-        # Build standings from opponents positions + agent's position
-        active_opponents = [
-            opp for opp in self.opponents
-            if not (opp.has_finished and opp.dnf)
-        ]
-        opponents_ahead = sum(
-            1 for opp in active_opponents
-            if opp.cumulative_time < self.total_time
-        )
-        self.position = opponents_ahead + 1
+        # Agent always completes current_lap laps (full race distance)
+        agent_laps = self.current_lap
 
-        times = [
-            (opp.cumulative_time, False, opp.driver_code)
-            for opp in active_opponents
-        ]
-        times.append((self.total_time, True, "AGENT"))
-        times.sort(key=lambda x: x[0])
-        self.race_standings = times
+        # Build entries: (laps_completed, cumulative_time, is_agent, code, dnf)
+        entries = []
+        for opp in self.opponents:
+            if opp.dnf and opp.has_finished:
+                continue  # exclude DNFs from active standings
+            entries.append((
+                opp.laps_completed, opp.cumulative_time, False, opp.driver_code
+            ))
+        entries.append((agent_laps, self.total_time, True, "AGENT"))
+        entries.sort(key=lambda x: (-x[0], x[1]))
+        self.race_standings = entries
+        self.position = next(i + 1 for i, (_, _, is_agent, _) in enumerate(entries) if is_agent)
+
+    def _build_final_standings(self) -> List[Dict[str, Any]]:
+        """Build detailed final standings from simulated race state for display."""
+        COMPOUND_SHORT = {1: "S", 2: "M", 3: "H"}
+        standings = []
+
+        for opp in self.opponents:
+            stints = " -> ".join(COMPOUND_SHORT.get(c, "?") for c in opp.pit_compounds)
+            standings.append({
+                "code": opp.driver_code,
+                "name": opp.driver_name,
+                "time": opp.cumulative_time,
+                "laps": opp.laps_completed,
+                "pit_stops": opp.num_pit_stops,
+                "strategy": stints,
+                "is_agent": False,
+                "dnf": opp.dnf and opp.has_finished,
+                "penalty": opp.time_penalty,
+            })
+
+        # Agent entry
+        stints_agent = []
+        if self.race_log:
+            stints_agent.append(COMPOUND_SHORT.get(self.race_log[0].get("compound"), "?"))
+            for lap in self.race_log:
+                if lap.get("pitted"):
+                    stints_agent.append(COMPOUND_SHORT.get(lap.get("compound"), "?"))
+        standings.append({
+            "code": "AGT",
+            "name": "Agent",
+            "time": self.total_time,
+            "laps": self.current_lap,
+            "pit_stops": self.num_pit_stops,
+            "strategy": " -> ".join(stints_agent),
+            "is_agent": True,
+            "dnf": False,
+            "penalty": 0.0,
+        })
+
+        # Sort: DNFs last, then more laps first, then lower time
+        standings.sort(key=lambda x: (x["dnf"], -x["laps"], x["time"]))
+        return standings
     
     def calculate_time_to_leader(self) -> float:
         """Calculates the time difference between the agent and the race leader."""
-        leader_time = self.race_standings[0][0]
+        leader_time = self.race_standings[0][1]
         return max(0.0, self.total_time - leader_time)
     
     def calculate_time_to_ahead(self) -> float:
         """Calculates the time difference between the agent and the car immediately ahead in the standings."""
         agent_idx = next(
-            (i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent), 0
+            (i for i, (_, _, is_agent, _) in enumerate(self.race_standings) if is_agent), 0
         )
         if agent_idx == 0:
             return 0.0
-        return max(0.0, self.total_time - self.race_standings[agent_idx - 1][0])
+        return max(0.0, self.total_time - self.race_standings[agent_idx - 1][1])
     
     def calculate_time_to_behind(self) -> float:
         """Calculates the time difference between the agent and the car immediately behind in the standings."""
         agent_idx = next(
-            (i for i, (_, is_agent, _) in enumerate(self.race_standings) if is_agent),
+            (i for i, (_, _, is_agent, _) in enumerate(self.race_standings) if is_agent),
             len(self.race_standings) - 1
         )
         if agent_idx >= len(self.race_standings) - 1:
             return 0.0
-        return max(0.0, self.race_standings[agent_idx + 1][0] - self.total_time)
+        return max(0.0, self.race_standings[agent_idx + 1][1] - self.total_time)
     
     def logger_output(self):
         if not self.race_log:
