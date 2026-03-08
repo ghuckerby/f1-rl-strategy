@@ -506,35 +506,35 @@ def evaluate_ppo_model(
 
         print(f"  {'─' * 74}")
     
-    # Print summary statistics
+    # Print summary statistics for each race
     print("\nReward Statistics:")
-    print(f"Mean: {np.mean(results['rewards']):.2f}")
-    print(f"Std: {np.std(results['rewards']):.2f}")
-    print(f"Min: {np.min(results['rewards']):.2f}")
-    print(f"Max: {np.max(results['rewards']):.2f}")
+    print(f"Mean: {np.mean(results['rewards']):.2f}, "
+          f"Std: {np.std(results['rewards']):.2f}, "
+          f"Min: {np.min(results['rewards']):.2f}, "
+          f"Max: {np.max(results['rewards']):.2f}")
     
     print("\nPosition Statistics:")
-    print(f"Mean: {np.mean(results['positions']):.2f}")
-    print(f"Std: {np.std(results['positions']):.2f}")
-    print(f"Best: {np.min(results['positions'])}")
-    print(f"Worst: {np.max(results['positions'])}")
+    print(f"Mean: {np.mean(results['positions']):.2f}, "
+          f"Std: {np.std(results['positions']):.2f}, "
+          f"Best: {np.min(results['positions'])}, "
+          f"Worst: {np.max(results['positions'])}")
     
     print("\nRace Time Statistics:")
-    print(f"Mean: {np.mean(results['total_times']):.2f}s")
-    print(f"Std: {np.std(results['total_times']):.2f}s")
-    print(f"Best: {np.min(results['total_times']):.2f}s")
-    print(f"Worst: {np.max(results['total_times']):.2f}s")
+    print(f"Mean: {np.mean(results['total_times']):.2f}s, "
+          f"Std: {np.std(results['total_times']):.2f}s, "
+          f"Best: {np.min(results['total_times']):.2f}s, "
+          f"Worst: {np.max(results['total_times']):.2f}s")
     
     positions = np.array(results['positions'])
     print("\nPosition Distribution:")
-    print(f"Wins (P1): {np.sum(positions == 1)} ({100*np.mean(positions == 1):.1f}%)")
-    print(f"Podiums (P1-3): {np.sum(positions <= 3)} ({100*np.mean(positions <= 3):.1f}%)")
-    print(f"Points (P1-10): {np.sum(positions <= 10)} ({100*np.mean(positions <= 10):.1f}%)")
+    print(f"Wins (P1): {np.sum(positions == 1)} ({100*np.mean(positions == 1):.1f}%), "
+          f"Podiums (P1-3): {np.sum(positions <= 3)} ({100*np.mean(positions <= 3):.1f}%), "
+          f"Points (P1-10): {np.sum(positions <= 10)} ({100*np.mean(positions <= 10):.1f}%)")
     
     print("\nStrategy Statistics:")
-    print(f"Mean Pit Stops: {np.mean(results['pit_stops']):.2f}")
-    print(f"Mean Compounds: {np.mean(results['compounds_used']):.2f}")
-    print(f"Mean Lap Time: {np.mean(results['lap_times']):.2f}s")
+    print(f"Mean Pit Stops: {np.mean(results['pit_stops']):.2f}, "
+          f"Mean Compounds: {np.mean(results['compounds_used']):.2f}, "
+          f"Mean Lap Time: {np.mean(results['lap_times']):.2f}s")
     
     env.close()
     

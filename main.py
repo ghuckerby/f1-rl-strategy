@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import joblib
+import numpy as np
 
 from f1_gym.agents.train_ppo import train_f1_ppo, evaluate_ppo_model
 
@@ -59,15 +60,34 @@ def train(args):
 def evaluate(args):
     test_configs, test_predictors = load_races(args.test_dir)
 
+    all_results = []
+    target_stats = []
+
     for race_data, predictor in zip(test_configs, test_predictors):
+
+        # Per Race Evaluation
         print(f"\nEvaluating on {race_data['name']}.")
-        evaluate_ppo_model(
+        race_results = evaluate_ppo_model(
             model_path=args.model,
             vecnormalize_path=args.vecnormalize,
             num_episodes=args.episodes,
             race_data=race_data,
             predictor=predictor,
         )
+        all_results.append((race_data["name"], race_results))
+
+        # Target driver stats for comparison
+        target = race_data.get("target_driver_strategy", {})
+        target_stats.append({
+            "race": race_data["name"],
+            "code": target.get("driver_code", "TGT"),
+            "position": target.get("finishing_position", 20),
+            "total_time": target.get("total_time", 0),
+            "pit_stops": target.get("num_pit_stops", 0)
+        })
+
+    # Summary across test races
+    target_code = target_stats[0]["code"] if target_stats else "TGT"
 
 # Command line interface
 def main():
@@ -77,16 +97,16 @@ def main():
     # Train command
     train_parser = subparsers.add_parser("train", help="Train a PPO agent on the specified training races.")
     train_parser.add_argument("--train-dir", type=str, default=TRAIN_DIR, help="Directory containing training race JSON files.")
-    train_parser.add_argument("--timesteps", type=int, default=2_000_000)
+    train_parser.add_argument("--timesteps", type=int, default=3_000_000)
     train_parser.add_argument("--n-envs", type=int, default=8)
-    train_parser.add_argument("--model-name", type=str, default="f1_rl_ppo_2024_season")
+    train_parser.add_argument("--model-name", type=str, default="f1_rl_ppo_2024_season_1")
     train_parser.add_argument("--seed", type=int, default=6)
 
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate a trained PPO model on the specified test races.")
     eval_parser.add_argument("--test-dir", type=str, default=TEST_DIR, help="Directory containing test race JSON files.")
-    eval_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo_2024_season.zip", help="Path to the trained PPO model file.")
-    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_2024_season_vecnormalize.pkl", help="Path to the VecNormalize statistics file.")
+    eval_parser.add_argument("--model", type=str, default="f1_gym/models/f1_rl_ppo_2024_season_1.zip", help="Path to the trained PPO model file.")
+    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/f1_rl_ppo_2024_season_1_vecnormalize.pkl", help="Path to the VecNormalize statistics file.")
     eval_parser.add_argument("--episodes", type=int, default=1)
     eval_parser.add_argument("--seed", type=int, default=6)
 
