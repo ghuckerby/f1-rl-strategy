@@ -710,7 +710,11 @@ if __name__ == "__main__":
         target_driver='HAM',
         test_races=['Miami Grand Prix', 'Austrian Grand Prix', 'Singapore Grand Prix',
                     'Abu Dhabi Grand Prix', 'Italian Grand Prix'],
-        skip_races=['Monaco Grand Prix']
+        # Skipped races:
+        # Monaco: Red flag first lap, hard to predict lap times
+        # USA and Australia: Hamilton DNF
+        # Japanese GP: Bad Data
+        skip_races=['Monaco Grand Prix', 'United States Grand Prix', 'Australian Grand Prix', 'Japanese Grand Prix']
     )
 
     # Save individual race JSONs into training_races/ and test_races/

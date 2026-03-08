@@ -89,6 +89,76 @@ def evaluate(args):
     # Summary across test races
     target_code = target_stats[0]["code"] if target_stats else "TGT"
 
+    agent_positions = [r["positions"][0] for _, r in all_results]
+    agent_rewards = [r["rewards"][0] for _, r in all_results]
+    agent_times = [r["total_times"][0] for _, r in all_results]
+    agent_pit_stops = [r["pit_stops"][0] for _, r in all_results]
+    agent_compounds = [r["compounds_used"][0] for _, r in all_results]
+    agent_lap_times = [r["lap_times"][0] for _, r in all_results]
+
+    target_positions = [t["position"] for t in target_stats]
+    target_times = [t["total_time"] for t in target_stats]
+    target_pit_stops = [t["pit_stops"] for t in target_stats]
+
+    print("\n" + "=" * 74)
+    print(f"  Overall Evaluation Summary - From {len(all_results)} Test Races")
+    print("=" * 74)
+
+    # Race breakdown table
+    print(f"\n  {'Race':<30} | {'Agent':>6} | {target_code:>6} | {'Delta Pos':>6} | {'Delta Time':>10}")
+    print(f"  {'─' * 76}")
+    position_deltas = []
+    time_deltas = []
+    for i, (name, _) in enumerate(all_results):
+
+        # Position Comparison
+        agent_position = agent_positions[i]
+        target_position = target_positions[i]
+        delta_position = agent_position - target_position
+        position_deltas.append(delta_position)
+
+        # Time Comparison
+        agent_time = agent_times[i]
+        target_time = target_times[i]
+        delta_time = agent_time - target_time
+        time_deltas.append(delta_time)
+
+        print(f"  {name:<30} | P{agent_position:<5} | P{target_position:<5} | {delta_position:>+9} | {delta_time:>+10.2f}s")
+    print(f"  {'─' * 76}")
+
+    # Agent Summary
+    a_positions = np.array(agent_positions)
+    print(f"\n  Agent Statistics (across {len(all_results)} races):")
+    print(f"    Mean Position:   {np.mean(a_positions):.2f}")
+    print(f"    Best / Worst:    P{np.min(a_positions)} / P{np.max(a_positions)}")
+    print(f"    Wins (P1):       {np.sum(a_positions == 1)} ({100*np.mean(a_positions == 1):.1f}%)")
+    print(f"    Podiums (P1-3):  {np.sum(a_positions <= 3)} ({100*np.mean(a_positions <= 3):.1f}%)")
+    print(f"    Points (P1-10):  {np.sum(a_positions <= 10)} ({100*np.mean(a_positions <= 10):.1f}%)")
+    print(f"    Mean Reward:     {np.mean(agent_rewards):.2f}")
+    print(f"    Mean Pit Stops:  {np.mean(agent_pit_stops):.2f}")
+    print(f"    Mean Compounds:  {np.mean(agent_compounds):.2f}")
+    print(f"    Mean Lap Time:   {np.mean(agent_lap_times):.2f}s")
+
+    # Target Driver Summary
+    t_positions = np.array(target_positions)
+    print(f"\n  {target_code} Statistics (across {len(all_results)} races):")
+    print(f"    Mean Position:   {np.mean(t_positions):.2f}")
+    print(f"    Best / Worst:    P{np.min(t_positions)} / P{np.max(t_positions)}")
+    print(f"    Wins (P1):       {np.sum(t_positions == 1)} ({100*np.mean(t_positions == 1):.1f}%)")
+    print(f"    Podiums (P1-3):  {np.sum(t_positions <= 3)} ({100*np.mean(t_positions <= 3):.1f}%)")
+    print(f"    Points (P1-10):  {np.sum(t_positions <= 10)} ({100*np.mean(t_positions <= 10):.1f}%)")
+    print(f"    Mean Pit Stops:  {np.mean(target_pit_stops):.2f}")
+
+    # Comparison
+    print(f"\n  Agent vs {target_code} Comparison:")
+    print(f"    Position delta average:  {np.mean(position_deltas):+.2f}")
+    print(f"    Time delta average:      {np.mean(time_deltas):+.2f}s")
+    agent_wins = sum(1 for d in position_deltas if d < 0)
+    ties = sum(1 for d in position_deltas if d == 0)
+    target_wins = sum(1 for d in position_deltas if d > 0)
+    print(f"    Head-to-head:      Agent won {agent_wins} times, tied {ties} times, {target_code} won {target_wins} times")
+    print("=" * 74)
+
 # Command line interface
 def main():
     parser = argparse.ArgumentParser(description="Reinforcement Learning for F1 Pit Stop strategy - Season Train & Test.")
