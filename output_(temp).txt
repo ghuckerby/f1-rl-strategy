@@ -1,0 +1,663 @@
+Loaded Abu Dhabi Grand Prix (58 laps)
+Loaded Austrian Grand Prix (71 laps)
+Loaded Italian Grand Prix (53 laps)
+Loaded Miami Grand Prix (57 laps)
+Loaded Singapore Grand Prix (62 laps)
+
+Evaluating on Abu Dhabi Grand Prix.
+
+======================================================================
+  EVALUATION  —  F1RealEnv (PPO)
+  Model: f1_gym/models/f1_rl_ppo_2024_season_2.zip
+  Episodes: 1
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  EPISODE 1/1  —  Abu Dhabi Grand Prix  (58 laps)
+──────────────────────────────────────────────────────────────────────
+Lap  1 | -- | action:   STAY OUT | compound: HARD | tyre_age:  1 | lap_time: 99.88s | total_time: 99.88s | pitted: False | position: 12
+Lap  2 | SC | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 116.73s | total_time: 216.62s | pitted: False | position: 12
+Lap  3 | SC | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 97.74s | total_time: 314.35s | pitted: False | position: 12
+Lap  4 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 89.67s | total_time: 404.02s | pitted: False | position: 12
+Lap  5 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 89.73s | total_time: 493.75s | pitted: False | position: 12
+Lap  6 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 90.69s | total_time: 584.44s | pitted: False | position: 12
+Lap  7 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 90.36s | total_time: 674.80s | pitted: False | position: 12
+Lap  8 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 90.22s | total_time: 765.02s | pitted: False | position: 12
+Lap  9 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 90.30s | total_time: 855.31s | pitted: False | position: 12
+Lap 10 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 90.66s | total_time: 945.97s | pitted: False | position: 12
+Lap 11 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 91.07s | total_time: 1037.03s | pitted: False | position: 12
+Lap 12 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 89.95s | total_time: 1126.99s | pitted: False | position: 10
+Lap 13 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 90.28s | total_time: 1217.27s | pitted: False | position: 9
+Lap 14 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 90.04s | total_time: 1307.31s | pitted: False | position: 7
+Lap 15 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 89.87s | total_time: 1397.18s | pitted: False | position: 6
+Lap 16 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 89.97s | total_time: 1487.14s | pitted: False | position: 6
+Lap 17 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 89.64s | total_time: 1576.78s | pitted: False | position: 6
+Lap 18 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 89.76s | total_time: 1666.54s | pitted: False | position: 6
+Lap 19 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 89.85s | total_time: 1756.39s | pitted: False | position: 6
+Lap 20 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 89.81s | total_time: 1846.19s | pitted: False | position: 6
+Lap 21 | -- | action:   STAY OUT | compound: HARD | tyre_age: 21 | lap_time: 89.72s | total_time: 1935.91s | pitted: False | position: 5
+Lap 22 | -- | action:   STAY OUT | compound: HARD | tyre_age: 22 | lap_time: 89.66s | total_time: 2025.57s | pitted: False | position: 5
+Lap 23 | -- | action:   STAY OUT | compound: HARD | tyre_age: 23 | lap_time: 89.79s | total_time: 2115.35s | pitted: False | position: 5
+Lap 24 | -- | action:   STAY OUT | compound: HARD | tyre_age: 24 | lap_time: 89.70s | total_time: 2205.05s | pitted: False | position: 5
+Lap 25 | -- | action:   STAY OUT | compound: HARD | tyre_age: 25 | lap_time: 89.62s | total_time: 2294.67s | pitted: False | position: 5
+Lap 26 | -- | action:   STAY OUT | compound: HARD | tyre_age: 26 | lap_time: 89.83s | total_time: 2384.50s | pitted: False | position: 5
+Lap 27 | -- | action:   STAY OUT | compound: HARD | tyre_age: 27 | lap_time: 89.84s | total_time: 2474.34s | pitted: False | position: 4
+Lap 28 | -- | action:   STAY OUT | compound: HARD | tyre_age: 28 | lap_time: 89.48s | total_time: 2563.83s | pitted: False | position: 4
+Lap 29 | -- | action:   STAY OUT | compound: HARD | tyre_age: 29 | lap_time: 89.76s | total_time: 2653.58s | pitted: False | position: 4
+Lap 30 | -- | action:   STAY OUT | compound: HARD | tyre_age: 30 | lap_time: 89.49s | total_time: 2743.07s | pitted: False | position: 3
+Lap 31 | -- | action:   STAY OUT | compound: HARD | tyre_age: 31 | lap_time: 89.71s | total_time: 2832.78s | pitted: False | position: 3
+Lap 32 | -- | action:   STAY OUT | compound: HARD | tyre_age: 32 | lap_time: 89.80s | total_time: 2922.58s | pitted: False | position: 3
+Lap 33 | -- | action:   STAY OUT | compound: HARD | tyre_age: 33 | lap_time: 89.59s | total_time: 3012.17s | pitted: False | position: 3
+Lap 34 | -- | action:   STAY OUT | compound: HARD | tyre_age: 34 | lap_time: 91.79s | total_time: 3103.96s | pitted: False | position: 4
+Lap 35 | -- | action:   STAY OUT | compound: HARD | tyre_age: 35 | lap_time: 89.73s | total_time: 3193.70s | pitted: False | position: 4
+Lap 36 | -- | action:   STAY OUT | compound: HARD | tyre_age: 36 | lap_time: 89.63s | total_time: 3283.33s | pitted: False | position: 4
+Lap 37 | -- | action:   STAY OUT | compound: HARD | tyre_age: 37 | lap_time: 89.50s | total_time: 3372.82s | pitted: False | position: 5
+Lap 38 | -- | action:   STAY OUT | compound: HARD | tyre_age: 38 | lap_time: 90.41s | total_time: 3463.24s | pitted: False | position: 5
+Lap 39 | -- | action:   STAY OUT | compound: HARD | tyre_age: 39 | lap_time: 90.46s | total_time: 3553.70s | pitted: False | position: 5
+Lap 40 | -- | action:   STAY OUT | compound: HARD | tyre_age: 40 | lap_time: 90.31s | total_time: 3644.01s | pitted: False | position: 5
+Lap 41 | -- | action:   STAY OUT | compound: HARD | tyre_age: 41 | lap_time: 91.43s | total_time: 3735.44s | pitted: False | position: 5
+Lap 42 | -- | action:   STAY OUT | compound: HARD | tyre_age: 42 | lap_time: 90.79s | total_time: 3826.23s | pitted: False | position: 5
+Lap 43 | -- | action:   STAY OUT | compound: HARD | tyre_age: 43 | lap_time: 91.34s | total_time: 3917.57s | pitted: False | position: 5
+Lap 44 | -- | action:   STAY OUT | compound: HARD | tyre_age: 44 | lap_time: 91.08s | total_time: 4008.65s | pitted: False | position: 5
+Lap 45 | -- | action:   STAY OUT | compound: HARD | tyre_age: 45 | lap_time: 91.26s | total_time: 4099.91s | pitted: False | position: 7
+Lap 46 | -- | action:   STAY OUT | compound: HARD | tyre_age: 46 | lap_time: 91.20s | total_time: 4191.11s | pitted: False | position: 7
+Lap 47 | -- | action:   STAY OUT | compound: HARD | tyre_age: 47 | lap_time: 90.91s | total_time: 4282.01s | pitted: False | position: 8
+Lap 48 | -- | action:   STAY OUT | compound: HARD | tyre_age: 48 | lap_time: 91.33s | total_time: 4373.34s | pitted: False | position: 8
+Lap 49 | -- | action:   STAY OUT | compound: HARD | tyre_age: 49 | lap_time: 91.23s | total_time: 4464.58s | pitted: False | position: 8
+Lap 50 | -- | action:   STAY OUT | compound: HARD | tyre_age: 50 | lap_time: 91.16s | total_time: 4555.73s | pitted: False | position: 8
+Lap 51 | -- | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 115.33s | total_time: 4671.06s | pitted: True | position: 13
+Lap 52 | -- | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 88.22s | total_time: 4759.28s | pitted: False | position: 12
+Lap 53 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 88.21s | total_time: 4847.49s | pitted: False | position: 11
+Lap 54 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 87.89s | total_time: 4935.38s | pitted: False | position: 11
+Lap 55 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 87.70s | total_time: 5023.08s | pitted: False | position: 11
+Lap 56 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 87.91s | total_time: 5110.98s | pitted: False | position: 10
+Lap 57 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 87.66s | total_time: 5198.65s | pitted: False | position: 10
+Lap 58 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 87.74s | total_time: 5286.39s | pitted: False | position: 10
+
+Episode 1/1 completed.
+Agent finished P10  |  Total Time: 5286.39s  |  Pit Stops: 1  |  Compounds Used: 1 (H -> H)  |  Reward: -33.88
+
+
+  ANCHORING VALIDATION
+  ────────────────────────────────────────────────────
+  Lap 1  →  Agent: 99.88s  |  HAM: 99.88s  |  Δ +0.00s
+  Total  →  Agent: 5286.39s  |  HAM: 5229.77s  |  Δ +56.61s
+  HAM finished P4 (real)  |  Agent finished P10
+  ────────────────────────────────────────────────────
+
+                                RACE STANDINGS                              
+  ──────────────────────────────────────────────────────────────────────────
+  Pos | Driver                |  Total Time |      Gap |   Pen | Stops | Strategy
+  ──────────────────────────────────────────────────────────────────────────
+    1 | NOR  Lando Norris     |    5193.29s |   LEADER |       |     1 | M -> H
+    2 | SAI  Carlos Sainz     |    5199.12s |   +5.83s |       |     1 | M -> H
+    3 | LEC  Charles Leclerc  |    5225.22s |  +31.93s |       |     1 | M -> H
+    4 | RUS  George Russell   |    5230.83s |  +37.54s |       |     1 | M -> H
+    5 | VER  Max Verstappen   |    5243.14s |  +49.85s |       |     1 | M -> H
+    6 | GAS  Pierre Gasly     |    5265.85s |  +72.56s |       |     1 | M -> H
+    7 | HUL  Nico Hulkenberg  |    5268.85s |  +75.55s |       |     1 | M -> H
+    8 | ALO  Fernando Alonso  |    5275.66s |  +82.37s |       |     1 | M -> H
+    9 | PIA  Oscar Piastri    |    5277.11s |  +83.82s |       |     1 | M -> H
+   10 | AGT  Agent            |    5286.39s |  +93.10s |       |     1 | H -> H   << AGENT
+   11 | ALB  Alexander Albon  |    5204.54s |   +1 Lap |       |     1 | M -> H
+   12 | TSU  Yuki Tsunoda     |    5208.03s |   +1 Lap |       |     1 | M -> H
+   13 | ZHO  Guanyu Zhou      |    5210.59s |   +1 Lap |       |     1 | M -> H
+   14 | STR  Lance Stroll     |    5216.76s |   +1 Lap |   +5s |     1 | M -> H
+   15 | DOO  Jack Doohan      |    5219.85s |   +1 Lap |       |     1 | M -> H
+   16 | MAG  Kevin Magnussen  |    5270.89s |   +1 Lap |       |     2 | M -> H -> S
+   17 | LAW  Liam Lawson      |    5226.95s |  +2 Laps |       |     1 | M -> H
+   18 | BOT  Valtteri Bottas  |         DNF |      DNF |       |     1 | M -> H
+   19 | COL  Franco Colapinto |         DNF |      DNF |       |     1 | M -> H
+   20 | PER  Sergio Perez     |         DNF |      DNF |       |     0 | M
+  ──────────────────────────────────────────────────────────────────────────
+
+Reward Statistics:
+Mean: -33.88, Std: 0.00, Min: -33.88, Max: -33.88
+
+Position Statistics:
+Mean: 10.00, Std: 0.00, Best: 10, Worst: 10
+
+Race Time Statistics:
+Mean: 5286.39s, Std: 0.00s, Best: 5286.39s, Worst: 5286.39s
+
+Position Distribution:
+Wins (P1): 0 (0.0%), Podiums (P1-3): 0 (0.0%), Points (P1-10): 1 (100.0%)
+
+Strategy Statistics:
+Mean Pit Stops: 1.00, Mean Compounds: 1.00, Mean Lap Time: 91.14s
+
+Evaluating on Austrian Grand Prix.
+
+======================================================================
+  EVALUATION  —  F1RealEnv (PPO)
+  Model: f1_gym/models/f1_rl_ppo_2024_season_2.zip
+  Episodes: 1
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  EPISODE 1/1  —  Austrian Grand Prix  (71 laps)
+──────────────────────────────────────────────────────────────────────
+Lap  1 | -- | action:   STAY OUT | compound: MED | tyre_age:  1 | lap_time: 74.84s | total_time: 74.84s | pitted: False | position: 4
+Lap  2 | -- | action:   STAY OUT | compound: MED | tyre_age:  2 | lap_time: 70.53s | total_time: 145.37s | pitted: False | position: 4
+Lap  3 | -- | action:   STAY OUT | compound: MED | tyre_age:  3 | lap_time: 70.72s | total_time: 216.09s | pitted: False | position: 4
+Lap  4 | -- | action:   STAY OUT | compound: MED | tyre_age:  4 | lap_time: 70.62s | total_time: 286.71s | pitted: False | position: 4
+Lap  5 | -- | action:   STAY OUT | compound: MED | tyre_age:  5 | lap_time: 70.48s | total_time: 357.19s | pitted: False | position: 4
+Lap  6 | -- | action:   STAY OUT | compound: MED | tyre_age:  6 | lap_time: 72.04s | total_time: 429.23s | pitted: False | position: 5
+Lap  7 | -- | action:   STAY OUT | compound: MED | tyre_age:  7 | lap_time: 71.20s | total_time: 500.42s | pitted: False | position: 5
+Lap  8 | -- | action:   STAY OUT | compound: MED | tyre_age:  8 | lap_time: 71.21s | total_time: 571.63s | pitted: False | position: 5
+Lap  9 | -- | action:   STAY OUT | compound: MED | tyre_age:  9 | lap_time: 70.98s | total_time: 642.62s | pitted: False | position: 5
+Lap 10 | -- | action:   STAY OUT | compound: MED | tyre_age: 10 | lap_time: 71.00s | total_time: 713.61s | pitted: False | position: 5
+Lap 11 | -- | action:   STAY OUT | compound: MED | tyre_age: 11 | lap_time: 71.22s | total_time: 784.83s | pitted: False | position: 5
+Lap 12 | -- | action:   STAY OUT | compound: MED | tyre_age: 12 | lap_time: 71.24s | total_time: 856.07s | pitted: False | position: 5
+Lap 13 | -- | action:   STAY OUT | compound: MED | tyre_age: 13 | lap_time: 71.35s | total_time: 927.42s | pitted: False | position: 5
+Lap 14 | -- | action:   STAY OUT | compound: MED | tyre_age: 14 | lap_time: 71.50s | total_time: 998.92s | pitted: False | position: 5
+Lap 15 | -- | action:   STAY OUT | compound: MED | tyre_age: 15 | lap_time: 71.66s | total_time: 1070.58s | pitted: False | position: 5
+Lap 16 | -- | action:   STAY OUT | compound: MED | tyre_age: 16 | lap_time: 71.52s | total_time: 1142.10s | pitted: False | position: 5
+Lap 17 | -- | action:   STAY OUT | compound: MED | tyre_age: 17 | lap_time: 71.61s | total_time: 1213.71s | pitted: False | position: 5
+Lap 18 | -- | action:   STAY OUT | compound: MED | tyre_age: 18 | lap_time: 71.52s | total_time: 1285.23s | pitted: False | position: 5
+Lap 19 | -- | action:   STAY OUT | compound: MED | tyre_age: 19 | lap_time: 72.15s | total_time: 1357.38s | pitted: False | position: 5
+Lap 20 | -- | action:   STAY OUT | compound: MED | tyre_age: 20 | lap_time: 71.87s | total_time: 1429.25s | pitted: False | position: 5
+Lap 21 | -- | action:   STAY OUT | compound: MED | tyre_age: 21 | lap_time: 75.73s | total_time: 1504.98s | pitted: False | position: 6
+Lap 22 | -- | action:   STAY OUT | compound: MED | tyre_age: 22 | lap_time: 71.34s | total_time: 1576.32s | pitted: False | position: 6
+Lap 23 | -- | action:   STAY OUT | compound: MED | tyre_age: 23 | lap_time: 69.45s | total_time: 1645.77s | pitted: False | position: 4
+Lap 24 | -- | action:   STAY OUT | compound: MED | tyre_age: 24 | lap_time: 72.00s | total_time: 1717.76s | pitted: False | position: 2
+Lap 25 | -- | action:   STAY OUT | compound: MED | tyre_age: 25 | lap_time: 71.38s | total_time: 1789.14s | pitted: False | position: 2
+Lap 26 | -- | action:   STAY OUT | compound: MED | tyre_age: 26 | lap_time: 71.21s | total_time: 1860.36s | pitted: False | position: 2
+Lap 27 | -- | action:   STAY OUT | compound: MED | tyre_age: 27 | lap_time: 71.39s | total_time: 1931.74s | pitted: False | position: 2
+Lap 28 | -- | action:   STAY OUT | compound: MED | tyre_age: 28 | lap_time: 71.22s | total_time: 2002.97s | pitted: False | position: 2
+Lap 29 | -- | action:   STAY OUT | compound: MED | tyre_age: 29 | lap_time: 70.58s | total_time: 2073.55s | pitted: False | position: 2
+Lap 30 | -- | action:   STAY OUT | compound: MED | tyre_age: 30 | lap_time: 71.33s | total_time: 2144.87s | pitted: False | position: 3
+Lap 31 | -- | action:   STAY OUT | compound: MED | tyre_age: 31 | lap_time: 70.88s | total_time: 2215.75s | pitted: False | position: 3
+Lap 32 | -- | action:   STAY OUT | compound: MED | tyre_age: 32 | lap_time: 70.95s | total_time: 2286.70s | pitted: False | position: 3
+Lap 33 | -- | action:   STAY OUT | compound: MED | tyre_age: 33 | lap_time: 69.70s | total_time: 2356.40s | pitted: False | position: 3
+Lap 34 | -- | action:   STAY OUT | compound: MED | tyre_age: 34 | lap_time: 70.57s | total_time: 2426.98s | pitted: False | position: 3
+Lap 35 | -- | action:   STAY OUT | compound: MED | tyre_age: 35 | lap_time: 70.34s | total_time: 2497.31s | pitted: False | position: 3
+Lap 36 | -- | action:   STAY OUT | compound: MED | tyre_age: 36 | lap_time: 71.03s | total_time: 2568.35s | pitted: False | position: 3
+Lap 37 | -- | action:   STAY OUT | compound: MED | tyre_age: 37 | lap_time: 70.78s | total_time: 2639.12s | pitted: False | position: 3
+Lap 38 | -- | action:   STAY OUT | compound: MED | tyre_age: 38 | lap_time: 71.05s | total_time: 2710.18s | pitted: False | position: 4
+Lap 39 | -- | action:   STAY OUT | compound: MED | tyre_age: 39 | lap_time: 70.83s | total_time: 2781.01s | pitted: False | position: 4
+Lap 40 | -- | action:   STAY OUT | compound: MED | tyre_age: 40 | lap_time: 70.75s | total_time: 2851.75s | pitted: False | position: 4
+Lap 41 | -- | action:   STAY OUT | compound: MED | tyre_age: 41 | lap_time: 71.05s | total_time: 2922.80s | pitted: False | position: 3
+Lap 42 | -- | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 92.51s | total_time: 3015.31s | pitted: True | position: 6
+Lap 43 | -- | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 69.73s | total_time: 3085.04s | pitted: False | position: 6
+Lap 44 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 70.31s | total_time: 3155.36s | pitted: False | position: 6
+Lap 45 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 69.55s | total_time: 3224.91s | pitted: False | position: 6
+Lap 46 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 69.65s | total_time: 3294.56s | pitted: False | position: 6
+Lap 47 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 70.12s | total_time: 3364.68s | pitted: False | position: 5
+Lap 48 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 70.74s | total_time: 3435.42s | pitted: False | position: 4
+Lap 49 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 70.29s | total_time: 3505.71s | pitted: False | position: 4
+Lap 50 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 70.56s | total_time: 3576.27s | pitted: False | position: 4
+Lap 51 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 70.91s | total_time: 3647.18s | pitted: False | position: 5
+Lap 52 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 70.99s | total_time: 3718.17s | pitted: False | position: 4
+Lap 53 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 74.71s | total_time: 3792.88s | pitted: False | position: 5
+Lap 54 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 70.97s | total_time: 3863.86s | pitted: False | position: 5
+Lap 55 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 71.62s | total_time: 3935.48s | pitted: False | position: 6
+Lap 56 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 71.88s | total_time: 4007.36s | pitted: False | position: 6
+Lap 57 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 71.91s | total_time: 4079.27s | pitted: False | position: 6
+Lap 58 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 71.68s | total_time: 4150.95s | pitted: False | position: 6
+Lap 59 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 71.20s | total_time: 4222.15s | pitted: False | position: 6
+Lap 60 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 71.07s | total_time: 4293.22s | pitted: False | position: 6
+Lap 61 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 71.06s | total_time: 4364.28s | pitted: False | position: 6
+Lap 62 | -- | action:   STAY OUT | compound: HARD | tyre_age: 21 | lap_time: 71.21s | total_time: 4435.49s | pitted: False | position: 6
+Lap 63 | -- | action:   STAY OUT | compound: HARD | tyre_age: 22 | lap_time: 71.26s | total_time: 4506.76s | pitted: False | position: 6
+Lap 64 | SC | action:   STAY OUT | compound: HARD | tyre_age: 23 | lap_time: 69.98s | total_time: 4576.74s | pitted: False | position: 5
+Lap 65 | SC | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 95.71s | total_time: 4672.45s | pitted: True | position: 5
+Lap 66 | SC | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 81.11s | total_time: 4753.56s | pitted: False | position: 5
+Lap 67 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 70.27s | total_time: 4823.83s | pitted: False | position: 5
+Lap 68 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 70.21s | total_time: 4894.04s | pitted: False | position: 5
+Lap 69 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 70.53s | total_time: 4964.57s | pitted: False | position: 5
+Lap 70 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 70.39s | total_time: 5034.96s | pitted: False | position: 5
+Lap 71 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 70.76s | total_time: 5105.72s | pitted: False | position: 5
+
+Episode 1/1 completed.
+Agent finished P5  |  Total Time: 5105.72s  |  Pit Stops: 2  |  Compounds Used: 2 (M -> H -> H)  |  Reward: 44.52
+
+
+  ANCHORING VALIDATION
+  ────────────────────────────────────────────────────
+  Lap 1  →  Agent: 74.84s  |  HAM: 74.84s  |  Δ +0.00s
+  Total  →  Agent: 5105.72s  |  HAM: 5085.94s  |  Δ +19.78s
+  HAM finished P4 (real)  |  Agent finished P5
+  ────────────────────────────────────────────────────
+
+                                RACE STANDINGS                              
+  ──────────────────────────────────────────────────────────────────────────
+  Pos | Driver                |  Total Time |      Gap |   Pen | Stops | Strategy
+  ──────────────────────────────────────────────────────────────────────────
+    1 | RUS  George Russell   |    5062.80s |   LEADER |       |     1 | M -> H
+    2 | PIA  Oscar Piastri    |    5064.70s |   +1.91s |       |     2 | M -> H -> M
+    3 | SAI  Carlos Sainz     |    5067.33s |   +4.53s |       |     2 | M -> H -> M
+    4 | VER  Max Verstappen   |    5100.05s |  +37.25s |  +10s |     3 | M -> H -> M -> S
+    5 | AGT  Agent            |    5105.72s |  +42.92s |       |     2 | M -> H -> H   << AGENT
+    6 | HUL  Nico Hulkenberg  |    5116.89s |  +54.09s |       |     1 | M -> H
+    7 | PER  Sergio Perez     |    5117.47s |  +54.67s |       |     2 | M -> H -> M
+    8 | MAG  Kevin Magnussen  |    5123.15s |  +60.35s |       |     1 | M -> H
+    9 | RIC  Daniel Ricciardo |    5123.97s |  +61.17s |       |     1 | M -> H
+   10 | GAS  Pierre Gasly     |    5124.56s |  +61.77s |       |     2 | M -> H -> M
+   11 | LEC  Charles Leclerc  |    5129.85s |  +67.06s |       |     2 | M -> H -> M
+   12 | OCO  Esteban Ocon     |    5131.12s |  +68.32s |       |     2 | M -> H -> M
+   13 | STR  Lance Stroll     |    5073.03s |   +1 Lap |       |     1 | M -> H
+   14 | TSU  Yuki Tsunoda     |    5075.94s |   +1 Lap |       |     1 | M -> H
+   15 | BOT  Valtteri Bottas  |    5082.17s |   +1 Lap |       |     1 | M -> H
+   16 | ALB  Alexander Albon  |    5083.66s |   +1 Lap |   +5s |     1 | M -> H
+   17 | ZHO  Guanyu Zhou      |    5107.68s |   +1 Lap |       |     2 | H -> M -> H
+   18 | ALO  Fernando Alonso  |    5110.46s |   +1 Lap |       |     2 | M -> H -> S
+   19 | SAR  Logan Sargeant   |    5069.11s |  +2 Laps |       |     2 | M -> H -> M
+   20 | NOR  Lando Norris     |         DNF |      DNF |       |     2 | M -> H -> M
+  ──────────────────────────────────────────────────────────────────────────
+
+Reward Statistics:
+Mean: 44.52, Std: 0.00, Min: 44.52, Max: 44.52
+
+Position Statistics:
+Mean: 5.00, Std: 0.00, Best: 5, Worst: 5
+
+Race Time Statistics:
+Mean: 5105.72s, Std: 0.00s, Best: 5105.72s, Worst: 5105.72s
+
+Position Distribution:
+Wins (P1): 0 (0.0%), Podiums (P1-3): 0 (0.0%), Points (P1-10): 1 (100.0%)
+
+Strategy Statistics:
+Mean Pit Stops: 2.00, Mean Compounds: 2.00, Mean Lap Time: 71.91s
+
+Evaluating on Italian Grand Prix.
+
+======================================================================
+  EVALUATION  —  F1RealEnv (PPO)
+  Model: f1_gym/models/f1_rl_ppo_2024_season_2.zip
+  Episodes: 1
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  EPISODE 1/1  —  Italian Grand Prix  (53 laps)
+──────────────────────────────────────────────────────────────────────
+Lap  1 | -- | action:   STAY OUT | compound: MED | tyre_age:  1 | lap_time: 89.67s | total_time: 89.67s | pitted: False | position: 5
+Lap  2 | -- | action:   STAY OUT | compound: MED | tyre_age:  2 | lap_time: 86.04s | total_time: 175.72s | pitted: False | position: 5
+Lap  3 | -- | action:   STAY OUT | compound: MED | tyre_age:  3 | lap_time: 85.63s | total_time: 261.35s | pitted: False | position: 5
+Lap  4 | -- | action:   STAY OUT | compound: MED | tyre_age:  4 | lap_time: 85.72s | total_time: 347.07s | pitted: False | position: 5
+Lap  5 | -- | action:   STAY OUT | compound: MED | tyre_age:  5 | lap_time: 84.77s | total_time: 431.84s | pitted: False | position: 5
+Lap  6 | -- | action:   STAY OUT | compound: MED | tyre_age:  6 | lap_time: 84.92s | total_time: 516.76s | pitted: False | position: 5
+Lap  7 | -- | action:   STAY OUT | compound: MED | tyre_age:  7 | lap_time: 85.20s | total_time: 601.96s | pitted: False | position: 5
+Lap  8 | -- | action:   STAY OUT | compound: MED | tyre_age:  8 | lap_time: 84.87s | total_time: 686.84s | pitted: False | position: 5
+Lap  9 | -- | action:   STAY OUT | compound: MED | tyre_age:  9 | lap_time: 85.03s | total_time: 771.87s | pitted: False | position: 5
+Lap 10 | -- | action:   STAY OUT | compound: MED | tyre_age: 10 | lap_time: 84.91s | total_time: 856.78s | pitted: False | position: 5
+Lap 11 | -- | action:   STAY OUT | compound: MED | tyre_age: 11 | lap_time: 84.94s | total_time: 941.72s | pitted: False | position: 5
+Lap 12 | -- | action:   STAY OUT | compound: MED | tyre_age: 12 | lap_time: 84.93s | total_time: 1026.65s | pitted: False | position: 5
+Lap 13 | -- | action:   STAY OUT | compound: MED | tyre_age: 13 | lap_time: 85.33s | total_time: 1111.98s | pitted: False | position: 5
+Lap 14 | -- | action:   STAY OUT | compound: MED | tyre_age: 14 | lap_time: 85.82s | total_time: 1197.79s | pitted: False | position: 5
+Lap 15 | -- | action:   STAY OUT | compound: MED | tyre_age: 15 | lap_time: 90.36s | total_time: 1288.16s | pitted: False | position: 6
+Lap 16 | -- | action:   STAY OUT | compound: MED | tyre_age: 16 | lap_time: 85.78s | total_time: 1373.94s | pitted: False | position: 5
+Lap 17 | -- | action:   STAY OUT | compound: MED | tyre_age: 17 | lap_time: 85.40s | total_time: 1459.34s | pitted: False | position: 4
+Lap 18 | -- | action:   STAY OUT | compound: MED | tyre_age: 18 | lap_time: 85.35s | total_time: 1544.69s | pitted: False | position: 4
+Lap 19 | -- | action:   STAY OUT | compound: MED | tyre_age: 19 | lap_time: 86.20s | total_time: 1630.88s | pitted: False | position: 4
+Lap 20 | -- | action:   STAY OUT | compound: MED | tyre_age: 20 | lap_time: 86.20s | total_time: 1717.08s | pitted: False | position: 3
+Lap 21 | -- | action:   STAY OUT | compound: MED | tyre_age: 21 | lap_time: 86.83s | total_time: 1803.92s | pitted: False | position: 3
+Lap 22 | -- | action:   STAY OUT | compound: MED | tyre_age: 22 | lap_time: 86.68s | total_time: 1890.59s | pitted: False | position: 6
+Lap 23 | -- | action:   STAY OUT | compound: MED | tyre_age: 23 | lap_time: 86.28s | total_time: 1976.87s | pitted: False | position: 5
+Lap 24 | -- | action:   STAY OUT | compound: MED | tyre_age: 24 | lap_time: 86.22s | total_time: 2063.09s | pitted: False | position: 4
+Lap 25 | -- | action:   STAY OUT | compound: MED | tyre_age: 25 | lap_time: 86.24s | total_time: 2149.33s | pitted: False | position: 4
+Lap 26 | -- | action:   STAY OUT | compound: MED | tyre_age: 26 | lap_time: 85.90s | total_time: 2235.23s | pitted: False | position: 4
+Lap 27 | -- | action:   STAY OUT | compound: MED | tyre_age: 27 | lap_time: 85.90s | total_time: 2321.13s | pitted: False | position: 5
+Lap 28 | -- | action:   STAY OUT | compound: MED | tyre_age: 28 | lap_time: 86.03s | total_time: 2407.16s | pitted: False | position: 5
+Lap 29 | -- | action:   STAY OUT | compound: MED | tyre_age: 29 | lap_time: 85.80s | total_time: 2492.96s | pitted: False | position: 5
+Lap 30 | -- | action:   STAY OUT | compound: MED | tyre_age: 30 | lap_time: 85.40s | total_time: 2578.36s | pitted: False | position: 5
+Lap 31 | -- | action:   STAY OUT | compound: MED | tyre_age: 31 | lap_time: 85.18s | total_time: 2663.54s | pitted: False | position: 6
+Lap 32 | -- | action:   STAY OUT | compound: MED | tyre_age: 32 | lap_time: 85.93s | total_time: 2749.46s | pitted: False | position: 6
+Lap 33 | -- | action:   STAY OUT | compound: MED | tyre_age: 33 | lap_time: 85.17s | total_time: 2834.63s | pitted: False | position: 6
+Lap 34 | -- | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 109.58s | total_time: 2944.22s | pitted: True | position: 10
+Lap 35 | -- | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 82.53s | total_time: 3026.74s | pitted: False | position: 10
+Lap 36 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 82.65s | total_time: 3109.39s | pitted: False | position: 7
+Lap 37 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 89.29s | total_time: 3198.68s | pitted: False | position: 10
+Lap 38 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 101.26s | total_time: 3299.94s | pitted: False | position: 13
+Lap 39 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 81.85s | total_time: 3381.79s | pitted: False | position: 13
+Lap 40 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 82.27s | total_time: 3464.07s | pitted: False | position: 13
+Lap 41 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 81.07s | total_time: 3545.14s | pitted: False | position: 11
+Lap 42 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 80.92s | total_time: 3626.06s | pitted: False | position: 10
+Lap 43 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 80.41s | total_time: 3706.47s | pitted: False | position: 10
+Lap 44 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 79.95s | total_time: 3786.42s | pitted: False | position: 9
+Lap 45 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 81.05s | total_time: 3867.48s | pitted: False | position: 8
+Lap 46 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 80.72s | total_time: 3948.20s | pitted: False | position: 7
+Lap 47 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 83.08s | total_time: 4031.28s | pitted: False | position: 7
+Lap 48 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 81.95s | total_time: 4113.23s | pitted: False | position: 7
+Lap 49 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 81.20s | total_time: 4194.43s | pitted: False | position: 7
+Lap 50 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 81.78s | total_time: 4276.21s | pitted: False | position: 7
+Lap 51 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 81.67s | total_time: 4357.88s | pitted: False | position: 7
+Lap 52 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 84.59s | total_time: 4442.47s | pitted: False | position: 7
+Lap 53 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 79.99s | total_time: 4522.46s | pitted: False | position: 7
+
+Episode 1/1 completed.
+Agent finished P7  |  Total Time: 4522.46s  |  Pit Stops: 1  |  Compounds Used: 2 (M -> H)  |  Reward: 41.40
+
+
+  ANCHORING VALIDATION
+  ────────────────────────────────────────────────────
+  Lap 1  →  Agent: 89.67s  |  HAM: 89.67s  |  Δ +0.00s
+  Total  →  Agent: 4522.46s  |  HAM: 4503.55s  |  Δ +18.91s
+  HAM finished P5 (real)  |  Agent finished P7
+  ────────────────────────────────────────────────────
+
+                                RACE STANDINGS                              
+  ──────────────────────────────────────────────────────────────────────────
+  Pos | Driver                |  Total Time |      Gap |   Pen | Stops | Strategy
+  ──────────────────────────────────────────────────────────────────────────
+    1 | LEC  Charles Leclerc  |    4480.73s |   LEADER |       |     1 | M -> H
+    2 | PIA  Oscar Piastri    |    4483.39s |   +2.66s |       |     1 | M -> H
+    3 | NOR  Lando Norris     |    4486.88s |   +6.15s |       |     1 | M -> H
+    4 | SAI  Carlos Sainz     |    4496.35s |  +15.62s |       |     1 | M -> H
+    5 | VER  Max Verstappen   |    4518.66s |  +37.93s |       |     1 | H -> M
+    6 | RUS  George Russell   |    4520.44s |  +39.71s |       |     1 | M -> H
+    7 | AGT  Agent            |    4522.46s |  +41.73s |       |     1 | M -> H   << AGENT
+    8 | PER  Sergio Perez     |    4534.88s |  +54.15s |       |     1 | H -> M
+    9 | ALB  Alexander Albon  |    4548.18s |  +67.46s |       |     1 | M -> H
+   10 | MAG  Kevin Magnussen  |    4549.03s |  +68.30s |  +10s |     1 | M -> H
+   11 | ALO  Fernando Alonso  |    4549.22s |  +68.50s |       |     1 | M -> H
+   12 | COL  Franco Colapinto |    4562.03s |  +81.31s |       |     1 | M -> H
+   13 | RIC  Daniel Ricciardo |    4574.18s |  +93.45s |  +15s |     1 | M -> H
+   14 | OCO  Esteban Ocon     |    4493.39s |   +1 Lap |       |     1 | H -> M
+   15 | GAS  Pierre Gasly     |    4499.07s |   +1 Lap |       |     1 | M -> H
+   16 | BOT  Valtteri Bottas  |    4507.94s |   +1 Lap |       |     1 | H -> M
+   17 | HUL  Nico Hulkenberg  |    4511.60s |   +1 Lap |       |     1 | M -> H
+   18 | ZHO  Guanyu Zhou      |    4520.78s |   +1 Lap |       |     1 | M -> H
+   19 | STR  Lance Stroll     |    4524.23s |   +1 Lap |       |     2 | H -> M -> S
+   20 | TSU  Yuki Tsunoda     |         DNF |      DNF |       |     0 | H
+  ──────────────────────────────────────────────────────────────────────────
+
+Reward Statistics:
+Mean: 41.40, Std: 0.00, Min: 41.40, Max: 41.40
+
+Position Statistics:
+Mean: 7.00, Std: 0.00, Best: 7, Worst: 7
+
+Race Time Statistics:
+Mean: 4522.46s, Std: 0.00s, Best: 4522.46s, Worst: 4522.46s
+
+Position Distribution:
+Wins (P1): 0 (0.0%), Podiums (P1-3): 0 (0.0%), Points (P1-10): 1 (100.0%)
+
+Strategy Statistics:
+Mean Pit Stops: 1.00, Mean Compounds: 2.00, Mean Lap Time: 85.33s
+
+Evaluating on Miami Grand Prix.
+
+======================================================================
+  EVALUATION  —  F1RealEnv (PPO)
+  Model: f1_gym/models/f1_rl_ppo_2024_season_2.zip
+  Episodes: 1
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  EPISODE 1/1  —  Miami Grand Prix  (57 laps)
+──────────────────────────────────────────────────────────────────────
+Lap  1 | -- | action:   STAY OUT | compound: HARD | tyre_age:  1 | lap_time: 99.92s | total_time: 99.92s | pitted: False | position: 7
+Lap  2 | -- | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 94.97s | total_time: 194.89s | pitted: False | position: 8
+Lap  3 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 94.03s | total_time: 288.92s | pitted: False | position: 8
+Lap  4 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 93.86s | total_time: 382.78s | pitted: False | position: 8
+Lap  5 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 93.67s | total_time: 476.45s | pitted: False | position: 8
+Lap  6 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 93.68s | total_time: 570.13s | pitted: False | position: 8
+Lap  7 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 94.47s | total_time: 664.59s | pitted: False | position: 8
+Lap  8 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 94.62s | total_time: 759.21s | pitted: False | position: 8
+Lap  9 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 94.02s | total_time: 853.24s | pitted: False | position: 8
+Lap 10 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 94.60s | total_time: 947.84s | pitted: False | position: 7
+Lap 11 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 94.37s | total_time: 1042.21s | pitted: False | position: 7
+Lap 12 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 93.99s | total_time: 1136.20s | pitted: False | position: 7
+Lap 13 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 93.87s | total_time: 1230.07s | pitted: False | position: 7
+Lap 14 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 93.69s | total_time: 1323.77s | pitted: False | position: 7
+Lap 15 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 93.34s | total_time: 1417.11s | pitted: False | position: 7
+Lap 16 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 93.52s | total_time: 1510.63s | pitted: False | position: 7
+Lap 17 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 93.60s | total_time: 1604.23s | pitted: False | position: 7
+Lap 18 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 93.31s | total_time: 1697.54s | pitted: False | position: 6
+Lap 19 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 93.33s | total_time: 1790.87s | pitted: False | position: 6
+Lap 20 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 93.05s | total_time: 1883.92s | pitted: False | position: 5
+Lap 21 | -- | action:   STAY OUT | compound: HARD | tyre_age: 21 | lap_time: 94.19s | total_time: 1978.11s | pitted: False | position: 6
+Lap 22 | SC | action:   STAY OUT | compound: HARD | tyre_age: 22 | lap_time: 93.36s | total_time: 2071.46s | pitted: False | position: 6
+Lap 23 | SC | action:   STAY OUT | compound: HARD | tyre_age: 23 | lap_time: 108.78s | total_time: 2180.25s | pitted: False | position: 6
+Lap 24 | -- | action:   STAY OUT | compound: HARD | tyre_age: 24 | lap_time: 92.85s | total_time: 2273.10s | pitted: False | position: 6
+Lap 25 | -- | action:   STAY OUT | compound: HARD | tyre_age: 25 | lap_time: 92.93s | total_time: 2366.03s | pitted: False | position: 6
+Lap 26 | -- | action:   STAY OUT | compound: HARD | tyre_age: 26 | lap_time: 99.05s | total_time: 2465.08s | pitted: False | position: 7
+Lap 27 | -- | action:   STAY OUT | compound: HARD | tyre_age: 27 | lap_time: 94.40s | total_time: 2559.48s | pitted: False | position: 8
+Lap 28 | SC | action:   STAY OUT | compound: HARD | tyre_age: 28 | lap_time: 107.36s | total_time: 2666.85s | pitted: False | position: 8
+Lap 29 | SC | action:   STAY OUT | compound: HARD | tyre_age: 29 | lap_time: 128.74s | total_time: 2795.59s | pitted: False | position: 6
+Lap 30 | SC | action:   STAY OUT | compound: HARD | tyre_age: 30 | lap_time: 120.11s | total_time: 2915.70s | pitted: False | position: 3
+Lap 31 | SC | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 118.37s | total_time: 3034.08s | pitted: True | position: 8
+Lap 32 | SC | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 141.26s | total_time: 3175.34s | pitted: False | position: 13
+Lap 33 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 93.90s | total_time: 3269.24s | pitted: False | position: 13
+Lap 34 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 91.82s | total_time: 3361.06s | pitted: False | position: 10
+Lap 35 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 91.03s | total_time: 3452.09s | pitted: False | position: 8
+Lap 36 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 91.97s | total_time: 3544.07s | pitted: False | position: 8
+Lap 37 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 91.62s | total_time: 3635.69s | pitted: False | position: 7
+Lap 38 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 91.40s | total_time: 3727.09s | pitted: False | position: 7
+Lap 39 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 91.59s | total_time: 3818.68s | pitted: False | position: 7
+Lap 40 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 91.86s | total_time: 3910.54s | pitted: False | position: 6
+Lap 41 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 91.77s | total_time: 4002.31s | pitted: False | position: 6
+Lap 42 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 91.25s | total_time: 4093.56s | pitted: False | position: 6
+Lap 43 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 90.61s | total_time: 4184.17s | pitted: False | position: 5
+Lap 44 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 91.30s | total_time: 4275.47s | pitted: False | position: 5
+Lap 45 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 90.23s | total_time: 4365.69s | pitted: False | position: 5
+Lap 46 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 90.52s | total_time: 4456.21s | pitted: False | position: 4
+Lap 47 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 90.54s | total_time: 4546.75s | pitted: False | position: 4
+Lap 48 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 91.05s | total_time: 4637.80s | pitted: False | position: 4
+Lap 49 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 91.07s | total_time: 4728.86s | pitted: False | position: 4
+Lap 50 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 91.78s | total_time: 4820.64s | pitted: False | position: 4
+Lap 51 | -- | action:   STAY OUT | compound: HARD | tyre_age: 21 | lap_time: 91.29s | total_time: 4911.93s | pitted: False | position: 4
+Lap 52 | -- | action:   STAY OUT | compound: HARD | tyre_age: 22 | lap_time: 91.54s | total_time: 5003.47s | pitted: False | position: 4
+Lap 53 | -- | action:   STAY OUT | compound: HARD | tyre_age: 23 | lap_time: 92.15s | total_time: 5095.62s | pitted: False | position: 4
+Lap 54 | -- | action:   STAY OUT | compound: HARD | tyre_age: 24 | lap_time: 91.61s | total_time: 5187.23s | pitted: False | position: 4
+Lap 55 | -- | action:   STAY OUT | compound: HARD | tyre_age: 25 | lap_time: 91.18s | total_time: 5278.41s | pitted: False | position: 4
+Lap 56 | -- | action:   STAY OUT | compound: HARD | tyre_age: 26 | lap_time: 91.32s | total_time: 5369.73s | pitted: False | position: 4
+Lap 57 | -- | action:   STAY OUT | compound: HARD | tyre_age: 27 | lap_time: 91.73s | total_time: 5461.46s | pitted: False | position: 4
+
+Episode 1/1 completed.
+Agent finished P4  |  Total Time: 5461.46s  |  Pit Stops: 1  |  Compounds Used: 1 (H -> H)  |  Reward: -4.22
+
+
+  ANCHORING VALIDATION
+  ────────────────────────────────────────────────────
+  Lap 1  →  Agent: 99.92s  |  HAM: 99.92s  |  Δ +0.00s
+  Total  →  Agent: 5461.46s  |  HAM: 5466.46s  |  Δ -5.00s
+  HAM finished P6 (real)  |  Agent finished P4
+  ────────────────────────────────────────────────────
+
+                                RACE STANDINGS                              
+  ──────────────────────────────────────────────────────────────────────────
+  Pos | Driver                |  Total Time |      Gap |   Pen | Stops | Strategy
+  ──────────────────────────────────────────────────────────────────────────
+    1 | NOR  Lando Norris     |    5449.88s |   LEADER |       |     1 | M -> H
+    2 | VER  Max Verstappen   |    5457.52s |   +7.64s |       |     1 | M -> H
+    3 | LEC  Charles Leclerc  |    5459.82s |   +9.94s |       |     1 | M -> H
+    4 | AGT  Agent            |    5461.46s |  +11.58s |       |     1 | H -> H   << AGENT
+    5 | PER  Sergio Perez     |    5464.53s |  +14.65s |       |     2 | M -> H -> M
+    6 | SAI  Carlos Sainz     |    5466.28s |  +16.40s |   +5s |     1 | M -> H
+    7 | TSU  Yuki Tsunoda     |    5476.06s |  +26.18s |       |     1 | M -> H
+    8 | RUS  George Russell   |    5484.67s |  +34.79s |       |     1 | M -> H
+    9 | ALO  Fernando Alonso  |    5486.98s |  +37.10s |       |     1 | H -> M
+   10 | OCO  Esteban Ocon     |    5489.62s |  +39.74s |       |     1 | M -> H
+   11 | HUL  Nico Hulkenberg  |    5490.67s |  +40.79s |       |     2 | M -> H -> M
+   12 | GAS  Pierre Gasly     |    5494.83s |  +44.95s |       |     1 | M -> H
+   13 | PIA  Oscar Piastri    |    5499.63s |  +49.75s |       |     2 | M -> H -> M
+   14 | ZHO  Guanyu Zhou      |    5499.86s |  +49.98s |       |     1 | M -> S
+   15 | RIC  Daniel Ricciardo |    5500.83s |  +50.95s |       |     1 | H -> M
+   16 | BOT  Valtteri Bottas  |    5502.23s |  +52.35s |       |     2 | S -> H -> M
+   17 | STR  Lance Stroll     |    5505.05s |  +55.17s |  +10s |     2 | M -> H -> M
+   18 | ALB  Alexander Albon  |    5525.97s |  +76.09s |       |     2 | M -> H -> S
+   19 | MAG  Kevin Magnussen  |    5534.56s |  +84.68s |  +30s |     1 | H -> M
+   20 | SAR  Logan Sargeant   |         DNF |      DNF |       |     1 | M -> H
+  ──────────────────────────────────────────────────────────────────────────
+
+Reward Statistics:
+Mean: -4.22, Std: 0.00, Min: -4.22, Max: -4.22
+
+Position Statistics:
+Mean: 4.00, Std: 0.00, Best: 4, Worst: 4
+
+Race Time Statistics:
+Mean: 5461.46s, Std: 0.00s, Best: 5461.46s, Worst: 5461.46s
+
+Position Distribution:
+Wins (P1): 0 (0.0%), Podiums (P1-3): 0 (0.0%), Points (P1-10): 1 (100.0%)
+
+Strategy Statistics:
+Mean Pit Stops: 1.00, Mean Compounds: 1.00, Mean Lap Time: 95.82s
+
+Evaluating on Singapore Grand Prix.
+
+======================================================================
+  EVALUATION  —  F1RealEnv (PPO)
+  Model: f1_gym/models/f1_rl_ppo_2024_season_2.zip
+  Episodes: 1
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  EPISODE 1/1  —  Singapore Grand Prix  (62 laps)
+──────────────────────────────────────────────────────────────────────
+Lap  1 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  1 | lap_time: 102.70s | total_time: 102.70s | pitted: False | position: 3
+Lap  2 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  2 | lap_time: 98.85s | total_time: 201.56s | pitted: False | position: 3
+Lap  3 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  3 | lap_time: 99.25s | total_time: 300.81s | pitted: False | position: 3
+Lap  4 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  4 | lap_time: 99.07s | total_time: 399.88s | pitted: False | position: 3
+Lap  5 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  5 | lap_time: 98.29s | total_time: 498.17s | pitted: False | position: 3
+Lap  6 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  6 | lap_time: 98.27s | total_time: 596.44s | pitted: False | position: 3
+Lap  7 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  7 | lap_time: 98.38s | total_time: 694.82s | pitted: False | position: 3
+Lap  8 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  8 | lap_time: 98.25s | total_time: 793.07s | pitted: False | position: 3
+Lap  9 | -- | action:   STAY OUT | compound: SOFT | tyre_age:  9 | lap_time: 98.03s | total_time: 891.10s | pitted: False | position: 3
+Lap 10 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 10 | lap_time: 98.31s | total_time: 989.40s | pitted: False | position: 3
+Lap 11 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 11 | lap_time: 97.92s | total_time: 1087.32s | pitted: False | position: 3
+Lap 12 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 12 | lap_time: 97.98s | total_time: 1185.30s | pitted: False | position: 3
+Lap 13 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 13 | lap_time: 98.10s | total_time: 1283.41s | pitted: False | position: 3
+Lap 14 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 14 | lap_time: 98.17s | total_time: 1381.58s | pitted: False | position: 3
+Lap 15 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 15 | lap_time: 98.29s | total_time: 1479.87s | pitted: False | position: 3
+Lap 16 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 16 | lap_time: 99.04s | total_time: 1578.91s | pitted: False | position: 3
+Lap 17 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 17 | lap_time: 106.86s | total_time: 1685.77s | pitted: False | position: 5
+Lap 18 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 18 | lap_time: 98.88s | total_time: 1784.65s | pitted: False | position: 5
+Lap 19 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 19 | lap_time: 98.56s | total_time: 1883.21s | pitted: False | position: 5
+Lap 20 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 20 | lap_time: 99.04s | total_time: 1982.25s | pitted: False | position: 5
+Lap 21 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 21 | lap_time: 99.45s | total_time: 2081.69s | pitted: False | position: 5
+Lap 22 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 22 | lap_time: 98.87s | total_time: 2180.57s | pitted: False | position: 5
+Lap 23 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 23 | lap_time: 99.04s | total_time: 2279.61s | pitted: False | position: 5
+Lap 24 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 24 | lap_time: 98.56s | total_time: 2378.17s | pitted: False | position: 5
+Lap 25 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 25 | lap_time: 99.70s | total_time: 2477.87s | pitted: False | position: 5
+Lap 26 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 26 | lap_time: 99.82s | total_time: 2577.69s | pitted: False | position: 5
+Lap 27 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 27 | lap_time: 100.38s | total_time: 2678.07s | pitted: False | position: 5
+Lap 28 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 28 | lap_time: 99.38s | total_time: 2777.45s | pitted: False | position: 4
+Lap 29 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 29 | lap_time: 99.79s | total_time: 2877.24s | pitted: False | position: 4
+Lap 30 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 30 | lap_time: 99.76s | total_time: 2977.00s | pitted: False | position: 3
+Lap 31 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 31 | lap_time: 100.01s | total_time: 3077.01s | pitted: False | position: 4
+Lap 32 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 32 | lap_time: 98.96s | total_time: 3175.96s | pitted: False | position: 4
+Lap 33 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 33 | lap_time: 98.52s | total_time: 3274.48s | pitted: False | position: 4
+Lap 34 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 34 | lap_time: 98.98s | total_time: 3373.47s | pitted: False | position: 4
+Lap 35 | -- | action:   STAY OUT | compound: SOFT | tyre_age: 35 | lap_time: 99.53s | total_time: 3473.00s | pitted: False | position: 4
+Lap 36 | -- | action:   BOX HARD | compound: HARD | tyre_age:  1 | lap_time: 126.66s | total_time: 3599.66s | pitted: True | position: 8
+Lap 37 | -- | action:   STAY OUT | compound: HARD | tyre_age:  2 | lap_time: 96.42s | total_time: 3696.08s | pitted: False | position: 7
+Lap 38 | -- | action:   STAY OUT | compound: HARD | tyre_age:  3 | lap_time: 96.48s | total_time: 3792.56s | pitted: False | position: 7
+Lap 39 | -- | action:   STAY OUT | compound: HARD | tyre_age:  4 | lap_time: 96.43s | total_time: 3888.98s | pitted: False | position: 6
+Lap 40 | -- | action:   STAY OUT | compound: HARD | tyre_age:  5 | lap_time: 97.71s | total_time: 3986.69s | pitted: False | position: 6
+Lap 41 | -- | action:   STAY OUT | compound: HARD | tyre_age:  6 | lap_time: 96.66s | total_time: 4083.35s | pitted: False | position: 6
+Lap 42 | -- | action:   STAY OUT | compound: HARD | tyre_age:  7 | lap_time: 96.65s | total_time: 4180.00s | pitted: False | position: 5
+Lap 43 | -- | action:   STAY OUT | compound: HARD | tyre_age:  8 | lap_time: 95.71s | total_time: 4275.71s | pitted: False | position: 5
+Lap 44 | -- | action:   STAY OUT | compound: HARD | tyre_age:  9 | lap_time: 95.80s | total_time: 4371.50s | pitted: False | position: 5
+Lap 45 | -- | action:   STAY OUT | compound: HARD | tyre_age: 10 | lap_time: 95.95s | total_time: 4467.46s | pitted: False | position: 5
+Lap 46 | -- | action:   STAY OUT | compound: HARD | tyre_age: 11 | lap_time: 96.02s | total_time: 4563.47s | pitted: False | position: 5
+Lap 47 | -- | action:   STAY OUT | compound: HARD | tyre_age: 12 | lap_time: 95.88s | total_time: 4659.36s | pitted: False | position: 5
+Lap 48 | -- | action:   STAY OUT | compound: HARD | tyre_age: 13 | lap_time: 96.07s | total_time: 4755.42s | pitted: False | position: 6
+Lap 49 | -- | action:   STAY OUT | compound: HARD | tyre_age: 14 | lap_time: 95.83s | total_time: 4851.25s | pitted: False | position: 5
+Lap 50 | -- | action:   STAY OUT | compound: HARD | tyre_age: 15 | lap_time: 97.73s | total_time: 4948.98s | pitted: False | position: 5
+Lap 51 | -- | action:   STAY OUT | compound: HARD | tyre_age: 16 | lap_time: 96.10s | total_time: 5045.09s | pitted: False | position: 5
+Lap 52 | -- | action:   STAY OUT | compound: HARD | tyre_age: 17 | lap_time: 96.15s | total_time: 5141.24s | pitted: False | position: 5
+Lap 53 | -- | action:   STAY OUT | compound: HARD | tyre_age: 18 | lap_time: 96.51s | total_time: 5237.74s | pitted: False | position: 6
+Lap 54 | -- | action:   STAY OUT | compound: HARD | tyre_age: 19 | lap_time: 96.31s | total_time: 5334.05s | pitted: False | position: 5
+Lap 55 | -- | action:   STAY OUT | compound: HARD | tyre_age: 20 | lap_time: 96.79s | total_time: 5430.85s | pitted: False | position: 6
+Lap 56 | -- | action:   STAY OUT | compound: HARD | tyre_age: 21 | lap_time: 97.42s | total_time: 5528.27s | pitted: False | position: 6
+Lap 57 | -- | action:   STAY OUT | compound: HARD | tyre_age: 22 | lap_time: 97.88s | total_time: 5626.15s | pitted: False | position: 6
+Lap 58 | -- | action:   STAY OUT | compound: HARD | tyre_age: 23 | lap_time: 97.88s | total_time: 5724.03s | pitted: False | position: 6
+Lap 59 | -- | action:   STAY OUT | compound: HARD | tyre_age: 24 | lap_time: 98.31s | total_time: 5822.35s | pitted: False | position: 6
+Lap 60 | -- | action:   STAY OUT | compound: HARD | tyre_age: 25 | lap_time: 98.24s | total_time: 5920.59s | pitted: False | position: 6
+Lap 61 | -- | action:   STAY OUT | compound: HARD | tyre_age: 26 | lap_time: 98.17s | total_time: 6018.75s | pitted: False | position: 6
+Lap 62 | -- | action:   STAY OUT | compound: HARD | tyre_age: 27 | lap_time: 97.98s | total_time: 6116.73s | pitted: False | position: 6
+
+Episode 1/1 completed.
+Agent finished P6  |  Total Time: 6116.73s  |  Pit Stops: 1  |  Compounds Used: 2 (S -> H)  |  Reward: 51.91
+
+
+  ANCHORING VALIDATION
+  ────────────────────────────────────────────────────
+  Lap 1  →  Agent: 102.70s  |  HAM: 102.70s  |  Δ +0.00s
+  Total  →  Agent: 6116.73s  |  HAM: 6137.82s  |  Δ -21.08s
+  HAM finished P6 (real)  |  Agent finished P6
+  ────────────────────────────────────────────────────
+
+                                RACE STANDINGS                              
+  ──────────────────────────────────────────────────────────────────────────
+  Pos | Driver                |  Total Time |      Gap |   Pen | Stops | Strategy
+  ──────────────────────────────────────────────────────────────────────────
+    1 | NOR  Lando Norris     |    6052.57s |   LEADER |       |     1 | M -> H
+    2 | VER  Max Verstappen   |    6073.52s |  +20.94s |       |     1 | M -> H
+    3 | PIA  Oscar Piastri    |    6094.39s |  +41.82s |       |     1 | M -> H
+    4 | RUS  George Russell   |    6113.61s |  +61.04s |       |     1 | M -> H
+    5 | LEC  Charles Leclerc  |    6115.00s |  +62.43s |       |     1 | M -> H
+    6 | AGT  Agent            |    6116.73s |  +64.16s |       |     1 | S -> H   << AGENT
+    7 | SAI  Carlos Sainz     |    6148.61s |  +96.04s |       |     1 | M -> H
+    8 | ALO  Fernando Alonso  |    6053.44s |   +1 Lap |       |     1 | M -> H
+    9 | HUL  Nico Hulkenberg  |    6055.71s |   +1 Lap |       |     1 | M -> H
+   10 | PER  Sergio Perez     |    6057.20s |   +1 Lap |       |     1 | M -> H
+   11 | COL  Franco Colapinto |    6058.85s |   +1 Lap |       |     1 | M -> H
+   12 | TSU  Yuki Tsunoda     |    6061.36s |   +1 Lap |       |     1 | M -> S
+   13 | OCO  Esteban Ocon     |    6096.58s |   +1 Lap |       |     1 | M -> H
+   14 | STR  Lance Stroll     |    6100.14s |   +1 Lap |       |     1 | H -> M
+   15 | ZHO  Guanyu Zhou      |    6109.79s |   +1 Lap |       |     1 | H -> M
+   16 | BOT  Valtteri Bottas  |    6110.40s |   +1 Lap |       |     1 | H -> M
+   17 | GAS  Pierre Gasly     |    6111.63s |   +1 Lap |       |     1 | M -> S
+   18 | RIC  Daniel Ricciardo |    6142.37s |   +1 Lap |       |     2 | S -> M -> S
+   19 | MAG  Kevin Magnussen  |         DNF |      DNF |       |     2 | H -> M -> S
+   20 | ALB  Alexander Albon  |         DNF |      DNF |       |     1 | M -> H
+  ──────────────────────────────────────────────────────────────────────────
+
+Reward Statistics:
+Mean: 51.91, Std: 0.00, Min: 51.91, Max: 51.91
+
+Position Statistics:
+Mean: 6.00, Std: 0.00, Best: 6, Worst: 6
+
+Race Time Statistics:
+Mean: 6116.73s, Std: 0.00s, Best: 6116.73s, Worst: 6116.73s
+
+Position Distribution:
+Wins (P1): 0 (0.0%), Podiums (P1-3): 0 (0.0%), Points (P1-10): 1 (100.0%)
+
+Strategy Statistics:
+Mean Pit Stops: 1.00, Mean Compounds: 2.00, Mean Lap Time: 98.66s
+
+==========================================================================
+  Overall Evaluation Summary - From 5 Test Races
+==========================================================================
+
+  Race                           |  Agent |    HAM | Delta Pos | Delta Time
+  ────────────────────────────────────────────────────────────────────────────
+  Abu Dhabi Grand Prix           | P10    | P4     |        +6 |     +56.61s
+  Austrian Grand Prix            | P5     | P4     |        +1 |     +19.78s
+  Italian Grand Prix             | P7     | P5     |        +2 |     +18.91s
+  Miami Grand Prix               | P4     | P6     |        -2 |      -5.00s
+  Singapore Grand Prix           | P6     | P6     |        +0 |     -21.08s
+  ────────────────────────────────────────────────────────────────────────────
+
+  Agent Statistics (across 5 races):
+    Mean Position:   6.40
+    Best / Worst:    P4 / P10
+    Wins (P1):       0 (0.0%)
+    Podiums (P1-3):  0 (0.0%)
+    Points (P1-10):  5 (100.0%)
+    Mean Reward:     19.95
+    Mean Pit Stops:  1.20
+    Mean Compounds:  1.60
+    Mean Lap Time:   88.57s
+
+  HAM Statistics (across 5 races):
+    Mean Position:   5.00
+    Best / Worst:    P4 / P6
+    Wins (P1):       0 (0.0%)
+    Podiums (P1-3):  0 (0.0%)
+    Points (P1-10):  5 (100.0%)
+    Mean Pit Stops:  1.20
+
+  Agent vs HAM Comparison:
+    Position delta average:  +1.40
+    Time delta average:      +13.84s
+    Head-to-head:      Agent won 1 times, tied 1 times, HAM won 3 times

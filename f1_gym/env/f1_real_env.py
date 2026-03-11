@@ -224,6 +224,9 @@ class F1RealEnv(gym.Env):
             self.compounds_used.add(action)
             self.tyre_age = 0
 
+        # Increment age before calculation so first lap of stint = 1,
+        self.tyre_age += 1
+
         # Calculate lap time anchored to target driver's real pace
         base_lap = self.params.calculate_adjusted_lap_time(
             agent_compound_id=self.current_compound,
@@ -248,7 +251,6 @@ class F1RealEnv(gym.Env):
         self.lap_time = base_lap + pit_time
         self.total_time += self.lap_time
         self.current_lap += 1
-        self.tyre_age += 1
         self.tyre_wear = min(self.tyre_age / self.total_laps, 1.0)
 
     def update_opponents(self):

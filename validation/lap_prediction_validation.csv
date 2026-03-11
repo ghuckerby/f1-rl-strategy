@@ -1,0 +1,12 @@
+Race,Samples,MAE (s),RMSE (s),R^2,LOO MAE (s)
+Abu Dhabi Grand Prix,921,0.31,0.442,0.778,0.616
+Austrian Grand Prix,1269,0.271,0.38,0.821,0.545
+Italian Grand Prix,927,0.509,0.679,0.714,0.907
+Miami Grand Prix,934,0.359,0.464,0.804,0.553
+Singapore Grand Prix,1109,0.424,0.641,0.719,0.722
+Race,Hamilton Time (s),Agent Time (s),Time Difference (s)
+Abu Dhabi Grand Prix,5229.77,5229.77,0.0
+Austrian Grand Prix,5085.94,5085.94,-0.0
+Italian Grand Prix,4503.55,4503.55,0.0
+Miami Grand Prix,5466.46,5466.46,0.0
+Singapore Grand Prix,6137.82,6137.82,-0.0
