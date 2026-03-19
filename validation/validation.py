@@ -22,6 +22,10 @@ TEST_DIR = "data/test_races"
 OUTPUT_DIR = os.path.dirname(__file__)
 COMPOUND_NAMES = {1: "Soft", 2: "Medium", 3: "Hard"}
 
+# Checks how well the lap time model predicts lap times
+
+# Predicts on the same data the model was trained on
+# And leave-one-driver_out validation (train on all drivers, test on held out, repeat for each driver)
 def validate_lap_prediction(predictor: LapPredictor):
 
     rows = []
@@ -76,6 +80,9 @@ def validate_lap_prediction(predictor: LapPredictor):
     df = pd.DataFrame(rows)
     return df
 
+# Simulation consistency / replay check
+# Loads the recorded target strategy and runs the env lap by lap
+# Checks the difference to validate the anchoring
 def validate_anchoring():
 
     rows = []
@@ -116,6 +123,9 @@ def validate_anchoring():
     df = pd.DataFrame(rows)
     return df
 
+# Removes target from testing
+# Trains random forest on all other drivers, test on target
+# Plots actual vs predicted across each stint
 def plot_stint_traces(predictor: LapPredictor):
     plot_dir = os.path.join(OUTPUT_DIR, "stint_traces")
     os.makedirs(plot_dir, exist_ok=True)

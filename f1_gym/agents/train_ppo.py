@@ -127,7 +127,7 @@ def train_f1_ppo(
     batch_size: int = 256,
     n_epochs: int = 5,
     
-    gamma: float = 0.95,
+    gamma: float = 0.99,
     gae_lambda: float = 0.95,
     clip_range: float = 0.2,
     clip_range_vf: Optional[float] = None,
@@ -236,8 +236,8 @@ def train_f1_ppo(
     # PPO network architecture
     if net_arch is None:
         net_arch = dict(
-            pi=[64, 64],
-            vf=[64, 64],
+            pi=[128, 128],
+            vf=[128, 128],
         )
     
     # Map activation function string to torch module
@@ -285,7 +285,7 @@ def train_f1_ppo(
     # Evaluation callback
     eval_callback = EvalCallback(
         eval_env,
-        best_model_save_path=f"{MODEL_DIR}/best_ppo",
+        best_model_save_path=f"{MODEL_DIR}/best_ppo/{model_name}",
         log_path=f"{LOG_DIR}/eval",
         eval_freq=eval_freq // n_envs,
         n_eval_episodes=n_eval_episodes,

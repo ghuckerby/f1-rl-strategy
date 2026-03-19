@@ -178,6 +178,11 @@ class F1RealEnv(gym.Env):
             # Final position reward
             final_position_reward = (20 - self.position) * self.reward_config.final_position_weight
             reward += final_position_reward
+
+            # Terminal penalty for not using at least 2 compounds
+            if len(self.compounds_used) < 2:
+                reward += self.reward_config.terminal_rule_penalty
+
             info["episode_log"] = list(self.race_log)
             info["final_standings"] = self._build_final_standings()
 
