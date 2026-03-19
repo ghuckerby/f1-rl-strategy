@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, List, Set
+import numpy as np
 import pandas as pd
 
 @dataclass
@@ -53,6 +54,9 @@ class RaceParams:
     target_compound_at_lap: List[int] = field(default_factory=list)
     target_tyre_age_at_lap: List[int] = field(default_factory=list)
 
+    # Pace offset: mean(predicted - actual) on clean laps for the target driver
+    target_pace_offset: float = 0.0
+
     # Safety car lap numbers
     sc_laps: Set[int] = field(default_factory=set)
 
@@ -101,11 +105,11 @@ class RaceParams:
         
         # Case 3: agent pits but target didn't -> use predictor for agent's compound/age (clean lap time). Caller adds pit loss separately.
         if agent_is_pitting and not is_target_pit:
-            return self.predict(agent_compound_id, agent_tyre_age, current_lap)
+            return self.predict(agent_compound_id, agent_tyre_age, current_lap) - self.target_pace_offset
 
         # Case 4: target pitted but agent stays out -> target's real lap time is inflated by pit stop, so fall back to predictor for agent's compound/age (clean lap time)
         if is_target_pit and not agent_is_pitting:
-            return self.predict(agent_compound_id, agent_tyre_age, current_lap)
+            return self.predict(agent_compound_id, agent_tyre_age, current_lap) - self.target_pace_offset
 
         # Case 5: normal racing lap -> return target's real lap time adjusted by the delta between agent and target predicted times (accounts for compound/age differences)
         if target_real is not None and has_target_data:
@@ -118,7 +122,7 @@ class RaceParams:
             return target_real + delta
 
         # Fallback: no target data for this lap → raw predictor
-        return self.predict(agent_compound_id, agent_tyre_age, current_lap)
+        return self.predict(agent_compound_id, agent_tyre_age, current_lap) - self.target_pace_offset
     
     @classmethod
     def from_race_data(cls, race_data: Dict[str, Any], predictor: Optional[Any] = None) -> 'RaceParams':
@@ -168,6 +172,25 @@ class RaceParams:
             for lap_num in range(start, end + 1):
                 sc_laps.add(lap_num)
 
+        # Compute target pace offset: mean(predicted - actual) on clean laps
+        target_pace_offset = 0.0
+        if predictor is not None and target_lap_times:
+            clean_errors = []
+            for lap in range(1, min(total_laps, len(target_lap_times)) + 1):
+                if lap in sc_laps or lap in target_pit_laps:
+                    continue
+                i = lap - 1
+                pred = float(predictor.predict(
+                    pd.DataFrame([{
+                        'LapNumber': lap,
+                        'TyreAge': target_tyre_age_at_lap[i],
+                        'CompoundID': target_compound_at_lap[i]
+                    }])[['LapNumber', 'TyreAge', 'CompoundID']]
+                )[0])
+                clean_errors.append(pred - target_lap_times[i])
+            if clean_errors:
+                target_pace_offset = float(np.mean(clean_errors))
+
         return cls(
             track=track,
             compounds=compounds,
@@ -176,5 +199,6 @@ class RaceParams:
             target_pit_laps=target_pit_laps,
             target_compound_at_lap=target_compound_at_lap,
             target_tyre_age_at_lap=target_tyre_age_at_lap,
+            target_pace_offset=target_pace_offset,
             sc_laps=sc_laps,
         )

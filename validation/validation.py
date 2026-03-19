@@ -10,20 +10,14 @@ from f1_gym.lap_predictor import LapPredictor
 from f1_gym.env.f1_real_env import F1RealEnv
 from data.fastf1_data_extraction import COMPOUND_MAP
 
-TEST_RACES = [
-    "Abu Dhabi Grand Prix",
-    "Austrian Grand Prix",
-    "Italian Grand Prix",
-    "Miami Grand Prix",
-    "Singapore Grand Prix",
-]
+TEST_RACES = ['Chinese Grand Prix', 'Hungarian Grand Prix', 'Singapore Grand Prix',
+                    'Bahrain Grand Prix', 'Mexico City Grand Prix']
 YEAR = 2024
 TEST_DIR = "data/test_races"
 OUTPUT_DIR = os.path.dirname(__file__)
 COMPOUND_NAMES = {1: "Soft", 2: "Medium", 3: "Hard"}
 
 # Checks how well the lap time model predicts lap times
-
 # Predicts on the same data the model was trained on
 # And leave-one-driver_out validation (train on all drivers, test on held out, repeat for each driver)
 def validate_lap_prediction(predictor: LapPredictor):
@@ -123,9 +117,56 @@ def validate_anchoring():
     df = pd.DataFrame(rows)
     return df
 
+# Computes the pace offset per race and shows the MAE improvement for HAM
+# Offset = mean(predicted - actual) on clean laps for target driver
+# Corrected prediction = raw prediction - offset
+def validate_pace_offset(predictor: LapPredictor):
+    rows = []
+
+    for race in TEST_RACES:
+        session = predictor.extractor.load_session(YEAR, race)
+        laps = session.laps.copy()
+        valid = laps[
+            (laps['IsAccurate'] == True) &
+            (laps['PitInTime'].isna()) &
+            (laps['PitOutTime'].isna())
+        ].copy()
+        valid["LapTimeSec"] = valid["LapTime"].dt.total_seconds()
+        valid["CompoundID"] = valid["Compound"].map(COMPOUND_MAP)
+        valid = valid.sort_values(["Driver", "LapNumber"])
+        valid["TyreAge"] = valid.groupby(["Driver", "Stint"]).cumcount() + 1
+        valid = valid[["Driver", "LapNumber", "TyreAge", "CompoundID", "LapTimeSec"]].dropna()
+        features = ["LapNumber", "TyreAge", "CompoundID"]
+
+        # Use model (trained on all drivers)
+        model = LapPredictor.load_model(race)
+        ham = valid[valid["Driver"] == "HAM"]
+        if ham.empty:
+            continue
+
+        raw_preds = model.predict(ham[features])
+        errors = raw_preds - ham["LapTimeSec"].values
+        offset = np.mean(errors)
+        corrected_preds = raw_preds - offset
+
+        mae_before = mean_absolute_error(ham["LapTimeSec"], raw_preds)
+        mae_after = mean_absolute_error(ham["LapTimeSec"], corrected_preds)
+
+        rows.append({
+            "Race": race,
+            "HAM Laps": len(ham),
+            "Offset (s)": round(offset, 3),
+            "MAE Before (s)": round(mae_before, 3),
+            "MAE After (s)": round(mae_after, 3),
+            "Improvement (s)": round(mae_before - mae_after, 3),
+        })
+
+    return pd.DataFrame(rows)
+
+
 # Removes target from testing
 # Trains random forest on all other drivers, test on target
-# Plots actual vs predicted across each stint
+# Plots actual vs predicted across each stint, with and without pace offset correction
 def plot_stint_traces(predictor: LapPredictor):
     plot_dir = os.path.join(OUTPUT_DIR, "stint_traces")
     os.makedirs(plot_dir, exist_ok=True)
@@ -151,18 +192,26 @@ def plot_stint_traces(predictor: LapPredictor):
         model = RandomForestRegressor(n_estimators=100, random_state=6)
         model.fit(train[features], train["LapTimeSec"])
 
-        predictions = model.predict(held_out[features])
-        mae = mean_absolute_error(held_out["LapTimeSec"], predictions)
+        raw_preds = model.predict(held_out[features])
+        errors = raw_preds - held_out["LapTimeSec"].values
+        offset = np.mean(errors)
+        corrected_preds = raw_preds - offset
+
+        mae_raw = mean_absolute_error(held_out["LapTimeSec"], raw_preds)
+        mae_corrected = mean_absolute_error(held_out["LapTimeSec"], corrected_preds)
 
         fig, ax = plt.subplots(figsize=(10, 6))
         for stint_id, group in held_out.groupby("Stint"):
-            prediction = model.predict(group[features])
+            stint_raw = model.predict(group[features])
+            stint_corrected = stint_raw - offset
             compoundid = int(group["CompoundID"].iloc[0])
-            label = f"Actual ({COMPOUND_NAMES.get(compoundid, "?")})"
+            label = f"Actual ({COMPOUND_NAMES.get(compoundid, '?')})"
             ax.plot(group["LapNumber"].values, group["LapTimeSec"].values, label=label, marker="o")
-            ax.plot(group["LapNumber"].values, prediction, marker="x", label="Predicted")
+            ax.plot(group["LapNumber"].values, stint_raw, marker="x", linestyle="--", alpha=0.5, label="Raw Predicted")
+            ax.plot(group["LapNumber"].values, stint_corrected, marker="s", label="Corrected Predicted")
 
-        ax.set_title(f"Hamilton Stint Traces - {race.replace(' Grand Prix', ' GP')} (MAE: {mae:.2f}s)")
+        ax.set_title(f"Hamilton Stint Traces - {race.replace(' Grand Prix', ' GP')}\n"
+                     f"Raw MAE: {mae_raw:.2f}s | Corrected MAE: {mae_corrected:.2f}s | Offset: {offset:+.2f}s")
         ax.set_xlabel("Lap Number")
         ax.set_ylabel("Lap Time (s)")
         ax.legend()
@@ -179,11 +228,15 @@ if __name__ == "__main__":
     predictor = LapPredictor()
     lap_prediction_results = validate_lap_prediction(predictor)
     anchoring_results = validate_anchoring()
+    pace_offset_results = validate_pace_offset(predictor)
     plot_stint_traces(predictor)
 
     # Save to CSV
     csv_path = os.path.join(OUTPUT_DIR, "lap_prediction_validation.csv")
     with open(csv_path, "w") as f:
         lap_prediction_results.to_csv(f, index=False)
+        f.write("\n")
         anchoring_results.to_csv(f, index=False)
+        f.write("\n")
+        pace_offset_results.to_csv(f, index=False)
     print(f"Validation results saved to {csv_path}")
