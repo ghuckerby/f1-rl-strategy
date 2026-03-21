@@ -10,7 +10,7 @@ from f1_gym.lap_predictor import LapPredictor
 from f1_gym.env.f1_real_env import F1RealEnv
 from data.fastf1_data_extraction import COMPOUND_MAP
 
-TEST_RACES = ['Chinese Grand Prix', 'Hungarian Grand Prix', 'Singapore Grand Prix',
+TEST_RACES = ['Chinese Grand Prix', 'Hungarian Grand Prix', 'Miami Grand Prix',
                     'Bahrain Grand Prix', 'Mexico City Grand Prix']
 YEAR = 2024
 TEST_DIR = "data/test_races"

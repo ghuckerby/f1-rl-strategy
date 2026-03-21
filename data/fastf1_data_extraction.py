@@ -708,7 +708,7 @@ if __name__ == "__main__":
     season_config = extractor.get_season_config(
         year=2024,
         target_driver='HAM',
-        test_races=['Chinese Grand Prix', 'Hungarian Grand Prix', 'Singapore Grand Prix',
+        test_races=['Chinese Grand Prix', 'Hungarian Grand Prix', 'Miami Grand Prix',
                     'Bahrain Grand Prix', 'Mexico City Grand Prix'],
         # Skipped races:
         # Monaco: Red flag first lap, hard to predict lap times
