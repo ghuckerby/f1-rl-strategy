@@ -19,7 +19,7 @@ COMPOUND_NAMES = {1: "Soft", 2: "Medium", 3: "Hard"}
 
 # Checks how well the lap time model predicts lap times
 # Predicts on the same data the model was trained on
-# And leave-one-driver_out validation (train on all drivers, test on held out, repeat for each driver)
+# And leave-one-driver out validation (train on all drivers, test on held out, repeat for each driver)
 def validate_lap_prediction(predictor: LapPredictor):
 
     rows = []

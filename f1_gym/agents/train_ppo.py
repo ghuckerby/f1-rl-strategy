@@ -19,6 +19,7 @@ from f1_gym.env.multi_race_env import MultiRaceEnv
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
+# Labels for compounds and actions
 COMPOUND_NAMES = {0: "?", 1: "SOFT", 2: "MED", 3: "HARD"}
 COMPOUND_SHORT = {0: "?", 1: "S", 2: "M", 3: "H"}
 ACTION_NAMES = {0: "STAY OUT", 1: "BOX SOFT", 2: "BOX MED", 3: "BOX HARD"}
@@ -469,7 +470,7 @@ def evaluate_ppo_model(
             print(f"  {target_code} finished P{target_position} (real)  |  Agent finished P{final_position}")
             print(f"  {'─' * 52}")
 
-        # Standings table — (handles lapped drivers classified as +N Lap(s))
+        # Standings table — (handles lapped drivers classified as +N Laps)
         print(f"\n  {'RACE STANDINGS':^74}")
         print(f"  {'─' * 74}")
         print(f"  {'Pos':>3} | {'Driver':<21} | {'Total Time':>11} | {'Gap':>8} | {'Pen':>5} | {'Stops':>5} | Strategy")

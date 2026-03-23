@@ -174,12 +174,7 @@ def main():
     train_parser.add_argument("--timesteps", type=int, default=3_000_000)
     train_parser.add_argument("--model-name", type=str, default="f1_rl_ppo_2024_season")
     train_parser.add_argument("--seed", type=int, default=6)
-
     train_parser.add_argument("--n-envs", type=int, default=8)
-    train_parser.add_argument("--gamma", type=float, default=0.99)
-    train_parser.add_argument("--ent-coef", type=float, default=0.02)
-    train_parser.add_argument("--n-epochs", type=int, default=5)
-    train_parser.add_argument("--net-arch", type=str, default=None, help="Comma-separated layer sizes, e.g. '128,128'")
 
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate a trained PPO model on the specified test races.")

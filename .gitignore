@@ -1,6 +1,8 @@
 
 fastf1_cache/cache/
 
+*.venv/
+
 wandb/
 f1_gym/models/wandb/
 f1_gym/logs/tensorboard/

@@ -5,6 +5,8 @@ import joblib
 from data.fastf1_data_extraction import FastF1DataExtractor, COMPOUND_MAP
 
 class LapPredictor:
+    """Lap time prediction based on lap number, tyre age, tyre compound"""
+
     MODEL_DIR = "f1_gym/models/lap_predictors"
 
     def __init__(self):
@@ -13,15 +15,19 @@ class LapPredictor:
 
     @staticmethod
     def race_to_filename(race_name: str) -> str:
+        """Helper for file naming"""
         return race_name.strip().replace(" ", "_").lower()
 
-    def _model_path(self, race_name: str) -> str:
+    def model_path(self, race_name: str) -> str:
         return os.path.join(self.MODEL_DIR, f"{self.race_to_filename(race_name)}.pkl")
 
     def create_dataset(self, year: int, race_name: str) -> pd.DataFrame:
+        """Creates a training dataset for one race from FastF1 data"""
+
         session = self.extractor.load_session(year, race_name)
         laps = session.laps.copy()
 
+        # Use only clean laps
         valid_laps = laps[
             (laps['IsAccurate'] == True) &
             (laps['PitInTime'].isna()) &
@@ -45,6 +51,8 @@ class LapPredictor:
         print(f"{race_name} Model trained")
 
     def train_races(self, year: int, race_list: list[str]):
+        """Train lap time prediction model for a race"""
+
         for race_name in race_list:
             data = self.create_dataset(year, race_name)
 
@@ -55,7 +63,7 @@ class LapPredictor:
         os.makedirs(self.MODEL_DIR, exist_ok=True)
 
         for race_name, model in self.models.items():
-            path = self._model_path(race_name)
+            path = self.model_path(race_name)
             joblib.dump(model, path)
             print(f"Saved: {path}")
 
@@ -66,6 +74,8 @@ class LapPredictor:
 
     @staticmethod
     def test_model(race_name: str):
+        """Tests for the lap time prediction model on some scenarios, simple sanity checks"""
+
         model = LapPredictor.load_model(race_name)
 
         test_scenarios = [

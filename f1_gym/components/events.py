@@ -25,7 +25,6 @@ class RealRaceEvents:
     sc_speed_factor: float = 1.4
     sc_pit_factor: float = 0.5
 
-    # State
     current_lap: int = field(default=0, init=False)
     safety_car_active: bool = field(default=False, init=False)
 

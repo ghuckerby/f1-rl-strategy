@@ -64,6 +64,7 @@ requests==2.32.5
 requests-cache==1.2.1
 rich==14.3.1
 rpds-py==0.28.0
+ruff==0.15.4
 sb3_contrib==2.7.0
 scikit-learn==1.8.0
 scipy==1.16.3

@@ -9,7 +9,8 @@ from f1_gym.components.events import RealRaceEvents
 from f1_gym.reward_config import RewardConfig
 
 class F1RealEnv(gym.Env):
-    """Custom Gym environment for simulating a real F1 race based on historical data, allowing an RL agent to learn optimal pit stop strategies against real opponents and events."""
+    """Custom Gym environment for simulating a real F1 race based on historical data, 
+    allowing an RL agent to learn pit stop strategies against real opponents and events."""
 
     # Observation normalisation constants
     MAX_GAP_SECONDS = 60.0
@@ -184,7 +185,7 @@ class F1RealEnv(gym.Env):
                 reward += self.reward_config.terminal_rule_penalty
 
             info["episode_log"] = list(self.race_log)
-            info["final_standings"] = self._build_final_standings()
+            info["final_standings"] = self.build_final_standings()
 
         return self.make_obs(), reward, terminated, False, info
     
@@ -222,7 +223,7 @@ class F1RealEnv(gym.Env):
 
         pit_loss_multiplier = self.events.get_pit_loss_multiplier()
 
-        # Pit Stop — update compound / age BEFORE lap-time calc
+        # Pit Stop: update compound and reset tyre age
         if agent_is_pitting:
             self.num_pit_stops += 1
             self.current_compound = action
@@ -242,10 +243,7 @@ class F1RealEnv(gym.Env):
         if base_lap is None:
             base_lap = self.params.track.average_lap
 
-        # Add pit-loss only when the agent pits on a lap the target did NOT
-        # pit (case 3 in calculate_adjusted_lap_time).  When the agent pits
-        # on the same lap as the target, the real lap time already includes
-        # the pit-stop delay.
+        # Add pit-loss only when the agent pits on a lap the target didn't pit to prevent double counting a pit stop
         pit_time = 0.0
         if agent_is_pitting:
             same_lap_as_target = current_lap_number in self.params.target_pit_laps
@@ -259,7 +257,7 @@ class F1RealEnv(gym.Env):
         self.tyre_wear = min(self.tyre_age / self.total_laps, 1.0)
 
     def update_opponents(self):
-        """Advances all opponents by one lap, updating their lap times, positions, and compounds based on their individual strategies"""
+        """Advances all opponents by one lap, updating their lap times, positions, and compounds based on their strategies"""
         for opp in self.opponents:
             opp.step()
 
@@ -282,8 +280,8 @@ class F1RealEnv(gym.Env):
         self.race_standings = entries
         self.position = next(i + 1 for i, (_, _, is_agent, _) in enumerate(entries) if is_agent)
 
-    def _build_final_standings(self) -> List[Dict[str, Any]]:
-        """Build detailed final standings from simulated race state for display."""
+    def build_final_standings(self) -> List[Dict[str, Any]]:
+        """Build detailed final standings from race state for display."""
         COMPOUND_SHORT = {1: "S", 2: "M", 3: "H"}
         standings = []
 
@@ -320,7 +318,7 @@ class F1RealEnv(gym.Env):
             "penalty": 0.0,
         })
 
-        # Sort: DNFs last, then more laps first, then lower time
+        # Sort standings: DNFs last, then more laps first, then lower time
         standings.sort(key=lambda x: (x["dnf"], -x["laps"], x["time"]))
         return standings
     

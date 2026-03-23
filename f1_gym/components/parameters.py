@@ -103,7 +103,7 @@ class RaceParams:
         if agent_is_pitting and is_target_pit and target_real is not None:
             return target_real
         
-        # Case 3: agent pits but target didn't -> use predictor for agent's compound/age (clean lap time). Caller adds pit loss separately.
+        # Case 3: agent pits but target didn't -> use predictor for agent's compound/age (clean lap time) then add pit loss separately.
         if agent_is_pitting and not is_target_pit:
             return self.predict(agent_compound_id, agent_tyre_age, current_lap) - self.target_pace_offset
 
@@ -121,7 +121,7 @@ class RaceParams:
             delta = predicted_agent - predicted_target
             return target_real + delta
 
-        # Fallback: no target data for this lap → raw predictor
+        # Fallback: no target data for this lap -> raw predictor
         return self.predict(agent_compound_id, agent_tyre_age, current_lap) - self.target_pace_offset
     
     @classmethod

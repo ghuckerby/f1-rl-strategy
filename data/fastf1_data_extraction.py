@@ -9,14 +9,17 @@ import numpy as np
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
-# Data Classes
+# -- Data Classes --
+
 @dataclass
 class TyreCompound:
+    """Represents a tyre compound used in the race"""
     compound: str 
     compound_id: int
 
 @dataclass
 class OpponentStrategy:
+    """Stores a driver's race strategy and race outcome"""
     driver_code: str
     driver_name: str
     starting_compound: int
@@ -33,12 +36,14 @@ class OpponentStrategy:
 
 @dataclass
 class SafetyCarEvent:
+    """Represents a safety car or virtual safety car event during the race"""
     start_lap: int
     end_lap: int
     duration: int
 
 @dataclass
 class TrackParameters:
+    """Stores track and race parameters used by the simulation"""
     name: str
     total_laps: int
     pit_loss_time: float
@@ -48,6 +53,7 @@ class TrackParameters:
 
 @dataclass
 class RaceConfig:
+    """Stores the configuration for a single race"""
     year: int
     name: str
     track: TrackParameters
@@ -61,6 +67,7 @@ class RaceConfig:
     target_driver_strategy: OpponentStrategy
 
     def to_dict(self) -> Dict[str, Any]:
+        """Converts RaceConfig to a dictionary for JSON export"""
         return {
             "year": self.year,
             "name": self.name,
@@ -77,13 +84,16 @@ class RaceConfig:
 
 @dataclass
 class SeasonConfig:
+    """Stores all race configs for a season and the train/test split"""
     year: int
     target_driver: str
     races: List[RaceConfig]
     train_races: List[str]
     test_races: List[str]
 
-# Compound Mapping
+# -- Compound Mapping --
+
+# Numeric IDs for compounds (Intermediate and wet mostly unused)
 COMPOUND_MAP = {
     'SOFT': 1,
     'MEDIUM': 2,
@@ -93,26 +103,34 @@ COMPOUND_MAP = {
 }
 
 def map_compound(compound_str: str) -> int:
+    """Maps compound string to numeric ID, returns -1 if unknown"""
     return COMPOUND_MAP.get(compound_str.upper(), -1)
 
-# Main Extractor Class
+# -- Main Extractor Class --
+
 class FastF1DataExtractor:
+    """Extracts race and season data from FastF1 race sessions.
+    
+    Produces structured configuration objects that can be saved as a JSON file and used in the F1 RL strategy environment.
+    """
 
     def __init__(self, cache_dir: str = "fastf1_cache/cache"):
-        # Enable FastF1 caching
+        """Initializes the data extractor and sets up FastF1 caching."""
         ff1.Cache.enable_cache(cache_dir)
         self.cache_dir = cache_dir
 
     def load_session(self, year: int, gp: str, session_type: str = 'R') -> ff1.core.Session:
-        # Load session and data
+        """Loads a FastF1 session and returns it."""
         session = ff1.get_session(year, gp, session_type)
         session.load(laps=True, telemetry=False, weather=True, messages=True)
         return session
     
     def get_tyre_compounds(self, session: ff1.core.Session) -> Dict[int, TyreCompound]:
+        """Extracts the tyre compounds used in the race and maps them to numeric IDs."""
+
         laps = session.laps.copy()
 
-        # Filter invalid laps (pit and SC laps)
+        # Use only accurate non-pit laps with valid lap times
         valid_laps = laps[
             (laps['IsAccurate'] == True) &
             (laps['PitInTime'].isna()) &
@@ -136,10 +154,14 @@ class FastF1DataExtractor:
         return tyre_compounds
     
     def get_pit_loss(self, session: ff1.core.Session) -> Tuple[float, float]:
+        """Calculates the average and standard deviation of pit stop losses for a session.
+        
+        Pit loss is calculated as the difference between the pit lap time and the driver's normal lap time, with outliers filtered out.
+        """
         
         laps = session.laps.copy()
 
-        # Get normal laps (exclude pits, SC, invalid laps)
+        # Creates a baseline of normal lap times from accurate non-pit laps with valid lap times
         normal_laps = laps[
             (laps['IsAccurate'] == True) &
             (laps['PitInTime'].isna()) &
@@ -148,12 +170,12 @@ class FastF1DataExtractor:
         ].copy()
         normal_laps['LaptimeSec'] = normal_laps['LapTime'].dt.total_seconds()
 
-        # Median for imputation of lap times
+        # Median to quickly discard extreme outliers
         median_lap = normal_laps['LaptimeSec'].median()
 
-        # Pit stop duration
         pit_losses = []
         pit_in_laps = laps[~laps['PitInTime'].isna()].copy()
+
         for _, lap in pit_in_laps.iterrows():
             driver = lap['Driver']
             lap_num = lap['LapNumber']
@@ -164,7 +186,7 @@ class FastF1DataExtractor:
             # Calculate pit loss
             in_lap_time = lap['LapTime'].total_seconds()
 
-            # Skip outliers (caused by issues or crashes)
+            # Skip extreme outliers (likely caused by issues or crashes)
             if in_lap_time > 3 * median_lap:
                 continue
 
@@ -176,8 +198,9 @@ class FastF1DataExtractor:
                 (~laps['LapTime'].isna())
             ]
 
-            # Calcualte pit loss as difference between pit lap and normal lap
-            # some tracks mean the out lap is the longer one, so factor in both
+            # Calculate pit loss as difference between pit lap and normal lap
+            # Pit time is distributed differently between the in-lap and out-lap depending on the track
+            # so both are included in the calculation
             if len(out_lap) > 0:
                 out_lap_time = out_lap.iloc[0]['LapTime'].total_seconds()
                 pit_loss = (in_lap_time + out_lap_time) - 2 * driver_median_lap
@@ -187,7 +210,7 @@ class FastF1DataExtractor:
             if pit_loss > 0:
                 pit_losses.append(pit_loss)
         
-        # IQR outlier filtering
+        # Remove any remaining outliers using IQR filtering
         pit_losses = np.array(pit_losses)
         q1, q3 = np.percentile(pit_losses, [25, 75])
         iqr = q3 - q1
@@ -201,6 +224,10 @@ class FastF1DataExtractor:
         return float(np.mean(filtered)), float(np.std(filtered))
     
     def get_safety_car_events(self, session: ff1.core.Session) -> List[SafetyCarEvent]:
+        """Extracts safety car and virtual safety car events from the session laps.
+        
+        Consecutive laps with SC status codes are grouped into single events.
+        """
         
         events = []
         laps = session.laps.copy()
@@ -209,7 +236,7 @@ class FastF1DataExtractor:
 
             sc_laps = set()
 
-            # Track Status Code: 1=Green, 2=Yellow, 4=SC, 5=Red, 6=VSC, 7=SC Ending
+            # FastF1 Track Status Codes: 1=Green, 2=Yellow, 4=SC, 5=Red, 6=VSC, 7=SC Ending
             for _, lap in laps.iterrows():
                 status = lap.get('TrackStatus', '')
                 if pd.isna(status):
@@ -221,7 +248,7 @@ class FastF1DataExtractor:
                     sc_laps.add(lap['LapNumber'])
 
             if sc_laps:
-                # Group SC laps into events
+                # Group SC/VSC laps into consecutive events
                 sc_laps = sorted(sc_laps)
                 sc_start = sc_laps[0]
                 sc_end = sc_laps[0]
@@ -245,16 +272,26 @@ class FastF1DataExtractor:
         return events
     
     def calculate_sc_probability(self, sc_events: List[SafetyCarEvent], total_laps: int) -> float:
-        # Laps under SC
-        sc_starts = len(sc_events)
+        """Calculates the probability of a safety car on a racing lap
+        
+        Calculated as number of SC starts / number of normal laps
+        """
 
-        # Probability per lap
+        sc_starts = len(sc_events)
         total_sc_laps = sum(e.duration for e in sc_events)
         normal_laps = total_laps - total_sc_laps
         
         return sc_starts / normal_laps if normal_laps > 0 else 0.0
     
     def get_driver_strategy(self, session: ff1.core.Session, driver_code: str) -> OpponentStrategy:
+        """Extracts a driver's strategy and lap-by-lap data
+        
+        - start tyre and starting position
+        - pit lap numbers and compounds
+        - lap times
+        - positions at each lap
+        - finishing position and DNF status
+        """
         
         laps = session.laps.copy()
         driver_laps = laps[laps['Driver'] == driver_code].sort_values('LapNumber')
@@ -268,7 +305,7 @@ class FastF1DataExtractor:
         if not driver_name:
             driver_name = driver_code
 
-        # Starting compound and grid position
+        # Starting compound
         first_lap = driver_laps.iloc[0]
         start_compound = map_compound(first_lap['Compound'])
         
@@ -312,6 +349,7 @@ class FastF1DataExtractor:
         lap_times: List[float] = []
         prev_time_sec: Optional[float] = None
 
+        # Loop for each lap time
         for idx_row, (_, lap) in enumerate(driver_laps_sorted.iterrows()):
             time_sec = lap['TimeSec']
             lap_time_sec = lap['LapTimeSec']
@@ -339,7 +377,7 @@ class FastF1DataExtractor:
             lap_times.append(float(f"{elapsed:.3f}"))
             prev_time_sec = time_sec
 
-        # Final fallback: replace any remaining 0.0 with median (very rare)
+        # Final fallback: replace any remaining 0.0 with median
         valid_times = [t for t in lap_times if t > 0]
         if valid_times:
             median_time = float(f"{np.median(valid_times):.3f}")
@@ -350,7 +388,7 @@ class FastF1DataExtractor:
         for _, lap in driver_laps_sorted.iterrows():
             pos = lap.get('Position', np.nan)
             if pd.isna(pos):
-                positions.append(20)  # fallback
+                positions.append(20)  # Fallback if position is missing
             else:
                 positions.append(int(pos))
 
@@ -359,10 +397,11 @@ class FastF1DataExtractor:
         finishing_position = int(last_lap['Position']) if not pd.isna(last_lap['Position']) else 20
         total_time = sum(t for t in lap_times if t > 0)
 
-        # DNF detection: driver completed fewer laps than the race total
+        # Mark as DNF if the driver completed significantly fewer laps than the leader (more than 2 laps behind)
+        # Two laps allows lapped cars to be classified 
         total_race_laps = int(laps['LapNumber'].max())
         driver_completed_laps = int(driver_laps_sorted['LapNumber'].max())
-        dnf = driver_completed_laps < (total_race_laps - 2) # Allow for finishing a lap behind leader
+        dnf = driver_completed_laps < (total_race_laps - 2)
 
         return OpponentStrategy(
             driver_code=driver_code,
@@ -380,6 +419,7 @@ class FastF1DataExtractor:
         )
     
     def get_sc_factors(self, session: ff1.core.Session, track_params: TrackParameters, sc_events: List[SafetyCarEvent]) -> Tuple[float, float]:
+        """Estimate safety car speed and pit loss factors"""
 
         # No safety car in this race
         if not sc_events:
@@ -415,10 +455,9 @@ class FastF1DataExtractor:
         if len(sc_laps) >= 3 and not pd.isna(normal_median):
             sc_median = sc_laps['LaptimeSec'].median()
             sc_speed_factor = sc_median / normal_median
-            # Clamp to reasonable range
             sc_speed_factor = max(1.05, min(sc_speed_factor, 2.0))
         else:
-            # Insufficient data — fall back to simulation default
+            # Insufficient data — fall back to default
             sc_speed_factor = 1.4
 
         # SC Pit Factor: mean SC pit loss / normal pit loss
@@ -472,6 +511,7 @@ class FastF1DataExtractor:
         return float(sc_speed_factor), float(sc_pit_factor)
     
     def get_track_parameters(self, session: ff1.core.Session) -> TrackParameters:
+        """Extract track parameters such as total laps, pit loss time, and lap time statistics"""
 
         laps = session.laps.copy()
         total_laps = int(laps['LapNumber'].max())
@@ -499,6 +539,12 @@ class FastF1DataExtractor:
         )
     
     def get_time_penalties(self, session: ff1.core.Session) -> Dict[str, float]:
+        """Retrieves post-race time penalties from the session results
+        
+        Compares the official gap to leader to the actual on-track gap
+        If the gap is large, it's assumed to be a time penalty applied after the race
+        """
+
         results = session.results
         laps = session.laps
 
@@ -538,8 +584,8 @@ class FastF1DataExtractor:
         return penalties
 
     def get_race_config(self, year: int, gp: str, target_driver: str) -> RaceConfig:
+        """Builds a full race configuration for one race and a target driver"""
         
-        # Load session and parameters
         print(f"Loading session: {year} {gp}")
         session = self.load_session(year, gp, 'R')
 
@@ -605,6 +651,7 @@ class FastF1DataExtractor:
             skip_races: Optional[List[str]] = None,
             exclude_wet_races: bool = True
     ) -> SeasonConfig:
+        """Builds a season configuration by extracting every race in the schedule"""
         
         # Get full schedule and filter to race events (exclude testing)
         schedule = ff1.get_event_schedule(year)
@@ -654,6 +701,8 @@ class FastF1DataExtractor:
         )
 
     def save_race_config(self, race_config: RaceConfig, output_dir: str = "data/races"):
+        """Saves a RaceConfig to JSON"""
+
         os.makedirs(output_dir, exist_ok=True)
         filename = f"{race_config.year}_{race_config.name.replace(' ', '_')}.json"
         filepath = os.path.join(output_dir, filename)
@@ -662,27 +711,10 @@ class FastF1DataExtractor:
 
         print(f"Saved race config to {filepath}")
         return filepath
-    
-    def save_season_config(self, season_config: SeasonConfig, output_dir: str = "data/seasons"):
-        os.makedirs(output_dir, exist_ok=True)
-        filename = f"{season_config.year}_{season_config.target_driver}_season.json"
-        filepath = os.path.join(output_dir, filename)
-        
-        data = {
-            "year": season_config.year,
-            "target_driver": season_config.target_driver,
-            "train_races": season_config.train_races,
-            "test_races": season_config.test_races,
-            "races": [race.to_dict() for race in season_config.races]
-        }
-
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2, default=str)
-
-        print(f"Saved season config to {filepath}")
-        return filepath
 
     def save_season_split(self, season_config: SeasonConfig, train_dir: str = "data/training_races", test_dir: str = "data/test_races"):
+        """Saves each race into either the training or testing folder"""
+
         train_set = set(season_config.train_races)
         test_set = set(season_config.test_races)
 
@@ -708,8 +740,14 @@ if __name__ == "__main__":
     season_config = extractor.get_season_config(
         year=2024,
         target_driver='HAM',
-        test_races=['Chinese Grand Prix', 'Hungarian Grand Prix', 'Miami Grand Prix',
-                    'Bahrain Grand Prix', 'Mexico City Grand Prix'],
+        test_races=[
+            'Chinese Grand Prix',
+            'Hungarian Grand Prix',
+            'Miami Grand Prix',
+            'Bahrain Grand Prix',
+            'Mexico City Grand Prix'
+        ],
+        
         # Skipped races:
         # Monaco: Red flag first lap, hard to predict lap times
         # USA and Australia: Hamilton DNF
@@ -719,6 +757,3 @@ if __name__ == "__main__":
 
     # Save individual race JSONs into training_races/ and test_races/
     extractor.save_season_split(season_config)
-
-    # Also save the combined season JSON 
-    # extractor.save_season_config(season_config)
