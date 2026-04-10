@@ -9,7 +9,9 @@ f1-rl-strategy/
 ├── main.py                          # Entry point — training and evaluation
 ├── requirements.txt                 # Dependencies
 │
-├── data/                            # Extracted race configurations (JSON)
+├── data/                            # Data Extraction and Extracted race configurations (JSON)
+│   │
+│   ├── fastf1_data_extraction.py    # FastF1DataExtractor: builds JSON race configs
 │   ├── training_races/              # Training races (12 races)
 │   └── test_races/                  # Held-out test races (5 races)
 │
@@ -29,9 +31,6 @@ f1-rl-strategy/
 │   ├── env/
 │   │   ├── f1_real_env.py           # F1RealEnv: main Gymnasium environment
 │   │   └── multi_race_env.py        # MultiRaceEnv: wrapper for multi-race training
-│   │
-│   ├── extraction/
-│   │   └── extractor.py             # FastF1DataExtractor: builds JSON race configs
 │   │
 │   ├── models/                      # Saved model weights
 │   │   ├── final_model/             # Final PPO and vecnormalize model weights
