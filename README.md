@@ -10,8 +10,8 @@ f1-rl-strategy/
 ├── requirements.txt                 # Dependencies
 │
 ├── data/                            # Extracted race configurations (JSON)
-│   ├── train/                       # Training races (12 races)
-│   └── test/                        # Held-out test races (5 races)
+│   ├── training_races/              # Training races (12 races)
+│   └── test_races/                  # Held-out test races (5 races)
 │
 ├── f1_gym/                          # Main package
 │   │
