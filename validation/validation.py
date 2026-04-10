@@ -4,7 +4,7 @@ import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
 from f1_gym.lap_predictor import LapPredictor
 from f1_gym.env.f1_real_env import F1RealEnv
@@ -46,7 +46,6 @@ def validate_lap_prediction(predictor: LapPredictor):
         predictions = model.predict(X)
         mae = mean_absolute_error(y, predictions)
         rmse = np.sqrt(mean_squared_error(y, predictions))
-        r2 = r2_score(y, predictions)
 
         # Leave one out driver cross validation
         drivers = valid["Driver"].unique()
@@ -67,7 +66,6 @@ def validate_lap_prediction(predictor: LapPredictor):
             "Samples": len(y),
             "MAE (s)": round(mae, 3),
             "RMSE (s)": round(rmse, 3),
-            "R^2": round(r2, 3),
             "LOO MAE (s)": round(loo_mae, 3),
         })
 
@@ -154,7 +152,6 @@ def validate_pace_offset(predictor: LapPredictor):
 
         rows.append({
             "Race": race,
-            "HAM Laps": len(ham),
             "Offset (s)": round(offset, 3),
             "MAE Before (s)": round(mae_before, 3),
             "MAE After (s)": round(mae_after, 3),

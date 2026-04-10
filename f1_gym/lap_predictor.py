@@ -72,37 +72,6 @@ class LapPredictor:
         path = os.path.join(cls.MODEL_DIR, f"{cls.race_to_filename(race_name)}.pkl")
         return joblib.load(path)
 
-    @staticmethod
-    def test_model(race_name: str):
-        """Tests for the lap time prediction model on some scenarios, simple sanity checks"""
-
-        model = LapPredictor.load_model(race_name)
-
-        test_scenarios = [
-            {'LapNumber': 5,  'TyreAge': 3,  'CompoundID': 1, 'Desc': 'Fresh Softs (Early Race)'},
-            {'LapNumber': 30, 'TyreAge': 3,  'CompoundID': 1, 'Desc': 'Fresh Softs (Mid Race)'},
-            {'LapNumber': 50, 'TyreAge': 3,  'CompoundID': 1, 'Desc': 'Fresh Softs (Late Race)'},
-            {'LapNumber': 30, 'TyreAge': 20, 'CompoundID': 1, 'Desc': 'Old Softs (Mid Race)'},
-
-            {'LapNumber': 5,  'TyreAge': 3,  'CompoundID': 2, 'Desc': 'Fresh Mediums (Early Race)'},
-            {'LapNumber': 30, 'TyreAge': 3,  'CompoundID': 2, 'Desc': 'Fresh Mediums (Mid Race)'},
-            {'LapNumber': 50, 'TyreAge': 3,  'CompoundID': 2, 'Desc': 'Fresh Mediums (Late Race)'},
-            {'LapNumber': 30, 'TyreAge': 25, 'CompoundID': 2, 'Desc': 'Old Mediums (Mid Race)'},
-
-            {'LapNumber': 5,  'TyreAge': 3,  'CompoundID': 3, 'Desc': 'Fresh Hards (Early Race)'},
-            {'LapNumber': 30, 'TyreAge': 3,  'CompoundID': 3, 'Desc': 'Fresh Hards (Mid Race)'},
-            {'LapNumber': 50, 'TyreAge': 3,  'CompoundID': 3, 'Desc': 'Fresh Hards (Late Race)'},
-            {'LapNumber': 50, 'TyreAge': 35, 'CompoundID': 3, 'Desc': 'Old Hards (End of Race)'}
-        ]
-
-        df_test = pd.DataFrame(test_scenarios)
-        predictions = model.predict(df_test[['LapNumber', 'TyreAge', 'CompoundID']])
-
-        print(f"\n--- Predictions for: {race_name} ---")
-        for i, pred in enumerate(predictions):
-            print(f"  {test_scenarios[i]['Desc']}: {pred:.3f}s")
-
-
 if __name__ == "__main__":
     predictor = LapPredictor()
 
@@ -132,5 +101,3 @@ if __name__ == "__main__":
 
     predictor.train_races(2024, training_races)
     predictor.save_models()
-    for race in training_races:
-        LapPredictor.test_model(race)

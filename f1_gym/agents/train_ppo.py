@@ -382,6 +382,8 @@ def evaluate_ppo_model(
         "compounds_used": [],
         "lap_times": [],
         "total_times": [],
+        "episode_logs": [],
+        "final_standings": [],
     }
     
     # Evaluate the model over multiple episodes
@@ -441,6 +443,8 @@ def evaluate_ppo_model(
         results["compounds_used"].append(compounds)
         results["lap_times"].append(avg_lap_time)
         results["total_times"].append(total_time)
+        results["episode_logs"].append(episode_log)
+        results["final_standings"].append(terminal_info.get("final_standings", []))
 
         print(f"\nEpisode {episode + 1}/{num_episodes} completed.")
         print(f"Agent finished P{final_position}  |  "
@@ -454,23 +458,13 @@ def evaluate_ppo_model(
         target_code = target.get("driver_code", "TARGET")
         target_position = target.get("finishing_position", "?")
         if episode_log and target_lap_times:
-            # Lap 1 comparison
-            agent_lap1 = next((l["lap_time"] for l in episode_log if l.get("lap") == 1 and l.get("lap_time")), None)
-            target_lap1 = target_lap_times[0] if target_lap_times else None
-
-            if agent_lap1 and target_lap1:
-                delta1 = agent_lap1 - target_lap1
-                print(f"\n  ANCHORING VALIDATION")
-                print(f"  {'─' * 52}")
-                print(f"  Lap 1  →  Agent: {agent_lap1:.2f}s  |  {target_code}: {target_lap1:.2f}s  |  Δ {delta1:+.2f}s")
-
             # Overall comparison
-            print(f"  Total  →  Agent: {total_time:.2f}s  |  {target_code}: {target_total_time:.2f}s  |  "
-                  f"Δ {total_time - target_total_time:+.2f}s")
+            print(f"  Total race time:  Agent: {total_time:.2f}s  |  {target_code}: {target_total_time:.2f}s  |  "
+                  f"Delta: {total_time - target_total_time:+.2f}s")
             print(f"  {target_code} finished P{target_position} (real)  |  Agent finished P{final_position}")
             print(f"  {'─' * 52}")
 
-        # Standings table — (handles lapped drivers classified as +N Laps)
+        # Standings table
         print(f"\n  {'RACE STANDINGS':^74}")
         print(f"  {'─' * 74}")
         print(f"  {'Pos':>3} | {'Driver':<21} | {'Total Time':>11} | {'Gap':>8} | {'Pen':>5} | {'Stops':>5} | Strategy")

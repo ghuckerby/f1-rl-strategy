@@ -1,9 +1,9 @@
-Race,Samples,MAE (s),RMSE (s),R^2,LOO MAE (s)
-Chinese Grand Prix,762,0.549,0.731,0.675,0.72
-Hungarian Grand Prix,1254,0.33,0.513,0.846,0.649
-Miami Grand Prix,934,0.359,0.464,0.804,0.553
-Bahrain Grand Prix,1024,0.436,0.558,0.804,0.744
-Mexico City Grand Prix,1061,0.411,0.556,0.78,0.655
+Race,Samples,MAE (s),RMSE (s),LOO MAE (s)
+Chinese Grand Prix,762,0.549,0.731,0.72
+Hungarian Grand Prix,1254,0.33,0.513,0.649
+Miami Grand Prix,934,0.359,0.464,0.553
+Bahrain Grand Prix,1024,0.436,0.558,0.744
+Mexico City Grand Prix,1061,0.411,0.556,0.655
 
 Race,Hamilton Time (s),Agent Time (s),Time Difference (s)
 Chinese Grand Prix,6110.54,6110.54,0.0
@@ -12,9 +12,9 @@ Miami Grand Prix,5466.46,5466.46,0.0
 Bahrain Grand Prix,5555.07,5555.07,0.0
 Mexico City Grand Prix,6100.58,6100.58,0.0
 
-Race,HAM Laps,Offset (s),MAE Before (s),MAE After (s),Improvement (s)
-Chinese Grand Prix,42,-0.26,0.347,0.244,0.103
-Hungarian Grand Prix,65,0.424,0.455,0.37,0.086
-Miami Grand Prix,48,0.531,0.564,0.239,0.326
-Bahrain Grand Prix,52,0.186,0.287,0.212,0.075
-Mexico City Grand Prix,63,0.311,0.452,0.374,0.078
+Race,Offset (s),MAE Before (s),MAE After (s),Improvement (s)
+Chinese Grand Prix,-0.26,0.347,0.244,0.103
+Hungarian Grand Prix,0.424,0.455,0.37,0.086
+Miami Grand Prix,0.531,0.564,0.239,0.326
+Bahrain Grand Prix,0.186,0.287,0.212,0.075
+Mexico City Grand Prix,0.311,0.452,0.374,0.078

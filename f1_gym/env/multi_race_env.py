@@ -8,23 +8,11 @@ from f1_gym.reward_config import RewardConfig
 
 class MultiRaceEnv(gym.Env):
     """Wrapper that samples from multiple race environments
-    
-    Each episodes is one run on an F1RealEnv selected at each reset
+    Each episode is one F1RealEnv selected at each reset
     """
 
     def __init__( self, race_configs: List[Dict[str, Any]], predictors: List[Any], reward_config: Optional[RewardConfig] = None):
-        """Initialise multi-race environment"
-        
-        Args:
-            race_configs: list of race configurations
-            predictors: list of lap-time predictors for each race
-            reward_config: reward configuration
-        """
-
         super().__init__()
-
-        assert len(race_configs) == len(predictors), (f"Got {len(race_configs)} race configs but {len(predictors)} predictors")
-        assert len(race_configs) > 0, "Need at least one race config"
 
         self._race_configs = race_configs
         self._predictors = predictors

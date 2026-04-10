@@ -9,8 +9,7 @@ import numpy as np
 
 ff1.Cache.enable_cache("fastf1_cache/cache")
 
-# -- Data Classes --
-
+# Data Classes
 @dataclass
 class TyreCompound:
     """Represents a tyre compound used in the race"""
@@ -91,8 +90,6 @@ class SeasonConfig:
     train_races: List[str]
     test_races: List[str]
 
-# -- Compound Mapping --
-
 # Numeric IDs for compounds (Intermediate and wet mostly unused)
 COMPOUND_MAP = {
     'SOFT': 1,
@@ -106,8 +103,7 @@ def map_compound(compound_str: str) -> int:
     """Maps compound string to numeric ID, returns -1 if unknown"""
     return COMPOUND_MAP.get(compound_str.upper(), -1)
 
-# -- Main Extractor Class --
-
+# Main Extractor Class
 class FastF1DataExtractor:
     """Extracts race and season data from FastF1 race sessions.
     
