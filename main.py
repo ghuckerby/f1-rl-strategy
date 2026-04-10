@@ -179,8 +179,10 @@ def main():
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate a trained PPO model on the specified test races.")
     eval_parser.add_argument("--test-dir", type=str, default=TEST_DIR, help="Directory containing test race JSON files.")
-    eval_parser.add_argument("--model", type=str, default="f1_gym/models/best_ppo/ppo_run4/best_model.zip", help="Path to the trained PPO model file.")
-    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/best_ppo/ppo_run4/ppo_run4_vecnormalize.pkl", help="Path to the VecNormalize statistics file.")
+
+    eval_parser.add_argument("--model", type=str, default="f1_gym/models/final_model/final_ppo_model.zip", help="Path to the trained PPO model file.")
+    eval_parser.add_argument("--vecnormalize", type=str, default="f1_gym/models/final_model/final_ppo_vecnormalize.pkl", help="Path to the VecNormalize statistics file.")
+
     eval_parser.add_argument("--episodes", type=int, default=1)
     eval_parser.add_argument("--seed", type=int, default=6)
 
