@@ -55,6 +55,8 @@ f1-rl-strategy/
 4. **Training** — A tuned PPO agent from Stable-Baselines3 is trained across 3M timesteps with `MultiRaceEnv` randomly sampling from the 12 training races each episode.
 5. **Evaluation** — The saved policy is run on 5 held-out test races and compared against Hamilton's historical finishing position and total race time.
 
+Docstrings are also provided in key methods throughout the project.
+
 ## Installation
 
 ```bash
