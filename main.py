@@ -7,6 +7,7 @@ import joblib
 import numpy as np
 
 from f1_gym.agents.train_ppo import train_f1_ppo, evaluate_ppo_model
+from f1_gym.visualisation.race_plots import plot_race_comparison, plot_position_chart
 
 MODEL_DIR = "f1_gym/models"
 PREDICTOR_DIR = os.path.join(MODEL_DIR, "lap_predictors")
@@ -89,6 +90,10 @@ def evaluate(args):
             "total_time": target.get("total_time", 0),
             "pit_stops": target.get("num_pit_stops", 0)
         })
+
+        if race_results["episode_logs"]:
+            plot_race_comparison(race_results["episode_logs"][0], race_data, output_dir="f1_gym/visualisation/evaluation_plots")
+            plot_position_chart(race_results["episode_logs"][0], race_data, output_dir="f1_gym/visualisation/evaluation_plots")
 
     # Summary across test races
     target_code = target_stats[0]["code"] if target_stats else "TGT"
